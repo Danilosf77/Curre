@@ -33,7 +33,7 @@ export interface EducationItem {
   institution: string;
   startYear: string;
   endYear: string;
-  status: 'Concluído' | 'Em andamento' | 'Trancado';
+  status: 'Concluído' | 'Em andamento' | 'Trancado' | 'Terminé' | 'En cours' | 'Interrompu' | 'Completed' | 'In Progress' | 'Completado' | 'En curso' | string;
 }
 
 export interface SkillItem {
@@ -82,6 +82,7 @@ export interface OptimizedResume {
   courses: CourseItem[];
   jobAnalysis?: JobAnalysisResult;
   templateStyle: 'liquid-modern' | 'executive-clean' | 'minimalist';
+  language?: string;
   generatedAt: string;
 }
 

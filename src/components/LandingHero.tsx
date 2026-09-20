@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Award, Zap, FileText, ChevronRight, UserCheck, Search, Clock, Cloud } from 'lucide-react';
 import { OptimizedResume, UserProfile } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface LandingHeroProps {
   onStartResume: () => void;
@@ -19,29 +20,30 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   currentUser,
   onOpenLogin,
 }) => {
+  const { t } = useLanguage();
   // Animated simulation state for the liquid glass resume preview
   const [activeStepAnim, setActiveStepAnim] = useState(0);
 
   const simulationSteps = [
     {
-      title: "1. Informações básicas",
+      title: t('sim_title_1'),
       detail: "João Silva • Analista Administrativo",
-      badge: "Preenchimento simples",
+      badge: t('sim_badge_1'),
     },
     {
-      title: "2. Experiência informal",
+      title: t('sim_title_2'),
       detail: '"Cuidava das notas e planilhas no setor..."',
-      badge: "Linguagem própria",
+      badge: t('sim_badge_2'),
     },
     {
-      title: "3. Otimização com IA CURRÊ",
+      title: t('sim_title_3'),
       detail: '→ "Gerenciou rotinas fiscais e controle de faturamento via Excel"',
-      badge: "Padrão de recrutamento",
+      badge: t('sim_badge_3'),
     },
     {
-      title: "4. Alinhamento com a vaga",
+      title: t('sim_title_4'),
       detail: 'Requisitos correspondentes: 92% de compatibilidade',
-      badge: "Currículo pronto em PDF!",
+      badge: t('sim_badge_4'),
     },
   ];
 
@@ -65,20 +67,20 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           {/* Subtle Tag */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-subtle text-xs font-semibold text-sky-800 shadow-sm border border-sky-200/60">
             <Sparkles className="w-3.5 h-3.5 text-sky-600 animate-spin" style={{ animationDuration: '4s' }} />
-            <span>Inteligência Artificial Feita para Quem Precisa de Resultados</span>
+            <span>{t('hero_badge')}</span>
           </div>
 
           {/* Main Hero Title */}
           <h1 className="text-3xl sm:text-5xl lg:text-[44px] font-extrabold text-slate-900 tracking-tight leading-[1.18]">
-            Seu próximo emprego pode começar com um{' '}
+            {t('hero_title_p1')}
             <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              currículo melhor.
+              {t('hero_title_highlight')}
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
-            Crie um currículo profissional com inteligência artificial e adapte sua apresentação para a vaga que você deseja.
+            {t('hero_subtitle')}
           </p>
 
           {/* Banner de Currículo Salvo no Navegador */}
@@ -91,14 +93,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800 bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200">
-                      Sessão Salva
+                      {t('hero_saved_session')}
                     </span>
                     <span className="text-xs font-bold text-slate-900 truncate max-w-[200px] sm:max-w-xs">
                       {savedResume.personal?.fullName || 'Currículo Salvo'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Cargo: <strong>{savedResume.targetRole || 'Profissional'}</strong> • Pronto para download ou edição
+                    Cargo: <strong>{savedResume.targetRole || 'Profissional'}</strong> • {t('hero_saved_ready')}
                   </p>
                 </div>
               </div>
@@ -109,14 +111,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                   className="flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5"
                 >
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Abrir Salvo</span>
+                  <span>{t('hero_saved_open')}</span>
                 </button>
                 <button
                   onClick={onStartResume}
                   id="hero-btn-create-new-alt"
                   className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 cursor-pointer transition-all text-center"
                 >
-                  Novo
+                  {t('hero_saved_new')}
                 </button>
               </div>
             </div>
@@ -129,7 +131,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               id="hero-btn-create-resume"
               className="w-full sm:w-auto liquid-glass-button text-white font-bold px-7 py-3.5 rounded-xl text-base flex items-center justify-center gap-3 group cursor-pointer shadow-lg shadow-sky-500/30"
             >
-              <span>CRIAR MEU CURRÍCULO</span>
+              <span>{t('hero_cta_start')}</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 
@@ -138,7 +140,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               id="hero-btn-how-it-works"
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-base font-semibold text-slate-700 hover:text-slate-900 liquid-glass hover:bg-white/80 transition-all border border-slate-200/80 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
-              <span>COMO FUNCIONA</span>
+              <span>{t('hero_cta_how')}</span>
               <ChevronRight className="w-4 h-4 text-slate-400" />
             </button>
           </div>
@@ -147,11 +149,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-5 text-xs text-slate-500 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>100% gratuito</span>
+              <span>{t('hero_trust_free')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Sem cadastro obrigatório</span>
+              <span>{t('hero_trust_no_signup')}</span>
             </div>
             {currentUser ? (
               <div className="flex items-center gap-1.5 text-sky-800 font-semibold bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200">
@@ -166,7 +168,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                   title="Deseja salvar na nuvem? Login gratuito opcional"
                 >
                   <Cloud className="w-3.5 h-3.5 text-sky-600" />
-                  <span>Salvar na Nuvem (Opcional)</span>
+                  <span>{t('hero_trust_cloud')}</span>
                 </button>
               )
             )}
@@ -255,14 +257,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               {/* Interactive bottom micro-banner */}
               <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-xs text-slate-600">
                 <div className="flex items-center gap-1.5">
-                  <UserCheck className="w-4 h-4 text-sky-600" />
-                  <span className="font-medium">Sem inventar experiências</span>
+                  <UserCheck className="w-3.5 h-3.5 text-sky-600" />
+                  <span className="font-medium">{t('sim_no_fake')}</span>
                 </div>
                 <button
                   onClick={onStartResume}
-                  className="text-sky-600 font-bold hover:underline flex items-center gap-1 text-xs"
+                  className="text-sky-600 font-bold hover:underline flex items-center gap-1 text-xs cursor-pointer"
                 >
-                  Experimente agora →
+                  {t('sim_try_now')}
                 </button>
               </div>
             </div>
@@ -277,10 +279,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             <Zap className="w-5 h-5" />
           </div>
           <h3 className="font-bold text-slate-900 text-base mb-1">
-            Fácil como uma conversa
+            {t('feat_1_title')}
           </h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Escreva suas tarefas cotidianas com suas próprias palavras. A IA organiza em linguagem corporativa respeitada por recrutadores.
+            {t('feat_1_desc')}
           </p>
         </div>
 
@@ -289,10 +291,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             <Search className="w-5 h-5" />
           </div>
           <h3 className="font-bold text-slate-900 text-base mb-1">
-            Alinhado à Vaga de Emprego
+            {t('feat_2_title')}
           </h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Cole a descrição da oportunidade e o CURRÊ destaca exatamente as suas experiências e habilidades reais que atendem aos requisitos.
+            {t('feat_2_desc')}
           </p>
         </div>
 
@@ -301,10 +303,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             <ShieldCheck className="w-5 h-5" />
           </div>
           <h3 className="font-bold text-slate-900 text-base mb-1">
-            Ético e 100% Confiável
+            {t('feat_3_title')}
           </h3>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Garantia estrita de integridade: a IA nunca inventa cursos, empresas ou resultados falsos. Seu currículo sempre reflete sua verdade.
+            {t('feat_3_desc')}
           </p>
         </div>
       </div>

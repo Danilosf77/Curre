@@ -28,6 +28,14 @@ import {
   JobAnalysisResult,
   WizardStep,
 } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
+import { getPhoneConfig } from '../utils/phoneFormatters';
+import {
+  COMMON_ROLE_SUGGESTIONS_BY_LANG,
+  COMMON_COMPETENCIES_BY_LANG,
+  COMMON_TOOLS_BY_LANG,
+  SAMPLE_RESUME_BY_LANG,
+} from '../data/suggestions';
 
 interface ResumeWizardProps {
   initialStep?: WizardStep;
@@ -53,68 +61,6 @@ interface ResumeWizardProps {
   }) => void;
   onCancel: () => void;
 }
-
-const COMMON_ROLE_SUGGESTIONS = [
-  'Analista Administrativo',
-  'Assistente Financeiro',
-  'Recepcionista / Atendente',
-  'Vendedor de Loja',
-  'Auxiliar de Logística',
-  'Analista de Suporte Técnico',
-  'Assistente de Recursos Humanos',
-  'Desenvolvedor Web',
-  'Designer Gráfico',
-  'Operador de Caixa',
-];
-
-const COMMON_COMPETENCIES = [
-  'Comunicação assertiva',
-  'Trabalho em equipe',
-  'Organização',
-  'Atendimento ao cliente',
-  'Liderança',
-  'Gestão de documentos',
-  'Análise de dados',
-  'Resolução de problemas',
-  'Gestão de tempo',
-  'Proatividade',
-  'Negociação',
-  'Pontualidade',
-];
-
-const COMMON_TOOLS = [
-  'Excel / Planilhas',
-  'Pacote Office',
-  'Power BI',
-  'TOTVS',
-  'SAP',
-  'Canva',
-  'Google Workspace',
-  'Trello / Jira',
-  'Sistemas ERP',
-  'WhatsApp Business',
-];
-
-// Formata o telefone no padrão estrito: (xx) 9 xxxx-xxxx
-const formatPhoneBR = (value: string): string => {
-  let clean = value.replace(/\D/g, '');
-  if (clean.startsWith('55') && clean.length > 11) {
-    clean = clean.slice(2);
-  }
-  const digits = clean.slice(0, 11);
-  if (!digits) return '';
-
-  if (digits.length <= 2) {
-    return `(${digits}`;
-  }
-  if (digits.length <= 3) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  }
-  if (digits.length <= 7) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3)}`;
-  }
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-};
 
 // Formata data no padrão estrito: mm/aaaa (Mês estritamente entre 01 e 12)
 const formatMonthYear = (value: string, prevValue?: string): string => {
@@ -240,6 +186,11 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   onGenerateResume,
   onCancel,
 }) => {
+  const { language, t } = useLanguage();
+  const roleSuggestions = COMMON_ROLE_SUGGESTIONS_BY_LANG[language] || COMMON_ROLE_SUGGESTIONS_BY_LANG.pt;
+  const competencySuggestions = COMMON_COMPETENCIES_BY_LANG[language] || COMMON_COMPETENCIES_BY_LANG.pt;
+  const toolSuggestions = COMMON_TOOLS_BY_LANG[language] || COMMON_TOOLS_BY_LANG.pt;
+  const phoneConfig = getPhoneConfig(language);
   const [currentStep, setCurrentStep] = useState<WizardStep>(initialStep);
   const [hasReachedReview, setHasReachedReview] = useState<boolean>(initialStep === 8);
 
@@ -367,85 +318,29 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   const handleLoadSample = () => {
     setShowErrors(false);
     setNoExperience(false);
+
+    const currentSample = SAMPLE_RESUME_BY_LANG[language] || SAMPLE_RESUME_BY_LANG.pt;
+
     setPersonal({
-      fullName: 'Carlos Eduardo Mendes',
-      cityState: 'São Paulo, SP',
-      phone: '(11) 9 8765-4321',
-      email: 'carlos.mendes@email.com',
-      linkedin: 'linkedin.com/in/carloseduardo',
-      portfolio: '',
-      photoUrl: '',
-      hasPhoto: false,
+      fullName: currentSample.personal.fullName,
+      cityState: currentSample.personal.cityState,
+      phone: currentSample.personal.phone,
+      email: currentSample.personal.email,
+      linkedin: currentSample.personal.linkedin || '',
+      portfolio: currentSample.personal.portfolio || '',
+      photoUrl: currentSample.personal.photoUrl || '',
+      hasPhoto: !!currentSample.personal.hasPhoto,
     });
     setTargetJob({
-      roleTitle: 'Analista Administrativo',
-      briefGoal:
-        'Busco uma vaga como Analista Administrativo para organizar fluxos de rotinas, faturamento e atendimento a fornecedores, trazendo eficiência e processos organizados para a equipe.',
-      jobDescription: `Vaga: Analista Administrativo Pleno
-Responsabilidades:
-- Gestão e conferência de notas fiscais e relatórios gerenciais
-- Controle de contas a pagar e suporte a auditorias internas
-- Relacionamento com fornecedores e clientes
-- Uso constante de planilhas de Excel avançado e sistemas ERP
-
-Requisitos:
-- Ensino superior completo ou cursando em Administração, Contabilidade ou áreas afins
-- Domínio de Excel (fórmulas, tabelas dinâmicas)
-- Boa comunicação interpessoal e organização`,
+      roleTitle: currentSample.targetJob.roleTitle,
+      briefGoal: currentSample.targetJob.briefGoal,
+      jobDescription: currentSample.targetJob.jobDescription,
     });
-    setExperiences([
-      {
-        id: 'exp-sample-1',
-        company: 'Distribuidora Nova Era',
-        role: 'Assistente Administrativo',
-        startDate: '03/2022',
-        endDate: '',
-        isCurrent: true,
-        activitiesRaw:
-          'Emitia notas fiscais, conferia relatórios diários de vendas, organizava arquivos e planilhas e atendia fornecedores por e-mail e telefone.',
-        resultsRaw:
-          'Diminuiu o tempo de conferência de notas em 30% após padronizar as planilhas do setor.',
-      },
-      {
-        id: 'exp-sample-2',
-        company: 'Comércio Silva & Santos',
-        role: 'Auxiliar de Escritório',
-        startDate: '02/2019',
-        endDate: '11/2021',
-        isCurrent: false,
-        activitiesRaw:
-          'Atendimento presencial e telefônico, controle de estoque básico, preenchimento de recibos e suporte geral ao financeiro.',
-        resultsRaw:
-          'Mantive o controle de insumos 100% em dia sem faltas de material durante o período.',
-      },
-    ]);
-    setEducation([
-      {
-        id: 'edu-sample-1',
-        course: 'Administração de Empresas',
-        institution: 'Universidade Paulista',
-        startYear: '2019',
-        endYear: '2023',
-        status: 'Concluído',
-      },
-    ]);
-    setSelectedSkills([
-      'Comunicação assertiva',
-      'Organização',
-      'Trabalho em equipe',
-      'Gestão de documentos',
-      'Atendimento ao cliente',
-    ]);
-    setSelectedTools(['Excel / Planilhas', 'Pacote Office', 'TOTVS', 'Google Workspace']);
-    setCourses([
-      {
-        id: 'course-sample-1',
-        name: 'Excel Intermediário e Fórmulas de Gestão',
-        institution: 'SENAC',
-        year: '2022',
-        hours: '40h',
-      },
-    ]);
+    setExperiences(currentSample.experiences.map((exp) => ({ ...exp })));
+    setEducation(currentSample.education.map((edu) => ({ ...edu })));
+    setSelectedSkills([...currentSample.skills]);
+    setSelectedTools([...currentSample.tools]);
+    setCourses(currentSample.courses.map((c) => ({ ...c })));
   };
 
   // Step 1 Photo Upload helper
@@ -609,14 +504,14 @@ Requisitos:
 
   // Step Titles
   const stepTitles = [
-    'Dados Pessoais',
-    'Objetivo Profissional',
-    'Experiência Profissional',
-    'Formação Acadêmica',
-    'Competências & Ferramentas',
-    'Cursos & Certificações',
-    'Alinhamento com a Vaga',
-    'Revisão e Geração',
+    t('step_1_title'),
+    t('step_2_title'),
+    t('step_3_title'),
+    t('step_4_title'),
+    t('step_5_title'),
+    t('step_6_title'),
+    t('step_7_title'),
+    t('step_8_title'),
   ];
 
   // =========================================================================
@@ -624,7 +519,7 @@ Requisitos:
   // =========================================================================
   const isNameValid = (name: string) => name.trim().length >= 3;
   const isCityValid = (city: string) => city.trim().length >= 2;
-  const isPhoneValid = (phone: string) => phone.replace(/\D/g, '').length >= 10;
+  const isPhoneValid = (phone: string) => phoneConfig.isValid(phone);
   const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   // Step 1: Contato e dados pessoais essenciais
@@ -735,29 +630,29 @@ Requisitos:
     switch (currentStep) {
       case 1: {
         const missing: string[] = [];
-        if (!isNameValid(personal.fullName)) missing.push('Nome Completo');
-        if (!isCityValid(personal.cityState)) missing.push('Cidade/Estado');
-        if (!isPhoneValid(personal.phone)) missing.push('Telefone/WhatsApp');
-        if (!isEmailValid(personal.email)) missing.push('E-mail válido');
-        return missing.length > 0 ? `Preencha: ${missing.join(', ')}` : '';
+        if (!isNameValid(personal.fullName)) missing.push(t('step_1_name_label'));
+        if (!isCityValid(personal.cityState)) missing.push(t('step_1_city_label'));
+        if (!isPhoneValid(personal.phone)) missing.push(t('step_1_phone_label'));
+        if (!isEmailValid(personal.email)) missing.push(t('step_1_email_label'));
+        return missing.length > 0 ? `${t('step_2_missing_error').split(' ')[0]}: ${missing.join(', ')}` : '';
       }
       case 2:
-        return !isStep2Valid() ? 'Preencha o Cargo Almejado' : '';
+        return !isStep2Valid() ? t('step_2_missing_error') : '';
       case 3:
         return !isStep3Valid()
-          ? 'Preencha Empresa, Cargo e Atividades, ou marque "Em busca do primeiro emprego"'
+          ? t('step_3_missing_error')
           : '';
       case 4:
         return !isStep4Valid()
-          ? 'Preencha Curso e Instituição de ensino'
+          ? t('step_4_missing_error')
           : '';
       case 5:
         return !isStep5Valid()
-          ? 'Selecione pelo menos 1 competência ou ferramenta'
+          ? t('step_5_missing_error')
           : '';
       case 6:
         return !isStep6Valid()
-          ? 'Preencha os cursos adicionados ou remova itens em branco'
+          ? t('step_6_missing_error')
           : '';
       default:
         return '';
@@ -838,7 +733,7 @@ Requisitos:
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/70 px-3 py-1.5 rounded-lg border border-slate-200/80 cursor-pointer transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span>{currentStep === 1 ? 'Voltar ao início' : 'Etapa anterior'}</span>
+          <span>{currentStep === 1 ? t('wiz_back_home') : t('wiz_prev_step')}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -850,18 +745,18 @@ Requisitos:
               title="Salvar alterações e voltar diretamente à Etapa 8 de Revisão e Geração"
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
-              <span>Ir para Revisão (Etapa 8)</span>
+              <span>{t('wiz_jump_review')}</span>
             </button>
           )}
 
           <button
             onClick={handleLoadSample}
             id="wizard-btn-fill-sample"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-50/90 hover:bg-sky-100/80 px-3 py-1.5 rounded-lg border border-sky-200/70 transition-all"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-50/90 hover:bg-sky-100/80 px-3 py-1.5 rounded-lg border border-sky-200/70 transition-all cursor-pointer"
             title="Preenche dados de exemplo para testar rapidamente"
           >
             <Wand2 className="w-3.5 h-3.5 text-sky-600" />
-            <span>Preencher exemplo</span>
+            <span>{t('wiz_fill_sample')}</span>
           </button>
         </div>
       </div>
@@ -871,7 +766,7 @@ Requisitos:
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded-md">
-              Etapa {currentStep} de 8
+              {t('wiz_step_label')} {currentStep} {t('wiz_of_label')} 8
             </span>
             <h2 className="text-sm sm:text-base font-bold text-slate-900">
               {stepTitles[currentStep - 1]}
@@ -899,9 +794,9 @@ Requisitos:
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">Seus Dados de Contato</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_1_heading')}</h3>
               <p className="text-xs text-slate-500">
-                Informações que o recrutador usará para te chamar para a entrevista. Não pedimos CPF ou documentos.
+                {t('step_1_sub')}
               </p>
             </div>
 
@@ -909,13 +804,13 @@ Requisitos:
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                   <span>
-                    Nome Completo <span className="text-rose-500">*</span>
+                    {t('field_full_name')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="ex: Maria Eduarda Ferreira"
+                  placeholder={t('field_name_placeholder')}
                   value={personal.fullName}
                   onChange={(e) => setPersonal({ ...personal, fullName: e.target.value })}
                   className={`w-full px-4 py-2.5 rounded-xl border bg-white/90 text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -927,7 +822,7 @@ Requisitos:
                 {showErrors && !isNameValid(personal.fullName) && (
                   <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 text-rose-500 shrink-0" />
-                    <span>Informe seu nome e sobrenome (mínimo 3 caracteres).</span>
+                    <span>{t('field_name_error')}</span>
                   </p>
                 )}
               </div>
@@ -935,13 +830,13 @@ Requisitos:
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                   <span>
-                    Cidade / Estado <span className="text-rose-500">*</span>
+                    {t('field_city_state')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="ex: São Paulo, SP"
+                  placeholder={t('field_city_placeholder')}
                   value={personal.cityState}
                   onChange={(e) => setPersonal({ ...personal, cityState: e.target.value })}
                   className={`w-full px-4 py-2.5 rounded-xl border bg-white/90 text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -953,7 +848,7 @@ Requisitos:
                 {showErrors && !isCityValid(personal.cityState) && (
                   <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 text-rose-500 shrink-0" />
-                    <span>Informe sua cidade e estado (ex: São Paulo, SP).</span>
+                    <span>{t('field_city_error')}</span>
                   </p>
                 )}
               </div>
@@ -961,16 +856,16 @@ Requisitos:
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                   <span>
-                    Telefone / WhatsApp <span className="text-rose-500">*</span>
+                    {t('field_phone')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">Padrão: (xx) 9 xxxx-xxxx</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{phoneConfig.formatLabel}</span>
                 </label>
                 <input
                   type="tel"
-                  placeholder="(xx) 9 xxxx-xxxx"
-                  maxLength={17}
+                  placeholder={phoneConfig.placeholder}
+                  maxLength={phoneConfig.maxLength}
                   value={personal.phone}
-                  onChange={(e) => setPersonal({ ...personal, phone: formatPhoneBR(e.target.value) })}
+                  onChange={(e) => setPersonal({ ...personal, phone: phoneConfig.format(e.target.value) })}
                   className={`w-full px-4 py-2.5 rounded-xl border bg-white/90 text-sm focus:outline-none focus:ring-2 transition-all ${
                     showErrors && !isPhoneValid(personal.phone)
                       ? 'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 bg-rose-50/20'
@@ -980,7 +875,7 @@ Requisitos:
                 {showErrors && !isPhoneValid(personal.phone) && (
                   <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 text-rose-500 shrink-0" />
-                    <span>Informe um telefone ou WhatsApp completo no formato (xx) 9 xxxx-xxxx.</span>
+                    <span>{phoneConfig.errorMessage}</span>
                   </p>
                 )}
               </div>
@@ -988,13 +883,13 @@ Requisitos:
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                   <span>
-                    E-mail profissional <span className="text-rose-500">*</span>
+                    {t('field_email')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                 </label>
                 <input
                   type="email"
-                  placeholder="ex: seuemail@gmail.com"
+                  placeholder={t('field_email_placeholder')}
                   value={personal.email}
                   onChange={(e) => setPersonal({ ...personal, email: e.target.value })}
                   className={`w-full px-4 py-2.5 rounded-xl border bg-white/90 text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1006,18 +901,18 @@ Requisitos:
                 {showErrors && !isEmailValid(personal.email) && (
                   <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3 text-rose-500 shrink-0" />
-                    <span>Informe um endereço de e-mail válido.</span>
+                    <span>{t('field_email_error')}</span>
                   </p>
                 )}
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  LinkedIn (opcional)
+                  {t('field_linkedin')}
                 </label>
                 <input
                   type="text"
-                  placeholder="ex: linkedin.com/in/seunome"
+                  placeholder={t('field_linkedin_ph')}
                   value={personal.linkedin}
                   onChange={(e) => setPersonal({ ...personal, linkedin: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1026,11 +921,11 @@ Requisitos:
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Portfólio / Site (opcional)
+                  {t('field_portfolio')}
                 </label>
                 <input
                   type="text"
-                  placeholder="ex: meutrabalho.com ou github.com/user"
+                  placeholder={t('step_1_ph_portfolio')}
                   value={personal.portfolio}
                   onChange={(e) => setPersonal({ ...personal, portfolio: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1048,9 +943,9 @@ Requisitos:
                   className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500"
                 />
                 <span className="text-sm font-semibold text-slate-700">
-                  Quero adicionar uma foto no currículo
+                  {t('field_photo_toggle')}
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">(Opcional)</span>
+                <span className="text-[10px] text-slate-400 font-normal">({t('label_optional')})</span>
               </label>
 
               {personal.hasPhoto && (
@@ -1073,7 +968,7 @@ Requisitos:
                       className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 shadow-sm"
                     >
                       <Upload className="w-3.5 h-3.5" />
-                      <span>{personal.photoUrl ? 'Alterar foto' : 'Carregar imagem'}</span>
+                      <span>{personal.photoUrl ? t('field_photo_change') : t('field_photo_upload')}</span>
                     </label>
                     <input
                       id="photo-upload"
@@ -1098,22 +993,22 @@ Requisitos:
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">Qual cargo você está buscando?</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_2_heading')}</h3>
               <p className="text-xs text-slate-500">
-                O objetivo profissional ajuda o recrutador a identificar imediatamente onde você quer atuar.
+                {t('step_2_sub')}
               </p>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                 <span>
-                  Cargo Almejado <span className="text-rose-500">*</span>
+                  {t('step_2_role_label')} <span className="text-rose-500">*</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
               </label>
               <input
                 type="text"
-                placeholder="Exemplo: Analista Administrativo"
+                placeholder={t('step_2_role_placeholder')}
                 value={targetJob.roleTitle}
                 onChange={(e) => setTargetJob({ ...targetJob, roleTitle: e.target.value })}
                 className={`w-full px-4 py-3 rounded-xl border bg-white/90 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 transition-all ${
@@ -1125,17 +1020,17 @@ Requisitos:
               {showErrors && !isStep2Valid() && (
                 <p className="text-[11px] text-rose-600 font-medium mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3 text-rose-500 shrink-0" />
-                  <span>Informe o cargo almejado para direcionar seu currículo (ou escolha uma das sugestões abaixo).</span>
+                  <span>{t('step_2_role_error')}</span>
                 </p>
               )}
 
               {/* Suggestions chips */}
               <div className="mt-3">
                 <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
-                  Sugestões populares (clique para aplicar):
+                  {t('step_2_suggestions_label')}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {COMMON_ROLE_SUGGESTIONS.map((role) => (
+                  {roleSuggestions.map((role) => (
                     <button
                       key={role}
                       type="button"
@@ -1155,11 +1050,11 @@ Requisitos:
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Conte brevemente qual tipo de oportunidade você procura
+                {t('step_2_goal_label')}
               </label>
               <textarea
                 rows={3}
-                placeholder="Exemplo: Gostaria de trabalhar com rotinas administrativas, controle de notas ou atendimento ao cliente em uma empresa onde possa aprender e crescer."
+                placeholder={t('step_2_goal_placeholder')}
                 value={targetJob.briefGoal}
                 onChange={(e) => setTargetJob({ ...targetJob, briefGoal: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1169,7 +1064,7 @@ Requisitos:
               <div className="mt-2.5 p-3 rounded-xl bg-sky-50/80 border border-sky-100 flex items-start gap-2.5 text-xs text-sky-900">
                 <HelpCircle className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
                 <p className="leading-relaxed">
-                  <strong>Não sabe o que escrever?</strong> Não se preocupe. Escreva como você pensa com suas próprias palavras e a IA do CURRÊ transformará em um objetivo profissional formal e assertivo!
+                  {t('step_2_ai_tip')}
                 </p>
               </div>
             </div>
@@ -1184,10 +1079,10 @@ Requisitos:
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">
-                  Vamos contar sua experiência profissional
+                  {t('step_3_heading')}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Adicione seus trabalhos anteriores ou atual. A IA organizará cronologicamente.
+                  {t('step_3_sub')}
                 </p>
               </div>
               {!noExperience && (
@@ -1198,7 +1093,7 @@ Requisitos:
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 rounded-xl border border-sky-200 cursor-pointer self-start sm:self-auto transition-all"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ ADICIONAR EXPERIÊNCIA</span>
+                  <span>{t('step_3_add_btn')}</span>
                 </button>
               )}
             </div>
@@ -1217,10 +1112,10 @@ Requisitos:
                 />
                 <div>
                   <span className="text-xs font-bold text-slate-900 block">
-                    Em busca do primeiro emprego / Sem experiência formal anterior
+                    {t('step_3_no_exp_title')}
                   </span>
                   <span className="text-[11px] text-slate-600 block mt-0.5">
-                    Marque esta opção se você for estudante, jovem aprendiz ou estiver ingressando no mercado agora.
+                    {t('step_3_no_exp_sub')}
                   </span>
                 </div>
               </label>
@@ -1230,17 +1125,17 @@ Requisitos:
               <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-cyan-50/40 border border-sky-200 text-center space-y-3">
                 <Sparkles className="w-8 h-8 text-sky-600 mx-auto animate-pulse" />
                 <h4 className="text-sm font-bold text-slate-900">
-                  Perfil Sem Experiência Formal Selecionado
+                  {t('step_3_no_exp_alert_title')}
                 </h4>
                 <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
-                  Perfeito! O CURRÊ irá estruturar seu currículo com foco estratégico na sua <strong>Formação Acadêmica</strong>, <strong>Cursos & Certificações</strong> e <strong>Habilidades Práticas</strong>, destacando o seu potencial para os recrutadores.
+                  {t('step_3_no_exp_alert_desc')}
                 </p>
                 <button
                   type="button"
                   onClick={() => setNoExperience(false)}
                   className="text-xs font-bold text-sky-700 underline hover:text-sky-900 pt-1 cursor-pointer"
                 >
-                  Prefiro preencher minhas experiências profissionais
+                  {t('step_3_no_exp_revert')}
                 </button>
               </div>
             ) : (
@@ -1249,7 +1144,7 @@ Requisitos:
                 <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/70 text-xs text-amber-900 flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <p>
-                    <strong>Dica valiosa:</strong> Se você descrever suas atividades de maneira simples ou informal, nossa IA converterá para linguagem profissional corporativa, mantendo estritamente a verdade do que você fazia.
+                    {t('step_3_ai_tip')}
                   </p>
                 </div>
 
@@ -1258,8 +1153,8 @@ Requisitos:
                     <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                     <span>
                       {experiences.length === 0
-                        ? 'Adicione pelo menos 1 experiência profissional ou marque a opção de primeiro emprego acima.'
-                        : 'Preencha o Nome da Empresa, Cargo e Atividades obrigatórias (*) de cada experiência listada.'}
+                        ? t('step_3_err_add_one')
+                        : t('step_3_missing_error')}
                     </span>
                   </div>
                 )}
@@ -1273,7 +1168,7 @@ Requisitos:
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-sky-700 uppercase tracking-wider bg-sky-50 px-2 py-0.5 rounded">
-                          Empresa #{index + 1}
+                          {t('step_3_company_number')}{index + 1}
                         </span>
                         {experiences.length > 1 && (
                           <button
@@ -1282,7 +1177,7 @@ Requisitos:
                             className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            Remover
+                            {t('label_remove')}
                           </button>
                         )}
                       </div>
@@ -1291,13 +1186,13 @@ Requisitos:
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                             <span>
-                              Nome da Empresa <span className="text-rose-500">*</span>
+                              {t('step_3_company_label')} <span className="text-rose-500">*</span>
                             </span>
-                            <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                            <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                           </label>
                           <input
                             type="text"
-                            placeholder="ex: Magazine Luiza, Padaria Central..."
+                            placeholder={t('step_3_company_placeholder')}
                             value={exp.company}
                             onChange={(e) => handleUpdateExperience(exp.id, 'company', e.target.value)}
                             className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1307,20 +1202,20 @@ Requisitos:
                             }`}
                           />
                           {showErrors && !exp.company.trim() && (
-                            <p className="text-[10px] text-rose-600 font-medium mt-0.5">Informe o nome da empresa.</p>
+                            <p className="text-[10px] text-rose-600 font-medium mt-0.5">{t('step_3_err_company')}</p>
                           )}
                         </div>
 
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                             <span>
-                              Cargo ocupado <span className="text-rose-500">*</span>
+                              {t('step_3_role_label')} <span className="text-rose-500">*</span>
                             </span>
-                            <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                            <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                           </label>
                           <input
                             type="text"
-                            placeholder="ex: Assistente Administrativo, Vendedor..."
+                            placeholder={t('step_3_role_placeholder')}
                             value={exp.role}
                             onChange={(e) => handleUpdateExperience(exp.id, 'role', e.target.value)}
                             className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1330,20 +1225,20 @@ Requisitos:
                             }`}
                           />
                           {showErrors && !exp.role.trim() && (
-                            <p className="text-[10px] text-rose-600 font-medium mt-0.5">Informe o cargo ocupado.</p>
+                            <p className="text-[10px] text-rose-600 font-medium mt-0.5">{t('step_3_err_role')}</p>
                           )}
                         </div>
 
                         <div>
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-xs font-bold text-slate-700">
-                              Data de Início <span className="text-rose-500">*</span>
+                              {t('step_3_start_label')} <span className="text-rose-500">*</span>
                             </label>
-                            <span className="text-[10px] text-slate-400 font-normal">Padrão: mm/aaaa (mês 01 a 12)</span>
+                            <span className="text-[10px] text-slate-400 font-normal">{t('step_3_pattern_hint')}</span>
                           </div>
                           <input
                             type="text"
-                            placeholder="mm/aaaa (ex: 03/2020)"
+                            placeholder={language === 'en' ? 'mm/yyyy (e.g. 03/2020)' : language === 'fr' ? 'mm/aaaa (ex : 03/2020)' : language === 'es' ? 'mm/aaaa (ej: 03/2020)' : 'mm/aaaa (ex: 03/2020)'}
                             maxLength={7}
                             value={exp.startDate}
                             onChange={(e) => handleUpdateExperience(exp.id, 'startDate', formatMonthYear(e.target.value, exp.startDate))}
@@ -1355,7 +1250,7 @@ Requisitos:
                           />
                           {showErrors && !isValidMonthYear(exp.startDate) && (
                             <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                              {exp.startDate ? 'Data incompleta. Preencha mm/aaaa (ex: 03/2020).' : 'Informe a data de início (mm/aaaa).'}
+                              {exp.startDate ? t('step_3_err_start_incomplete') : t('step_3_err_start_empty')}
                             </p>
                           )}
                         </div>
@@ -1363,16 +1258,16 @@ Requisitos:
                         <div>
                           <div className="flex items-center justify-between mb-1">
                             <label className="text-xs font-bold text-slate-700">
-                              Data de Término {!exp.isCurrent && <span className="text-rose-500">*</span>}
+                              {t('step_3_end_label')} {!exp.isCurrent && <span className="text-rose-500">*</span>}
                             </label>
-                            <span className="text-[10px] text-slate-400 font-normal">Padrão: mm/aaaa (mês 01 a 12)</span>
+                            <span className="text-[10px] text-slate-400 font-normal">{t('step_3_pattern_hint')}</span>
                           </div>
                           <input
                             type="text"
-                            placeholder={exp.isCurrent ? 'Atual' : 'mm/aaaa (ex: 11/2023)'}
+                            placeholder={exp.isCurrent ? t('label_present') : (language === 'en' ? 'mm/yyyy (e.g. 11/2023)' : language === 'fr' ? 'mm/aaaa (ex : 11/2023)' : language === 'es' ? 'mm/aaaa (ej: 11/2023)' : 'mm/aaaa (ex: 11/2023)')}
                             maxLength={7}
                             disabled={exp.isCurrent}
-                            value={exp.isCurrent ? 'Atual' : exp.endDate}
+                            value={exp.isCurrent ? t('label_present') : exp.endDate}
                             onChange={(e) => handleUpdateExperience(exp.id, 'endDate', formatMonthYear(e.target.value, exp.endDate))}
                             className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
                               exp.isCurrent
@@ -1384,12 +1279,12 @@ Requisitos:
                           />
                           {showErrors && !exp.isCurrent && !isValidMonthYear(exp.endDate) && (
                             <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                              {exp.endDate ? 'Data incompleta. Preencha mm/aaaa (ex: 11/2023).' : 'Informe a data de término (ou marque abaixo "Trabalho atualmente").'}
+                              {exp.endDate ? t('step_3_err_end_incomplete') : t('step_3_err_end_empty')}
                             </p>
                           )}
                           {showErrors && !exp.isCurrent && isValidMonthYear(exp.startDate) && isValidMonthYear(exp.endDate) && !isChronologicallyValid(exp.startDate, exp.endDate, false) && (
                             <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                              A data de término não pode ser anterior à data de início.
+                              {t('step_3_err_end_before_start')}
                             </p>
                           )}
                         </div>
@@ -1404,7 +1299,7 @@ Requisitos:
                             className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500"
                           />
                           <span className="text-xs font-semibold text-slate-700">
-                            Trabalho atualmente nesta empresa
+                            {t('step_3_current_job')}
                           </span>
                         </label>
                       </div>
@@ -1412,13 +1307,13 @@ Requisitos:
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                           <span>
-                            Quais eram suas principais atividades? <span className="text-rose-500">*</span>
+                            {t('step_3_activities_label')} <span className="text-rose-500">*</span>
                           </span>
-                          <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                          <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                         </label>
                         <textarea
                           rows={2}
-                          placeholder="Conte com suas palavras. Ex: Cuidava de planilhas de gastos, atendia clientes no balcão e organizava estoque."
+                          placeholder={t('step_3_activities_placeholder')}
                           value={exp.activitiesRaw}
                           onChange={(e) => handleUpdateExperience(exp.id, 'activitiesRaw', e.target.value)}
                           className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1429,18 +1324,18 @@ Requisitos:
                         />
                         {showErrors && !exp.activitiesRaw.trim() && (
                           <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                            Descreva brevemente as atividades que você desempenhava.
+                            {t('step_3_err_activities')}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Quais resultados ou responsabilidades você teve? (opcional)
+                          {t('step_3_results_label')}
                         </label>
                         <textarea
                           rows={2}
-                          placeholder="Ex: Treinei dois novos funcionários, ajudei a bater a meta da loja, recebi elogios de clientes..."
+                          placeholder={t('step_3_results_placeholder')}
                           value={exp.resultsRaw}
                           onChange={(e) => handleUpdateExperience(exp.id, 'resultsRaw', e.target.value)}
                           className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1461,9 +1356,9 @@ Requisitos:
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Formação Acadêmica</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_4_heading')}</h3>
                 <p className="text-xs text-slate-500">
-                  Ensino médio, técnico, graduação ou pós-graduação.
+                  {t('step_4_sub')}
                 </p>
               </div>
               <button
@@ -1473,7 +1368,7 @@ Requisitos:
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 rounded-xl border border-sky-200 cursor-pointer self-start sm:self-auto transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ ADICIONAR FORMAÇÃO</span>
+                <span>{t('step_4_add_btn')}</span>
               </button>
             </div>
 
@@ -1482,8 +1377,8 @@ Requisitos:
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <span>
                   {education.length === 0
-                    ? 'Adicione pelo menos 1 formação acadêmica ou nível de escolaridade.'
-                    : 'Preencha o Curso e a Instituição de ensino de cada formação listada.'}
+                    ? t('step_4_err_add_one')
+                    : t('step_4_missing_error')}
                 </span>
               </div>
             )}
@@ -1496,7 +1391,7 @@ Requisitos:
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                      Formação #{idx + 1}
+                      {t('step_4_formation_prefix')}{idx + 1}
                     </span>
                     {education.length > 1 && (
                       <button
@@ -1505,7 +1400,7 @@ Requisitos:
                         className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Remover
+                        {t('label_remove')}
                       </button>
                     )}
                   </div>
@@ -1514,13 +1409,13 @@ Requisitos:
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                         <span>
-                          Curso / Escolaridade <span className="text-rose-500">*</span>
+                          {t('step_4_course_label')} <span className="text-rose-500">*</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                        <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="ex: Ensino Médio, Administração, Logística..."
+                        placeholder={t('step_4_course_ph')}
                         value={edu.course}
                         onChange={(e) => handleUpdateEducation(edu.id, 'course', e.target.value)}
                         className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1531,7 +1426,7 @@ Requisitos:
                       />
                       {showErrors && !edu.course.trim() && (
                         <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                          Informe o curso ou escolaridade (ex: Ensino Médio).
+                          {t('step_4_err_course')}
                         </p>
                       )}
                     </div>
@@ -1539,13 +1434,13 @@ Requisitos:
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                         <span>
-                          Instituição de Ensino <span className="text-rose-500">*</span>
+                          {t('step_4_inst_label')} <span className="text-rose-500">*</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                        <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                       </label>
                       <input
                         type="text"
-                        placeholder="ex: Escola Estadual, ETEC, Estácio, USP..."
+                        placeholder={t('step_4_inst_ph')}
                         value={edu.institution}
                         onChange={(e) => handleUpdateEducation(edu.id, 'institution', e.target.value)}
                         className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1556,42 +1451,42 @@ Requisitos:
                       />
                       {showErrors && !edu.institution.trim() && (
                         <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                          Informe o nome da escola ou faculdade.
+                          {t('step_4_err_institution')}
                         </p>
                       )}
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Ano de Início
+                        {t('step_4_start_year')}
                       </label>
                       <input
                         type="text"
                         maxLength={4}
-                        placeholder="ex: 2018"
+                        placeholder={language === 'en' ? 'e.g. 2018' : language === 'fr' ? 'ex : 2018' : language === 'es' ? 'ej: 2018' : 'ex: 2018'}
                         value={edu.startYear}
                         onChange={(e) => handleUpdateEducation(edu.id, 'startYear', formatYear(e.target.value))}
                         className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
                           showErrors && !isValidYear(edu.startYear)
-                            ? 'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 bg-rose-50/20'
+                                ? 'border-rose-400 ring-1 ring-rose-400 focus:ring-rose-500 bg-rose-50/20'
                             : 'border-slate-200 focus:ring-sky-500'
                         }`}
                       />
                       {showErrors && !isValidYear(edu.startYear) && (
                         <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                          Informe um ano válido com 4 dígitos (ex: 2018).
+                          {t('step_4_err_start_year')}
                         </p>
                       )}
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Ano de Conclusão (ou previsão)
+                        {t('step_4_end_year')}
                       </label>
                       <input
                         type="text"
                         maxLength={4}
-                        placeholder="ex: 2022"
+                        placeholder={language === 'en' ? 'e.g. 2022' : language === 'fr' ? 'ex : 2022' : language === 'es' ? 'ej: 2022' : 'ex: 2022'}
                         value={edu.endYear}
                         onChange={(e) => handleUpdateEducation(edu.id, 'endYear', formatYear(e.target.value))}
                         className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1606,7 +1501,7 @@ Requisitos:
                       />
                       {showErrors && !isValidYear(edu.endYear) && (
                         <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                          Informe um ano válido com 4 dígitos (ex: 2022).
+                          {t('step_4_err_end_year')}
                         </p>
                       )}
                       {showErrors &&
@@ -1616,7 +1511,7 @@ Requisitos:
                         edu.endYear?.trim().length === 4 &&
                         parseInt(edu.endYear, 10) < parseInt(edu.startYear, 10) && (
                           <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                            O ano de conclusão não pode ser anterior ao ano de início.
+                            {t('step_4_err_end_before_start')}
                           </p>
                         )}
                     </div>
@@ -1624,23 +1519,31 @@ Requisitos:
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      Status da Formação
+                      {t('step_4_status_label')}
                     </label>
                     <div className="flex gap-2">
-                      {(['Concluído', 'Em andamento', 'Trancado'] as const).map((status) => (
-                        <button
-                          key={status}
-                          type="button"
-                          onClick={() => handleUpdateEducation(edu.id, 'status', status)}
-                          className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all cursor-pointer ${
-                            edu.status === status
-                              ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                          }`}
-                        >
-                          {status}
-                        </button>
-                      ))}
+                      {(['Concluído', 'Em andamento', 'Trancado'] as const).map((status) => {
+                        const statusLabel =
+                          status === 'Concluído'
+                            ? t('step_4_status_completed')
+                            : status === 'Em andamento'
+                            ? t('step_4_status_in_progress')
+                            : t('step_4_status_interrupted');
+                        return (
+                          <button
+                            key={status}
+                            type="button"
+                            onClick={() => handleUpdateEducation(edu.id, 'status', status)}
+                            className={`text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all cursor-pointer ${
+                              edu.status === status
+                                ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            {statusLabel}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -1655,9 +1558,9 @@ Requisitos:
         {currentStep === 5 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">Competências e Habilidades</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_5_heading')}</h3>
               <p className="text-xs text-slate-500">
-                Selecione as habilidades e ferramentas que você possui ou digite outras. Pelo menos uma é necessária.
+                {t('step_5_sub')}
               </p>
             </div>
 
@@ -1665,7 +1568,7 @@ Requisitos:
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <span>
-                  Selecione pelo menos uma competência profissional ou ferramenta para o seu currículo.
+                  {t('step_5_err_select_one')}
                 </span>
               </div>
             )}
@@ -1673,10 +1576,10 @@ Requisitos:
             {/* General Competencies */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">
-                Habilidades profissionais (clique para marcar):
+                {t('step_5_skills_title')}
               </label>
               <div className="flex flex-wrap gap-2 mb-3">
-                {COMMON_COMPETENCIES.map((comp) => {
+                {competencySuggestions.map((comp) => {
                   const isSelected = selectedSkills.includes(comp);
                   return (
                     <button
@@ -1700,7 +1603,7 @@ Requisitos:
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Digitar outra competência (ex: Redação, Negociação...)"
+                  placeholder={t('step_5_skills_custom_ph')}
                   value={customSkillInput}
                   onChange={(e) => setCustomSkillInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomSkill())}
@@ -1711,7 +1614,7 @@ Requisitos:
                   onClick={addCustomSkill}
                   className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900 cursor-pointer"
                 >
-                  Adicionar
+                  {t('btn_add')}
                 </button>
               </div>
             </div>
@@ -1719,10 +1622,10 @@ Requisitos:
             {/* Tools / Software */}
             <div className="pt-4 border-t border-slate-100">
               <label className="block text-xs font-bold text-slate-700 mb-2">
-                Quais ferramentas ou sistemas você domina?
+                {t('step_5_tools_title')}
               </label>
               <div className="flex flex-wrap gap-2 mb-3">
-                {COMMON_TOOLS.map((tool) => {
+                {toolSuggestions.map((tool) => {
                   const isSelected = selectedTools.includes(tool);
                   return (
                     <button
@@ -1746,7 +1649,7 @@ Requisitos:
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Digitar outro sistema ou software (ex: ERP Protheus, Figma, SQL...)"
+                  placeholder={t('step_5_tools_custom_ph')}
                   value={customToolInput}
                   onChange={(e) => setCustomToolInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTool())}
@@ -1757,7 +1660,7 @@ Requisitos:
                   onClick={addCustomTool}
                   className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900 cursor-pointer"
                 >
-                  Adicionar
+                  {t('btn_add')}
                 </button>
               </div>
             </div>
@@ -1771,9 +1674,9 @@ Requisitos:
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Cursos e Certificações</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_6_heading')}</h3>
                 <p className="text-xs text-slate-500">
-                  Cursos livres, workshops, cursos online ou certificados técnicos.
+                  {t('step_6_sub')}
                 </p>
               </div>
               <button
@@ -1783,7 +1686,7 @@ Requisitos:
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 rounded-xl border border-sky-200 cursor-pointer self-start sm:self-auto transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ ADICIONAR CURSO</span>
+                <span>{t('step_6_add_btn')}</span>
               </button>
             </div>
 
@@ -1791,7 +1694,7 @@ Requisitos:
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <span>
-                  Preencha o Nome e a Instituição de cada curso adicionado ou remova o item em branco.
+                  {t('step_6_err_fill_all')}
                 </span>
               </div>
             )}
@@ -1799,16 +1702,16 @@ Requisitos:
             {courses.length === 0 ? (
               <div className="p-8 text-center rounded-2xl bg-slate-50/70 border border-dashed border-slate-200">
                 <Award className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-slate-600">Nenhum curso adicionado ainda.</p>
+                <p className="text-xs font-semibold text-slate-600">{t('step_6_empty')}</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">
-                  Esta seção é opcional, mas ajuda a destacar seu interesse em aprender!
+                  {t('step_6_empty_sub')}
                 </p>
                 <button
                   type="button"
                   onClick={handleAddCourse}
                   className="mt-3 text-xs font-bold text-sky-600 hover:underline cursor-pointer"
                 >
-                  + Adicionar meu primeiro curso
+                  {t('step_6_add_first')}
                 </button>
               </div>
             ) : (
@@ -1820,7 +1723,7 @@ Requisitos:
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                        Curso #{idx + 1}
+                        {t('step_6_course_prefix')}{idx + 1}
                       </span>
                       <button
                         type="button"
@@ -1828,7 +1731,7 @@ Requisitos:
                         className="text-xs text-rose-500 hover:text-rose-700 flex items-center gap-1 font-semibold cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Remover
+                        {t('label_remove')}
                       </button>
                     </div>
 
@@ -1836,13 +1739,13 @@ Requisitos:
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                           <span>
-                            Nome do Curso <span className="text-rose-500">*</span>
+                            {t('step_6_name_label')} <span className="text-rose-500">*</span>
                           </span>
-                          <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                          <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                         </label>
                         <input
                           type="text"
-                          placeholder="ex: Excel do Básico ao Avançado, Atendimento ao Cliente..."
+                          placeholder={language === 'fr' ? 'ex : Maîtrise avancée d\'Excel, Service client...' : language === 'en' ? 'e.g. Advanced Excel, Customer Service...' : language === 'es' ? 'ej: Excel Avanzado, Atención al Cliente...' : 'ex: Excel do Básico ao Avançado, Atendimento ao Cliente...'}
                           value={course.name}
                           onChange={(e) => handleUpdateCourse(course.id, 'name', e.target.value)}
                           className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1853,7 +1756,7 @@ Requisitos:
                         />
                         {showErrors && !course.name.trim() && (
                           <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                            Informe o nome do curso.
+                            {t('step_6_err_course_name')}
                           </p>
                         )}
                       </div>
@@ -1861,13 +1764,13 @@ Requisitos:
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                           <span>
-                            Instituição <span className="text-rose-500">*</span>
+                            {t('step_6_inst_label')} <span className="text-rose-500">*</span>
                           </span>
-                          <span className="text-[10px] text-slate-400 font-normal">Obrigatório</span>
+                          <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
                         </label>
                         <input
                           type="text"
-                          placeholder="ex: SENAC, Udemy, SEBRAE..."
+                          placeholder={language === 'fr' ? 'ex : Coursera, Udemy, CNAM...' : language === 'en' ? 'e.g. Coursera, Udemy, edX...' : language === 'es' ? 'ej: Platzi, Coursera, Udemy...' : 'ex: SENAC, Udemy, SEBRAE...'}
                           value={course.institution}
                           onChange={(e) => handleUpdateCourse(course.id, 'institution', e.target.value)}
                           className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1878,19 +1781,19 @@ Requisitos:
                         />
                         {showErrors && !course.institution.trim() && (
                           <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                            Informe a instituição.
+                            {t('step_6_err_institution')}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Ano
+                          {t('step_6_year_label')}
                         </label>
                         <input
                           type="text"
                           maxLength={4}
-                          placeholder="ex: 2023"
+                          placeholder={language === 'en' ? 'e.g. 2023' : language === 'fr' ? 'ex : 2023' : language === 'es' ? 'ej: 2023' : 'ex: 2023'}
                           value={course.year}
                           onChange={(e) => handleUpdateCourse(course.id, 'year', formatYear(e.target.value))}
                           className={`w-full px-3.5 py-2 rounded-xl border bg-white text-sm focus:outline-none focus:ring-2 transition-all ${
@@ -1901,18 +1804,18 @@ Requisitos:
                         />
                         {showErrors && !isValidYear(course.year) && (
                           <p className="text-[10px] text-rose-600 font-medium mt-0.5">
-                            Informe um ano com 4 dígitos (ex: 2023).
+                            {t('step_6_err_year')}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Carga Horária (opcional)
+                          {t('step_6_hours_label')}
                         </label>
                         <input
                           type="text"
-                          placeholder="ex: 40 horas"
+                          placeholder={language === 'fr' ? 'ex : 40 heures' : language === 'en' ? 'e.g. 40 hours' : language === 'es' ? 'ej: 40 horas' : 'ex: 40 horas'}
                           value={course.hours || ''}
                           onChange={(e) => handleUpdateCourse(course.id, 'hours', e.target.value)}
                           className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1934,25 +1837,23 @@ Requisitos:
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-100 text-sky-800 text-[11px] font-bold mb-2">
                 <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                Diferencial Inteligente CURRÊ
+                {t('step_7_tag')}
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-1">
-                Quer deixar seu currículo ainda mais alinhado à vaga?
+                {t('step_7_heading')}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Cole aqui a descrição da vaga. A IA vai analisar os requisitos e ajudar a destacar as experiências e competências mais relevantes do seu perfil.
+                {t('step_7_sub')}
               </p>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Descrição ou requisitos da vaga (Copie e cole do LinkedIn, Gupy, WhatsApp...)
+                {t('step_7_desc_label')}
               </label>
               <textarea
                 rows={6}
-                placeholder="Exemplo:
-Vaga: Analista Administrativo
-Estamos em busca de profissional com experiência em faturamento, conferência de notas fiscais e relatórios no Excel. Desejável conhecimento em sistemas integrados (TOTVS ou SAP) e boa comunicação interpessoal."
+                placeholder={t('step_7_desc_ph')}
                 value={targetJob.jobDescription || ''}
                 onChange={(e) => setTargetJob({ ...targetJob, jobDescription: e.target.value })}
                 className="w-full p-4 rounded-2xl border border-slate-200 bg-white/90 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 font-normal leading-relaxed"
@@ -1963,7 +1864,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <p>
-                <strong>Compromisso de Ética e Verdade:</strong> A IA NÃO inventa competências, experiências ou qualificações que você não possui. Ela apenas reorganiza e destaca suas informações reais com os termos que os recrutadores valorizam.
+                {t('step_7_ethics_text')}
               </p>
             </div>
 
@@ -1981,11 +1882,11 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
-                <span>{isAnalyzingJob ? 'Analisando requisitos com IA...' : 'ANALISAR VAGA COM IA'}</span>
+                <span>{isAnalyzingJob ? t('step_7_analyzing_btn') : t('step_7_analyze_btn')}</span>
               </button>
 
               <span className="text-xs text-slate-400">
-                (Se preferir, você pode pular esta etapa clicando em Próximo)
+                {t('step_7_skip_hint')}
               </span>
             </div>
 
@@ -1999,14 +1900,14 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 <div className="flex items-center justify-between border-b border-sky-100 pb-3">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700">
-                      Análise de Vaga Concluída
+                      {t('step_7_analysis_completed')}
                     </span>
                     <h4 className="text-base font-bold text-slate-900">
-                      {jobAnalysis.roleIdentified || 'Cargo Mapeado'}
+                      {jobAnalysis.roleIdentified || t('step_7_mapped_role')}
                     </h4>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-slate-500 block">Compatibilidade estimada</span>
+                    <span className="text-xs text-slate-500 block">{t('step_7_estimated_match')}</span>
                     <span className="text-xl font-extrabold text-sky-700">
                       {jobAnalysis.matchPercentage}%
                     </span>
@@ -2016,7 +1917,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
                     <span className="font-bold text-slate-800 block mb-1">
-                      ✓ Competências encontradas no seu perfil:
+                      {t('step_7_matched_skills')}
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {jobAnalysis.foundSkills.map((s, i) => (
@@ -2029,7 +1930,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
 
                   <div>
                     <span className="font-bold text-slate-800 block mb-1">
-                      Palavras-chave essenciais da vaga:
+                      {t('step_7_essential_keywords')}
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {jobAnalysis.keywords.map((k, i) => (
@@ -2044,7 +1945,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 {jobAnalysis.improvements?.length > 0 && (
                   <div className="pt-2 border-t border-sky-100 text-xs">
                     <span className="font-bold text-slate-700 block mb-1">
-                      💡 Dicas da IA para este processo seletivo:
+                      {t('step_7_ai_tips')}
                     </span>
                     <ul className="list-disc pl-4 space-y-0.5 text-slate-600">
                       {jobAnalysis.improvements.map((imp, idx) => (
@@ -2065,13 +1966,13 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
           <div className="space-y-6">
             <div className="text-center sm:text-left">
               <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100 px-2.5 py-1 rounded-md">
-                Tudo pronto para a mágica!
+                {t('step_8_tag')}
               </span>
               <h3 className="text-2xl font-extrabold text-slate-900 mt-2 mb-1">
-                Confira suas informações
+                {t('step_8_heading')}
               </h3>
               <p className="text-xs text-slate-500">
-                Você pode revisar cada seção abaixo antes de gerar seu currículo profissional com IA.
+                {t('step_8_sub')}
               </p>
             </div>
 
@@ -2081,10 +1982,10 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <h5 className="font-bold text-sm text-amber-900">
-                    Atenção: Campos obrigatórios incompletos
+                    {t('step_8_warning_title')}
                   </h5>
                   <p className="text-xs text-amber-800 leading-relaxed">
-                    Para garantir que seu currículo passe nos filtros das empresas e tenha qualidade profissional, preencha os itens marcados como <strong>Pendente</strong> abaixo clicando em <strong>Editar</strong>.
+                    {t('step_8_warning_desc')}
                   </p>
                 </div>
               </div>
@@ -2099,20 +2000,20 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <User className="w-4 h-4 text-sky-600" />
-                      Dados Pessoais
+                      {t('step_1_title')}
                     </h4>
                     {isStep1Valid() ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Preenchido
+                        <Check className="w-3 h-3" /> {t('step_8_status_completed')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Pendente (*)
+                        <AlertCircle className="w-3 h-3" /> {t('step_8_status_pending')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    {personal.fullName || 'Nome pendente'} • {personal.cityState || 'Local pendente'} • {personal.phone || 'Telefone pendente'}
+                    {personal.fullName || '—'} • {personal.cityState || '—'} • {personal.phone || '—'}
                   </p>
                 </div>
                 <button
@@ -2121,7 +2022,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
 
@@ -2133,20 +2034,20 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Target className="w-4 h-4 text-sky-600" />
-                      Cargo Almejado
+                      {t('step_2_title')}
                     </h4>
                     {isStep2Valid() ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Preenchido
+                        <Check className="w-3 h-3" /> {t('step_8_status_completed')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Pendente (*)
+                        <AlertCircle className="w-3 h-3" /> {t('step_8_status_pending')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    {targetJob.roleTitle || 'Cargo não especificado'}
+                    {targetJob.roleTitle || '—'}
                   </p>
                 </div>
                 <button
@@ -2155,7 +2056,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
 
@@ -2167,22 +2068,22 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Briefcase className="w-4 h-4 text-sky-600" />
-                      Experiências Profissionais
+                      {t('step_3_title')}
                     </h4>
                     {isStep3Valid() ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Preenchido
+                        <Check className="w-3 h-3" /> {t('step_8_status_completed')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Pendente (*)
+                        <AlertCircle className="w-3 h-3" /> {t('step_8_status_pending')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
                     {noExperience
-                      ? 'Opção "Em busca do primeiro emprego / sem experiência formal" ativada'
-                      : `${experiences.filter((e) => e.company.trim() && e.role.trim()).length} empresa(s) informada(s)`}
+                      ? t('step_3_no_exp_title')
+                      : `${experiences.filter((e) => e.company.trim() && e.role.trim()).length} ${t('step_8_items_count')}`}
                   </p>
                 </div>
                 <button
@@ -2191,7 +2092,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
 
@@ -2203,20 +2104,20 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <GraduationCap className="w-4 h-4 text-sky-600" />
-                      Formação Acadêmica
+                      {t('step_4_title')}
                     </h4>
                     {isStep4Valid() ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Preenchido
+                        <Check className="w-3 h-3" /> {t('step_8_status_completed')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Pendente (*)
+                        <AlertCircle className="w-3 h-3" /> {t('step_8_status_pending')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    {education.filter((e) => e.course.trim()).length} formação(ões) informada(s)
+                    {education.filter((e) => e.course.trim()).length} {t('step_8_items_count')}
                   </p>
                 </div>
                 <button
@@ -2225,7 +2126,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
 
@@ -2237,20 +2138,20 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-sky-600" />
-                      Competências & Ferramentas
+                      {t('step_5_title')}
                     </h4>
                     {isStep5Valid() ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Preenchido
+                        <Check className="w-3 h-3" /> {t('step_8_status_completed')}
                       </span>
                     ) : (
                       <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Pendente (*)
+                        <AlertCircle className="w-3 h-3" /> {t('step_8_status_pending')}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-500">
-                    {selectedSkills.length} competência(s) e {selectedTools.length} ferramenta(s)
+                    {selectedSkills.length} + {selectedTools.length} {t('step_8_items_count')}
                   </p>
                 </div>
                 <button
@@ -2259,7 +2160,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
 
@@ -2269,16 +2170,16 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <FileSearch className="w-4 h-4 text-sky-600" />
-                      Alinhamento com Vaga
+                      {t('step_7_title')}
                     </h4>
                     <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
-                      Opcional
+                      {t('label_optional')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
                     {targetJob.jobDescription?.trim()
-                      ? 'Descrição da vaga fornecida (Alinhamento IA ativado)'
-                      : 'Nenhuma vaga específica (Será gerado formato versátil)'}
+                      ? '✓'
+                      : '—'}
                   </p>
                 </div>
                 <button
@@ -2287,7 +2188,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                   className="text-xs font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1 px-3 py-1.5 rounded-xl border border-sky-200 hover:bg-sky-50 cursor-pointer shrink-0"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  Editar
+                  {t('step_8_edit_btn')}
                 </button>
               </div>
             </div>
@@ -2306,12 +2207,12 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 }`}
               >
                 <Sparkles className={`w-5 h-5 ${isAllValid() ? 'text-amber-300 animate-pulse' : 'text-slate-400'}`} />
-                <span>✨ GERAR MEU CURRÍCULO</span>
+                <span>{t('step_8_btn_generate')}</span>
               </button>
               <p className="text-[11px] text-slate-500 mt-2">
                 {isAllValid()
-                  ? 'Geração inteligente rápida e profissional • 100% gratuita sem cadastro obrigatório.'
-                  : 'Preencha todos os campos obrigatórios acima para habilitar a geração.'}
+                  ? t('step_8_btn_sub')
+                  : t('step_8_btn_sub_disabled')}
               </p>
             </div>
           </div>
@@ -2326,7 +2227,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-center gap-1.5 order-2 sm:order-1"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>Voltar</span>
+            <span>{t('wiz_back')}</span>
           </button>
 
           {/* Helper hint for pending items */}
@@ -2334,7 +2235,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
             {!canProceed() && (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-200/80 px-3 py-1 rounded-lg">
                 <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                Preencha os campos obrigatórios (*) para avançar
+                {t('wiz_req_warning')}
               </span>
             )}
           </div>
@@ -2346,10 +2247,10 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 onClick={handleJumpToReview}
                 id="wizard-btn-skip-to-review-bottom"
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 border border-sky-300 flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
-                title="Salvar alterações e voltar diretamente à Etapa 8 de Revisão e Geração"
+                title={t('wiz_jump_review')}
               >
                 <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                <span>Ir para Revisão (Etapa 8)</span>
+                <span>{t('wiz_jump_review')}</span>
               </button>
             )}
 
@@ -2364,7 +2265,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                     : 'bg-slate-200 text-slate-600 hover:bg-slate-300/80'
                 }`}
               >
-                <span>Próximo</span>
+                <span>{t('wiz_next')}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
@@ -2380,7 +2281,7 @@ Estamos em busca de profissional com experiência em faturamento, conferência d
                 }`}
               >
                 <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>GERAR MEU CURRÍCULO</span>
+                <span>{t('wiz_generate_btn')}</span>
               </button>
             )}
           </div>

@@ -1,15 +1,27 @@
 import { getGeminiClient } from './geminiClient.js';
 import { formatExperienceBullets } from '../src/utils/textBeautifier.js';
 
+const LANGUAGE_LABELS: Record<string, string> = {
+  pt: 'Português (Brasil)',
+  en: 'English (US)',
+  es: 'Español',
+  fr: 'Français',
+};
+
 export function generateFallbackResume(data: any) {
-  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis } = data;
+  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis, language = 'pt' } = data;
+  const lang = (language || 'pt').toLowerCase();
+
+  const presentLabel = lang === 'fr' ? 'Actuel' : lang === 'en' ? 'Present' : lang === 'es' ? 'Actualidad' : 'Atual';
+  const startLabel = lang === 'fr' ? 'Début' : lang === 'en' ? 'Start' : lang === 'es' ? 'Inicio' : 'Início';
+  const endLabel = lang === 'fr' ? 'Fin' : lang === 'en' ? 'End' : lang === 'es' ? 'Fin' : 'Término';
 
   const optimizedExp = (experiences || []).map((exp: any) => {
     const bullets = formatExperienceBullets(exp.activitiesRaw || '', exp.resultsRaw || '', exp.role);
 
     const period = exp.isCurrent
-      ? `${exp.startDate || 'Início'} — Atual`
-      : `${exp.startDate || 'Início'} — ${exp.endDate || 'Término'}`;
+      ? `${exp.startDate || startLabel} — ${presentLabel}`
+      : `${exp.startDate || startLabel} — ${exp.endDate || endLabel}`;
 
     return {
       id: exp.id,
@@ -21,13 +33,31 @@ export function generateFallbackResume(data: any) {
     };
   });
 
-  const summary = `Profissional dedicado(a) com objetivo de atuação como ${targetJob?.roleTitle || 'Profissional'}. Perfil proativo com experiência em ${
-    skills?.slice(0, 3)?.join(', ') || 'atividades correlatas'
-  }, buscando contribuir com resultados sólidos e evolução contínua na organização.`;
+  let summary = '';
+  const roleName = targetJob?.roleTitle || (lang === 'fr' ? 'Professionnel' : lang === 'en' ? 'Professional' : lang === 'es' ? 'Profesional' : 'Profissional');
+  const skillsSample = skills?.slice(0, 3)?.join(', ') || '';
+
+  if (lang === 'fr') {
+    summary = `Professionnel rigoureux et engagé visant le poste de ${roleName}. Profil polyvalent avec une solide expérience en ${
+      skillsSample || 'gestion et activités connexes'
+    }, motivé à apporter des résultats tangibles et une contribution continue à l'organisation.`;
+  } else if (lang === 'en') {
+    summary = `Dedicated and results-driven professional seeking a role as ${roleName}. Proactive background with strong capabilities in ${
+      skillsSample || 'related industry operations'
+    }, committed to delivering solid performance and continuous value to the team.`;
+  } else if (lang === 'es') {
+    summary = `Profesional responsable y proactivo con el objetivo de desempeñarse como ${roleName}. Amplia experiencia en ${
+      skillsSample || 'actividades afines'
+    }, con sólida capacidad de organización y enfoque en la consecución de resultados positivos.`;
+  } else {
+    summary = `Profissional dedicado(a) com objetivo de atuação como ${roleName}. Perfil proativo com experiência em ${
+      skillsSample || 'atividades correlatas'
+    }, buscando contribuir com resultados sólidos e evolução contínua na organização.`;
+  }
 
   return {
     personal: personal || {},
-    targetRole: targetJob?.roleTitle || 'Profissional',
+    targetRole: roleName,
     professionalSummary: summary,
     experiences: optimizedExp,
     education: education || [],
@@ -36,6 +66,7 @@ export function generateFallbackResume(data: any) {
     courses: courses || [],
     jobAnalysis: jobAnalysis || undefined,
     templateStyle: 'liquid-modern',
+    language: lang,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -50,7 +81,9 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Método não permitido. Utilize POST.' });
   }
 
-  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis } = req.body || {};
+  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis, language = 'pt' } = req.body || {};
+  const currentLang = (language || 'pt').toLowerCase();
+  const langName = LANGUAGE_LABELS[currentLang] || LANGUAGE_LABELS.pt;
 
   const ai = getGeminiClient();
 
@@ -59,30 +92,43 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const systemPrompt = `Você é o redator profissional sênior e especialista em ATS (Applicant Tracking Systems) do aplicativo CURRÊ ("Corra atrás da vaga certa").
+    const presentWord = currentLang === 'fr' ? 'Actuel' : currentLang === 'en' ? 'Present' : currentLang === 'es' ? 'Actualidad' : 'Atual';
+
+    const systemPrompt = `Você é o redator profissional sênior e especialista em ATS (Applicant Tracking Systems) do aplicativo CURRÊ.
 Sua missão é transformar as informações fornecidas pelo usuário em um currículo profissional impecável, dinâmico, moderno, objetivo e de alto impacto para recrutadores.
 
-DIRETRIZES CRÍTICAS DE LINGUAGEM E ESTILO (MUITO IMPORTANTE):
+=============================================================================
+REGRA CRÍTICA DE IDIOMA (MANDATÓRIA E DE MÁXIMA PRIORIDADE):
+O currículo DEVE ser redigido integralmente no idioma: ${langName} (${currentLang.toUpperCase()}).
+- Título do cargo almejado (targetRole): DEVE estar em ${langName}.
+- Resumo profissional (professionalSummary): DEVE estar em ${langName}.
+- Cargos de cada experiência (role): DEVEM estar em ${langName}.
+- Marcadores de atividades e resultados (bullets): DEVEM ser redigidos em ${langName}.
+- Se as informações de entrada tiverem sido digitadas em português ou outro idioma, você DEVE traduzir e adaptá-las elegantemente para ${langName}.
+=============================================================================
+
+DIRETRIZES CRÍTICAS DE LINGUAGEM E ESTILO:
 1. PROIBIÇÃO TERMINANTE DE BORDÕES E REPETIÇÕES:
-   - É ESTRITAMENTE PROIBIDO usar expressões como "Atuação com foco em...", "Atuou com foco em...", "Com foco em...", "Responsável por..." ou fórmulas repetitivas.
-   - NUNCA inicie múltiplos marcadores (bullets) com o mesmo verbo ou com a mesma estrutura sintática.
-   - Cada marcador de uma mesma experiência DEVE iniciar com um verbo de ação expressivo, assertivo e diferente no pretérito perfeito (ex.: "Gerenciou", "Estruturou", "Elaborou", "Conduziu", "Aprimorou", "Prestou suporte a", "Implementou", "Negociou", "Mapeou", "Atendeu", "Otimizou", "Coordenou", "Executou").
-   - A redação deve soar 100% natural, fluída, elegante e humana — jamais parecendo um texto gerado por molde ou padrão robótico.
-2. FIDELIDADE AOS FATOS:
+   - Não use fórmulas repetitivas ("Responsável por...", "Atuou com foco em...", "Responsible for...", "Chargé de...").
+   - NUNCA inicie múltiplos marcadores com o mesmo verbo ou estrutura sintática.
+   - Cada marcador de uma mesma experiência DEVE iniciar com um verbo de ação dinâmico e expressivo no tempo correto.
+   - A redação deve soa 100% natural, fluida e de alto nível humano no idioma ${langName}.
+2. FIDELIDADE ABSOLUTA AOS FATOS:
    - NUNCA invente empresas, cargos, períodos, formações, cursos ou competências que o usuário não informou.
-   - NUNCA crie dados fictícios ou números não fornecidos.
+   - NUNCA crie números fictícios.
 3. ADAPTAÇÃO PROFISSIONAL:
-   - Se o usuário escreveu de forma informal, coloquial ou simples, converta para linguagem executiva clara, direta e orientada a contribuições práticas.
+   - Converta descrições simples ou coloquiais em linguagem corporativa assertiva e orientada a contribuições práticas.
 4. RESUMO PROFISSIONAL PERSUASIVO:
-   - Crie um "Resumo Profissional" (professionalSummary) objetivo e persuasivo (2 a 3 frases no máximo), destacando a bagagem do candidato voltada ao cargo almejado.
+   - Crie um "Resumo Profissional" (professionalSummary) objetivo de 2 a 3 frases, destacando o perfil alinhado ao cargo almejado.
 5. PALAVRAS-CHAVE DA VAGA:
-   - Se houver descrição da vaga desejada, incorpore naturalmente termos técnicos e palavras-chave da vaga SOMENTE onde houver correspondência com a vivência real informada pelo candidato.
+   - Se houver descrição da vaga desejada, incorpore naturalmente termos relevantes nos bullets SOMENTE onde houver correspondência com a vivência real do candidato.
 6. CONCISÃO:
    - Mantenha de 2 a 4 marcadores por experiência, diretos e bem pontuados.
 
 DADOS RECEBIDOS:
+- Idioma Solicitado: ${langName} (${currentLang})
 - Cargo Pretendido: ${targetJob?.roleTitle || ''}
-- Objetivo informado pelo usuário: ${targetJob?.briefGoal || ''}
+- Objetivo informado: ${targetJob?.briefGoal || ''}
 - Vaga Desejada: ${targetJob?.jobDescription ? targetJob.jobDescription.substring(0, 1500) : 'Nenhuma vaga específica fornecida'}
 - Dados Pessoais: ${JSON.stringify(personal || {})}
 - Experiências informadas: ${JSON.stringify(experiences || [])}
@@ -91,33 +137,33 @@ DADOS RECEBIDOS:
 - Ferramentas informadas: ${JSON.stringify(tools || [])}
 - Cursos informados: ${JSON.stringify(courses || [])}
 
-Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura:
+Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os valores textuais no idioma ${langName}):
 {
-  "targetRole": "Título profissional padronizado e limpo",
-  "professionalSummary": "Resumo de 2 a 3 frases profissionais, conciso, fluido e sem clichês",
+  "targetRole": "Título profissional limpo e padronizado em ${langName}",
+  "professionalSummary": "Resumo de 2 a 3 frases profissionais em ${langName}",
   "experiences": [
     {
       "id": "mesmo id original",
       "company": "Nome da empresa",
-      "role": "Cargo profissional ajustado",
-      "period": "Ex: Jan 2021 — Atual ou 2018 — 2020",
+      "role": "Cargo profissional ajustado em ${langName}",
+      "period": "Ex: 03/2022 — ${presentWord}",
       "isCurrent": boolean,
       "bullets": [
-        "Frase com verbo de ação dinâmico no início sem repetir abertura anterior",
-        "Outra frase com verbo de ação diferente descrevendo contribuição real"
+        "Frase com verbo de ação dinâmico no início em ${langName}",
+        "Outra frase com verbo de ação diferente descrevendo contribuição real em ${langName}"
       ]
     }
   ],
-  "skills": ["lista organizada das competências informadas pelo usuário"],
-  "tools": ["lista organizada das ferramentas/sistemas informados pelo usuário"]
+  "skills": ["lista organizada das competências no idioma ${langName}"],
+  "tools": ["lista organizada das ferramentas/sistemas"]
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: systemPrompt,
       config: {
         responseMimeType: 'application/json',
-        temperature: 0.35,
+        temperature: 0.3,
       },
     });
 
@@ -130,15 +176,19 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura:
         (e: any) => e.id === exp.id || e.company?.trim().toLowerCase() === exp.company?.trim().toLowerCase()
       );
       const exactPeriod = originalExp
-        ? (originalExp.isCurrent ? `${originalExp.startDate} — Atual` : `${originalExp.startDate} — ${originalExp.endDate}`)
+        ? (originalExp.isCurrent ? `${originalExp.startDate} — ${presentWord}` : `${originalExp.startDate} — ${originalExp.endDate}`)
         : (exp.period || 'Período');
 
       const cleanedBullets = (exp.bullets || []).map((bullet: string) => {
         let b = bullet.trim();
         b = b.replace(/^(Atua[çc][ãa]o|Atuou|Com)\s+foco\s+em\s+/i, '');
-        b = b.replace(/^Respons[aá]vel\s+(por|pela|pelo|pelas|pelos)\s+/i, 'Gestão e condução de ');
+        b = b.replace(/^Respons[aá]vel\s+(por|pela|pelo|pelas|pelos)\s+/i, '');
+        b = b.replace(/^(Responsible for|In charge of)\s+/i, '');
+        b = b.replace(/^(Responsable de|Encargado de)\s+/i, '');
+        b = b.replace(/^(Responsable de|En charge de)\s+/i, '');
         return b.charAt(0).toUpperCase() + b.slice(1);
       });
+
       return {
         ...exp,
         period: exactPeriod,
@@ -157,7 +207,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura:
             id: e.id,
             company: e.company,
             role: e.role,
-            period: e.isCurrent ? `${e.startDate} — Atual` : `${e.startDate} — ${e.endDate}`,
+            period: e.isCurrent ? `${e.startDate} — ${presentWord}` : `${e.startDate} — ${e.endDate}`,
             isCurrent: !!e.isCurrent,
             bullets: [e.activitiesRaw || 'Rotinas pertinentes ao cargo'],
           })),
@@ -167,6 +217,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura:
       courses: courses || [],
       jobAnalysis: jobAnalysis || undefined,
       templateStyle: 'liquid-modern',
+      language: currentLang,
       generatedAt: new Date().toISOString(),
     };
 

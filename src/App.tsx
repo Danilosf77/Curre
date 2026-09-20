@@ -19,8 +19,10 @@ import {
 } from './types';
 import { formatExperienceBullets } from './utils/textBeautifier';
 import { Sparkles, Heart } from 'lucide-react';
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 
-export default function App() {
+function AppContent() {
+  const { language } = useLanguage();
   const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -113,29 +115,59 @@ export default function App() {
     jobAnalysis?: JobAnalysisResult;
   }): OptimizedResume => {
     const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis } = data;
-    const fullName = personal?.fullName?.trim() || 'Profissional';
-    const role = targetJob?.roleTitle?.trim() || 'Profissional';
+    const isFr = language === 'fr';
+    const isEn = language === 'en';
+    const isEs = language === 'es';
+
+    const defaultName = isFr ? 'Professionnel' : isEn ? 'Professional' : isEs ? 'Profesional' : 'Profissional';
+    const fullName = personal?.fullName?.trim() || defaultName;
+    const role = targetJob?.roleTitle?.trim() || defaultName;
+
+    const presentText = isFr ? 'Présent' : isEn ? 'Present' : isEs ? 'Presente' : 'Atual';
+    const startDefault = isFr ? 'Début' : isEn ? 'Start' : isEs ? 'Inicio' : 'Início';
+    const endDefault = isFr ? 'Fin' : isEn ? 'End' : isEs ? 'Fin' : 'Término';
+    const companyDefault = isFr ? 'Entreprise' : isEn ? 'Company' : isEs ? 'Empresa' : 'Empresa';
+    const roleDefault = isFr ? 'Poste' : isEn ? 'Position' : isEs ? 'Cargo' : 'Cargo';
 
     const optimizedExp = (experiences || []).map((exp) => {
       const bullets = formatExperienceBullets(exp.activitiesRaw || '', exp.resultsRaw || '', exp.role);
 
       const period = exp.isCurrent
-        ? `${exp.startDate || 'Início'} — Atual`
-        : `${exp.startDate || 'Início'} — ${exp.endDate || 'Término'}`;
+        ? `${exp.startDate || startDefault} — ${presentText}`
+        : `${exp.startDate || startDefault} — ${exp.endDate || endDefault}`;
 
       return {
         id: exp.id || Math.random().toString(),
-        company: exp.company || 'Empresa',
-        role: exp.role || 'Cargo',
+        company: exp.company || companyDefault,
+        role: exp.role || roleDefault,
         period,
         isCurrent: !!exp.isCurrent,
         bullets,
       };
     });
 
-    const summary = targetJob?.briefGoal?.trim()
-      ? `Profissional orientado a resultados com objetivo de atuar como ${role}. ${targetJob.briefGoal}`
-      : `Profissional dedicado(a) com objetivo de atuação como ${role}. Perfil proativo e comprometido com resultados de qualidade, aplicando conhecimentos em ${(skills || []).slice(0, 3).join(', ') || 'atividades da área'} para contribuir com o desenvolvimento da equipe e organização.`;
+    let summary = '';
+    if (targetJob?.briefGoal?.trim()) {
+      if (isFr) {
+        summary = `Professionnel orienté résultats visant le poste de ${role}. ${targetJob.briefGoal}`;
+      } else if (isEn) {
+        summary = `Results-oriented professional seeking an opportunity as ${role}. ${targetJob.briefGoal}`;
+      } else if (isEs) {
+        summary = `Profesional orientado a resultados con el objetivo de desempeñarse como ${role}. ${targetJob.briefGoal}`;
+      } else {
+        summary = `Profissional orientado a resultados com objetivo de atuar como ${role}. ${targetJob.briefGoal}`;
+      }
+    } else {
+      if (isFr) {
+        summary = `Professionnel motivé et rigoureux visant le poste de ${role}. Profil proactif et engagé, mobilisant des compétences solides pour apporter efficacité, rigueur et valeur ajoutée au sein de l'équipe et de l'organisation.`;
+      } else if (isEn) {
+        summary = `Dedicated and proactive professional aiming to contribute as ${role}. Proven ability to deliver reliable results, maintain high standards, and support key organizational initiatives.`;
+      } else if (isEs) {
+        summary = `Profesional dedicado(a) con el objetivo de desempeñarse como ${role}. Perfil proactivo y comprometido con resultados de calidad, aplicando conocimientos sólidos para contribuir al desarrollo del equipo y la organización.`;
+      } else {
+        summary = `Profissional dedicado(a) com objetivo de atuação como ${role}. Perfil proativo e comprometido com resultados de qualidade, aplicando conhecimentos em ${(skills || []).slice(0, 3).join(', ') || 'atividades da área'} para contribuir com o desenvolvimento da equipe e organização.`;
+      }
+    }
 
     const safePersonal: PersonalData = {
       fullName,
@@ -182,6 +214,7 @@ export default function App() {
       // 1. Prepare sanitized data without large base64 strings in the payload
       const sanitizedData = {
         ...data,
+        language,
         personal: {
           ...data.personal,
           photoUrl: data.personal.photoUrl ? 'user-uploaded-photo' : undefined,
@@ -440,3 +473,12 @@ export default function App() {
     </div>
   );
 }
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
+

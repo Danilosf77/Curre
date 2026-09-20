@@ -56,6 +56,52 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   const [showCompatibility, setShowCompatibility] = useState(true);
 
   const resumeRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [resumeHeight, setResumeHeight] = useState(1050);
+
+  // Dynamic scaling for Mobile Viewport (A4 document preview scaling)
+  const updateScale = React.useCallback(() => {
+    if (containerRef.current) {
+      const parentWidth = containerRef.current.getBoundingClientRect().width;
+      if (parentWidth < 820) {
+        setScale(parentWidth / 820);
+      } else {
+        setScale(1);
+      }
+    }
+    if (resumeRef.current) {
+      setResumeHeight(resumeRef.current.scrollHeight);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    updateScale();
+    window.addEventListener('resize', updateScale);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (containerRef.current && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        updateScale();
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [updateScale]);
+
+  // Force scale recalculation when template or resume changes
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      updateScale();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [template, resume, updateScale]);
 
   // Auto-salva no navegador assim que o currículo é gerado/visualizado
   React.useEffect(() => {
@@ -425,7 +471,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           REALISTIC RESUME PAPER (A4 Document Preview)
       ========================================================================= */}
       <div
-        className="flex justify-center select-none"
+        ref={containerRef}
+        className="w-full flex justify-center select-none overflow-hidden print:overflow-visible print:h-auto"
+        style={{
+          height: scale < 1 ? `${resumeHeight * scale}px` : 'auto'
+        }}
         onContextMenu={(e) => e.preventDefault()}
       >
         <div
@@ -435,14 +485,22 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           onCopy={(e) => e.preventDefault()}
           onCut={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
-          className={`resume-paper select-none w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl transition-all border border-slate-200/80 overflow-hidden print:max-w-none print:shadow-none print:border-none ${
+          className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none ${
             template === 'liquid-modern'
               ? 'p-6 sm:p-10 font-sans'
               : template === 'executive-clean'
               ? 'p-6 sm:p-10 font-serif'
               : 'p-0 font-sans'
           }`}
-          style={{ minHeight: '1050px', userSelect: 'none', WebkitUserSelect: 'none' }}
+          style={{
+            width: '820px',
+            minHeight: '1050px',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            transform: scale < 1 ? `scale(${scale})` : 'none',
+            transformOrigin: 'top center',
+            flexShrink: 0,
+          }}
         >
           {template === 'liquid-modern' && (
             <LiquidModernTemplate
