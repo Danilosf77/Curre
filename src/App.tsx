@@ -22,7 +22,7 @@ import { Sparkles, Heart } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 
 function AppContent() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -418,55 +418,61 @@ function AppContent() {
       />
 
       {/* Clean Footer (hidden on print) */}
-      <footer id="app-footer" className="no-print mt-auto py-8 px-4 sm:px-8 border-t border-slate-200/80 bg-white/70 backdrop-blur-sm text-center text-xs text-slate-500">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-slate-900 tracking-tight text-sm">
-                CURRÊ
-              </span>
-              <span className="text-[11px] text-slate-400">
-                — Corra atrás da vaga certa.
-              </span>
+      <footer id="app-footer" className="no-print mt-auto py-8 px-6 sm:px-8 border-t border-slate-200/80 bg-white/70 backdrop-blur-sm text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Top Row: Brand & Description vs. Links */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2 max-w-xl text-left">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-extrabold text-slate-900 tracking-tight text-sm">
+                  CURRÊ
+                </span>
+                <span className="text-slate-300">|</span>
+                <span className="text-xs text-slate-500 font-medium">
+                  {t('brand_slogan')}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed text-left">
+                {t('footer_tagline')}
+              </p>
             </div>
-            <span className="hidden sm:inline text-slate-300">•</span>
-            <div className="text-xs text-slate-700 font-medium whitespace-nowrap inline-flex items-center gap-1.5">
-              <span>Site desenvolvido por</span>
-              <strong className="text-slate-950 font-bold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60 whitespace-nowrap inline-block">
-                Danilo Freitas
-              </strong>
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-600">
+              <button
+                onClick={() => setHowItWorksOpen(true)}
+                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                {t('nav_how_it_works')}
+              </button>
+              <button
+                onClick={() => setFeaturesOpen(true)}
+                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                {t('nav_features')}
+              </button>
+              <button
+                onClick={() => setPrivacyOpen(true)}
+                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                {t('footer_terms')}
+              </button>
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-400">
-            Plataforma inteligente de currículos com IA otimizada para recrutadores e sistemas ATS.
-          </p>
+          {/* Divider */}
+          <div className="border-t border-slate-100" />
 
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600">
-            <button
-              onClick={() => setHowItWorksOpen(true)}
-              className="hover:text-slate-900 cursor-pointer"
-            >
-              Como funciona
-            </button>
-            <button
-              onClick={() => setFeaturesOpen(true)}
-              className="hover:text-slate-900 cursor-pointer"
-            >
-              Recursos
-            </button>
-            <button
-              onClick={() => setPrivacyOpen(true)}
-              className="hover:text-slate-900 cursor-pointer"
-            >
-              Termos & LGPD
-            </button>
-            <button
-              onClick={() => setLoginOpen(true)}
-              className="hover:text-slate-900 cursor-pointer"
-            >
-              {currentUser ? 'Minha Nuvem' : 'Entrar (Opcional)'}
-            </button>
+          {/* Bottom Row: Attribution & Copyright */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px]">
+            <div className="text-slate-500 inline-flex items-center gap-1.5">
+              <span>{t('footer_developed_by')}</span>
+              <strong className="text-slate-800 font-bold bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/40 whitespace-nowrap inline-block">
+                Danilo Freitas
+              </strong>
+            </div>
+            <div className="text-slate-400">
+              &copy; {new Date().getFullYear()} CURRÊ. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>

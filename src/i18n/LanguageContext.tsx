@@ -161,6 +161,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_portfolio_ph: "ex: meutrabalho.com / portfolio",
     // Slogan & Brand
     brand_slogan: 'Corra atrás da vaga certa.',
+    footer_developed_by: 'Site desenvolvido por',
+    footer_tagline: 'Plataforma inteligente de currículos com IA otimizada para recrutadores e sistemas ATS.',
+    footer_terms: 'Termos & LGPD',
     nav_create: 'Criar currículo',
     nav_how_it_works: 'Como funciona',
     nav_features: 'Recursos',
@@ -514,6 +517,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_portfolio_ph: "e.g. mysite.com / portfolio",
     // Slogan & Brand
     brand_slogan: 'Run after the right job.',
+    footer_developed_by: 'Site developed by',
+    footer_tagline: 'Intelligent resume platform with AI optimized for recruiters and ATS systems.',
+    footer_terms: 'Terms & Privacy',
     nav_create: 'Build resume',
     nav_how_it_works: 'How it works',
     nav_features: 'Features',
@@ -867,6 +873,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_portfolio_ph: "ej: miweb.es / portafolio",
     // Slogan & Brand
     brand_slogan: 'Consigue el empleo ideal.',
+    footer_developed_by: 'Sitio desarrollado por',
+    footer_tagline: 'Plataforma inteligente de currículums con IA optimizada para reclutadores y sistemas ATS.',
+    footer_terms: 'Términos y Privacidad',
     nav_create: 'Crear currículum',
     nav_how_it_works: 'Cómo funciona',
     nav_features: 'Funciones',
@@ -1220,6 +1229,9 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_portfolio_ph: "ex: monsite.fr / portfolio",
     // Slogan & Brand
     brand_slogan: 'Décrochez le bon poste.',
+    footer_developed_by: 'Site développé par',
+    footer_tagline: 'Plateforme intelligente de CV avec IA optimisée pour les recruteurs et les systèmes ATS.',
+    footer_terms: 'Conditions et Confidentialité',
     nav_create: 'Créer un CV',
     nav_how_it_works: 'Comment ça marche',
     nav_features: 'Fonctionnalités',

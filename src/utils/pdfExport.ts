@@ -17,12 +17,14 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
   const originalTransform = element.style.transform;
   const originalTransformOrigin = element.style.transformOrigin;
   const originalFlexShrink = element.style.flexShrink;
+  const originalPaddingBottom = element.style.paddingBottom;
+  const originalMarginBottom = element.style.marginBottom;
 
   try {
     // 1. Aplica temporariamente classe de exportação se houver regras CSS específicas
     element.classList.add('pdf-exporting');
 
-    // 2. Altera temporariamente o estilo do elemento para forçar o layout de desktop A4 real
+    // 2. Altera temporariamente o estilo do elemento para forçar o layout de desktop A4 real e zerar margens inferiores
     element.style.width = '794px';
     element.style.maxWidth = 'none';
     element.style.boxShadow = 'none';
@@ -31,6 +33,8 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
     element.style.transform = 'none';
     element.style.transformOrigin = 'initial';
     element.style.flexShrink = '0';
+    element.style.paddingBottom = '0px';
+    element.style.marginBottom = '0px';
 
     // 3. Executa html2canvas com configurações de desktop forçadas para garantir a renderização fiel e nítida
     const canvas = await html2canvas(element, {
@@ -54,22 +58,35 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
     const pdfWidth = pdf.internal.pageSize.getWidth(); // 210
     const pdfHeight = pdf.internal.pageSize.getHeight(); // 297
 
-    // Scale image to fit A4 width perfectly
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    // Scale image to fit A4 width perfectly by default
+    let imgWidth = pdfWidth;
+    let imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    // Tolerância de 10% para evitar folha extra desnecessária
+    const maxSinglePageAllowedHeight = pdfHeight * 1.10; // 326.7mm
+    let xOffset = 0;
+
+    if (imgHeight > pdfHeight && imgHeight <= maxSinglePageAllowedHeight) {
+      // O conteúdo transborda em até 10%. Vamos comprimi-lo levemente para caber em uma única página A4.
+      const scaleRatio = pdfHeight / imgHeight;
+      imgWidth = pdfWidth * scaleRatio;
+      imgHeight = pdfHeight;
+      xOffset = (pdfWidth - imgWidth) / 2; // Centraliza horizontalmente
+      console.log(`Aplicado fator de compressão de ${Math.round((1 - scaleRatio) * 100)}% para forçar currículo em uma única página.`);
+    }
 
     let heightLeft = imgHeight;
     let position = 0;
 
     // First page
-    pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    pdf.addImage(dataUrl, 'PNG', xOffset, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pdfHeight;
 
-    // Additional pages if content spans across multiple A4 pages
+    // Additional pages if content spans across multiple A4 pages (and was not compressed to single page)
     while (heightLeft > 5) {
       position = heightLeft - imgHeight;
       pdf.addPage();
-      pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      pdf.addImage(dataUrl, 'PNG', xOffset, position, imgWidth, imgHeight, undefined, 'FAST');
       heightLeft -= pdfHeight;
     }
 
@@ -103,5 +120,7 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
     element.style.transform = originalTransform;
     element.style.transformOrigin = originalTransformOrigin;
     element.style.flexShrink = originalFlexShrink;
+    element.style.paddingBottom = originalPaddingBottom;
+    element.style.marginBottom = originalMarginBottom;
   }
 }
