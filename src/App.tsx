@@ -1,0 +1,442 @@
+import React, { useState, useEffect } from 'react';
+import { Navbar } from './components/Navbar';
+import { LandingHero } from './components/LandingHero';
+import { ResumeWizard } from './components/ResumeWizard';
+import { ResumePreview } from './components/ResumePreview';
+import { LoadingOverlay } from './components/LoadingOverlay';
+import { HowItWorksModal, FeaturesModal, LoginModal, PrivacyTermsModal } from './components/InfoModals';
+import { AdaptJobModal } from './components/AdaptJobModal';
+import {
+  OptimizedResume,
+  PersonalData,
+  TargetJob,
+  ExperienceItem,
+  EducationItem,
+  CourseItem,
+  JobAnalysisResult,
+  WizardStep,
+  UserProfile,
+} from './types';
+import { formatExperienceBullets } from './utils/textBeautifier';
+import { Sparkles, Heart } from 'lucide-react';
+
+export default function App() {
+  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
+  const [wizardStep, setWizardStep] = useState<WizardStep>(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(null);
+  const [savedResumeData, setSavedResumeData] = useState<OptimizedResume | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+
+  // Cached form data to allow seamless editing back and forth
+  const [formDataCache, setFormDataCache] = useState<{
+    personal: PersonalData;
+    targetJob: TargetJob;
+    experiences: ExperienceItem[];
+    education: EducationItem[];
+    skills: string[];
+    tools: string[];
+    courses: CourseItem[];
+    jobAnalysis?: JobAnalysisResult;
+  } | null>(null);
+
+  // Modals
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [adaptJobOpen, setAdaptJobOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('curre_user_profile');
+      if (storedUser) {
+        setCurrentUser(JSON.parse(storedUser));
+      }
+    } catch (e) {
+      console.error('Error reading user profile:', e);
+    }
+  }, []);
+
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('curre_user_profile', JSON.stringify(user));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    try {
+      localStorage.removeItem('curre_user_profile');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Check if user has a previously saved resume in localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('curre_saved_resume');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
+          setSavedResumeData(parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Error reading saved resume from localStorage:', e);
+    }
+  }, [currentView]);
+
+  // Open saved resume directly from landing page or navbar
+  const handleOpenSavedResume = () => {
+    if (savedResumeData) {
+      setGeneratedResume(savedResumeData);
+      setCurrentView('result');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Helper function to build a resilient professional resume client-side if network/server is slow or fails
+  const buildClientFallbackResume = (data: {
+    personal: PersonalData;
+    targetJob: TargetJob;
+    experiences: ExperienceItem[];
+    education: EducationItem[];
+    skills: string[];
+    tools: string[];
+    courses: CourseItem[];
+    jobAnalysis?: JobAnalysisResult;
+  }): OptimizedResume => {
+    const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis } = data;
+    const fullName = personal?.fullName?.trim() || 'Profissional';
+    const role = targetJob?.roleTitle?.trim() || 'Profissional';
+
+    const optimizedExp = (experiences || []).map((exp) => {
+      const bullets = formatExperienceBullets(exp.activitiesRaw || '', exp.resultsRaw || '', exp.role);
+
+      const period = exp.isCurrent
+        ? `${exp.startDate || 'Início'} — Atual`
+        : `${exp.startDate || 'Início'} — ${exp.endDate || 'Término'}`;
+
+      return {
+        id: exp.id || Math.random().toString(),
+        company: exp.company || 'Empresa',
+        role: exp.role || 'Cargo',
+        period,
+        isCurrent: !!exp.isCurrent,
+        bullets,
+      };
+    });
+
+    const summary = targetJob?.briefGoal?.trim()
+      ? `Profissional orientado a resultados com objetivo de atuar como ${role}. ${targetJob.briefGoal}`
+      : `Profissional dedicado(a) com objetivo de atuação como ${role}. Perfil proativo e comprometido com resultados de qualidade, aplicando conhecimentos em ${(skills || []).slice(0, 3).join(', ') || 'atividades da área'} para contribuir com o desenvolvimento da equipe e organização.`;
+
+    const safePersonal: PersonalData = {
+      fullName,
+      cityState: personal?.cityState || '',
+      phone: personal?.phone || '',
+      email: personal?.email || '',
+      linkedin: personal?.linkedin || '',
+      portfolio: personal?.portfolio || '',
+      photoUrl: personal?.photoUrl,
+      hasPhoto: !!personal?.hasPhoto,
+    };
+
+    return {
+      personal: safePersonal,
+      targetRole: role,
+      professionalSummary: summary,
+      experiences: optimizedExp,
+      education: education || [],
+      skills: skills || [],
+      tools: tools || [],
+      courses: courses || [],
+      jobAnalysis,
+      templateStyle: 'liquid-modern',
+      generatedAt: new Date().toISOString(),
+    };
+  };
+
+  // Main resume generator API call
+  const handleGenerateResume = async (data: {
+    personal: PersonalData;
+    targetJob: TargetJob;
+    experiences: ExperienceItem[];
+    education: EducationItem[];
+    skills: string[];
+    tools: string[];
+    courses: CourseItem[];
+    jobAnalysis?: JobAnalysisResult;
+  }) => {
+    setFormDataCache(data);
+    setIsLoading(true);
+    const startTime = Date.now();
+
+    try {
+      // 1. Prepare sanitized data without large base64 strings in the payload
+      const sanitizedData = {
+        ...data,
+        personal: {
+          ...data.personal,
+          photoUrl: data.personal.photoUrl ? 'user-uploaded-photo' : undefined,
+        },
+      };
+
+      // 2. Fetch main resume optimization
+      const fetchPromise = fetch('/api/ai/optimize-resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sanitizedData),
+      });
+
+      // 3. Timeout safeguard: if server takes > 8 seconds, fallback locally
+      const response = await Promise.race([
+        fetchPromise,
+        new Promise<Response>((_, reject) =>
+          setTimeout(() => reject(new Error('Server timeout')), 8000)
+        ),
+      ]);
+
+      let resultResume: OptimizedResume;
+
+      if (response.ok) {
+        resultResume = await response.json();
+        // Restore actual photoUrl for client-side display
+        if (data.personal.photoUrl) {
+          resultResume.personal.photoUrl = data.personal.photoUrl;
+          resultResume.personal.hasPhoto = true;
+        }
+      } else {
+        resultResume = buildClientFallbackResume(data);
+      }
+
+      // Attach any existing jobAnalysis
+      if (data.jobAnalysis) {
+        resultResume.jobAnalysis = data.jobAnalysis;
+      }
+
+      // Ensure user experiences the 4-phase liquid loading transition (minimum 1.8s)
+      const elapsed = Date.now() - startTime;
+      const waitTime = Math.max(0, 1800 - elapsed);
+
+      setTimeout(() => {
+        setGeneratedResume(resultResume);
+        setSavedResumeData(resultResume);
+        try {
+          localStorage.setItem('curre_saved_resume', JSON.stringify(resultResume));
+        } catch (e) {
+          console.error(e);
+        }
+        setIsLoading(false);
+        setCurrentView('result');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, waitTime);
+    } catch (error) {
+      console.warn('Backend API unavailable or slow, generating with local smart heuristics:', error);
+      const fallbackResume = buildClientFallbackResume(data);
+
+      const elapsed = Date.now() - startTime;
+      const waitTime = Math.max(0, 1800 - elapsed);
+
+      setTimeout(() => {
+        setGeneratedResume(fallbackResume);
+        setSavedResumeData(fallbackResume);
+        try {
+          localStorage.setItem('curre_saved_resume', JSON.stringify(fallbackResume));
+        } catch (e) {
+          console.error(e);
+        }
+        setIsLoading(false);
+        setCurrentView('result');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, waitTime);
+    }
+  };
+
+  // Re-generate current resume
+  const handleRegenerate = () => {
+    if (formDataCache) {
+      handleGenerateResume(formDataCache);
+    }
+  };
+
+  // Adapt to a new job description
+  const handleAdaptToNewJob = async (newJobDesc: string) => {
+    if (!formDataCache) return;
+
+    const updatedFormData = {
+      ...formDataCache,
+      targetJob: {
+        ...formDataCache.targetJob,
+        jobDescription: newJobDesc,
+      },
+      jobAnalysis: undefined, // trigger fresh analysis
+    };
+
+    setAdaptJobOpen(false);
+    handleGenerateResume(updatedFormData);
+  };
+
+  // Navigation helpers
+  const handleStartWizard = (step: WizardStep = 1) => {
+    setWizardStep(step);
+    setCurrentView('wizard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleEditFromPreview = () => {
+    setWizardStep(8);
+    setCurrentView('wizard');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col selection:bg-sky-200 selection:text-sky-900">
+      {/* Top Navbar */}
+      <Navbar
+        onStartResume={() => handleStartWizard(1)}
+        onOpenHowItWorks={() => setHowItWorksOpen(true)}
+        onOpenFeatures={() => setFeaturesOpen(true)}
+        onOpenAuth={() => setLoginOpen(true)}
+        isWizardActive={currentView === 'wizard'}
+        onGoHome={() => setCurrentView('landing')}
+        hasSavedResume={!!savedResumeData}
+        onOpenSavedResume={handleOpenSavedResume}
+        currentUser={currentUser}
+      />
+
+      {/* Main Content Area */}
+      <main className="flex-1">
+        {currentView === 'landing' && (
+          <LandingHero
+            onStartResume={() => handleStartWizard(1)}
+            onOpenHowItWorks={() => setHowItWorksOpen(true)}
+            savedResume={savedResumeData}
+            onOpenSavedResume={handleOpenSavedResume}
+            currentUser={currentUser}
+            onOpenLogin={() => setLoginOpen(true)}
+          />
+        )}
+
+        {currentView === 'wizard' && (
+          <ResumeWizard
+            initialStep={wizardStep}
+            initialData={formDataCache}
+            onGenerateResume={handleGenerateResume}
+            onCancel={() => setCurrentView('landing')}
+          />
+        )}
+
+        {currentView === 'result' && generatedResume && (
+          <ResumePreview
+            resume={generatedResume}
+            onEdit={handleEditFromPreview}
+            onRegenerate={handleRegenerate}
+            onAdaptOtherJob={() => setAdaptJobOpen(true)}
+            onBackToHome={() => setCurrentView('landing')}
+            currentUser={currentUser}
+            onOpenLogin={() => setLoginOpen(true)}
+          />
+        )}
+      </main>
+
+      {/* Loading Overlay with 4-phase transition */}
+      {isLoading && <LoadingOverlay />}
+
+      {/* Information & Feature Modals */}
+      <HowItWorksModal
+        isOpen={howItWorksOpen}
+        onClose={() => setHowItWorksOpen(false)}
+        onStart={() => handleStartWizard(1)}
+      />
+
+      <FeaturesModal
+        isOpen={featuresOpen}
+        onClose={() => setFeaturesOpen(false)}
+      />
+
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        currentUser={currentUser}
+        onLoginSuccess={handleLoginSuccess}
+        onLogout={handleLogout}
+      />
+
+      {/* Adapt for other job modal */}
+      <AdaptJobModal
+        isOpen={adaptJobOpen}
+        onClose={() => setAdaptJobOpen(false)}
+        currentRole={generatedResume?.targetRole || formDataCache?.targetJob.roleTitle || 'Profissional'}
+        onConfirmAdapt={handleAdaptToNewJob}
+        isLoading={isLoading}
+      />
+
+      {/* Privacy & LGPD Terms Modal */}
+      <PrivacyTermsModal
+        isOpen={privacyOpen}
+        onClose={() => setPrivacyOpen(false)}
+      />
+
+      {/* Clean Footer (hidden on print) */}
+      <footer id="app-footer" className="no-print mt-auto py-8 px-4 sm:px-8 border-t border-slate-200/80 bg-white/70 backdrop-blur-sm text-center text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-slate-900 tracking-tight text-sm">
+                CURRÊ
+              </span>
+              <span className="text-[11px] text-slate-400">
+                — Corra atrás da vaga certa.
+              </span>
+            </div>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <div className="text-xs text-slate-700 font-medium whitespace-nowrap inline-flex items-center gap-1.5">
+              <span>Site desenvolvido por</span>
+              <strong className="text-slate-950 font-bold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60 whitespace-nowrap inline-block">
+                Danilo Freitas
+              </strong>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-slate-400">
+            Plataforma inteligente de currículos com IA otimizada para recrutadores e sistemas ATS.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600">
+            <button
+              onClick={() => setHowItWorksOpen(true)}
+              className="hover:text-slate-900 cursor-pointer"
+            >
+              Como funciona
+            </button>
+            <button
+              onClick={() => setFeaturesOpen(true)}
+              className="hover:text-slate-900 cursor-pointer"
+            >
+              Recursos
+            </button>
+            <button
+              onClick={() => setPrivacyOpen(true)}
+              className="hover:text-slate-900 cursor-pointer"
+            >
+              Termos & LGPD
+            </button>
+            <button
+              onClick={() => setLoginOpen(true)}
+              className="hover:text-slate-900 cursor-pointer"
+            >
+              {currentUser ? 'Minha Nuvem' : 'Entrar (Opcional)'}
+            </button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
