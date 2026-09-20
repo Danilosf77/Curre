@@ -108,7 +108,7 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
             {experiences.map((exp, idx) => (
               <div key={idx} className="space-y-1">
                 {/* Linha da Empresa e Período */}
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between font-serif gap-0.5">
+                <div className="flex flex-row items-baseline justify-between font-serif gap-0.5">
                   <span className="text-sm font-black text-slate-950 uppercase tracking-wide">
                     {exp.company}
                   </span>
@@ -153,7 +153,7 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
 
           <div className="space-y-2">
             {education.map((edu, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 text-xs font-serif">
+              <div key={idx} className="flex flex-row items-baseline justify-between gap-1 text-xs font-serif">
                 <div>
                   <span className="font-bold text-slate-950 uppercase">{edu.course}</span>
                   <span className="text-slate-700 italic ml-1.5">— {edu.institution}</span>

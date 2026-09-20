@@ -38,11 +38,11 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
   courses,
 }) => {
   return (
-    <div className="w-full text-slate-800 font-sans leading-normal flex flex-col md:flex-row print:flex-row min-h-full">
+    <div className="w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full">
       {/* =========================================================================
           COLUNA LATERAL (34% da largura) — Contato, Competências, Ferramentas, Educação
       ========================================================================= */}
-      <aside className="w-full md:w-[34%] print:w-[34%] bg-slate-50/90 border-b md:border-b-0 md:border-r print:border-r border-slate-200/80 p-5 sm:p-6 flex flex-col gap-6 shrink-0">
+      <aside className="w-[34%] bg-slate-50/90 border-r border-slate-200/80 p-6 flex flex-col gap-6 shrink-0">
         {/* Foto centralizada na coluna lateral se existir */}
         {personal.hasPhoto && personal.photoUrl && (
           <div className="flex justify-center mb-1">
@@ -179,13 +179,13 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
       {/* =========================================================================
           COLUNA PRINCIPAL (66% da largura) — Título, Resumo e Experiências
       ========================================================================= */}
-      <main className="w-full md:w-[66%] print:w-[66%] p-5 sm:p-7 flex flex-col justify-start">
+      <main className="w-[66%] p-7 flex flex-col justify-start">
         {/* Cabeçalho Principal com Nome e Cargo */}
         <header className="pb-4 mb-5 border-b border-slate-200">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
             {personal.fullName}
           </h1>
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 mt-1">
+          <p className="text-sm font-bold uppercase tracking-wider text-slate-700 mt-1">
             {targetRole}
           </p>
         </header>
@@ -197,7 +197,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
               <User className="w-3.5 h-3.5 text-slate-500" />
               Perfil Profissional
             </h2>
-            <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed text-justify">
+            <p className="text-[13px] text-slate-700 leading-relaxed text-justify">
               {professionalSummary}
             </p>
           </section>
@@ -214,9 +214,9 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
             <div className="space-y-4">
               {experiences.map((exp, idx) => (
                 <div key={idx} className="space-y-1">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <div className="flex flex-row items-baseline justify-between gap-1">
                     <div>
-                      <span className="text-xs sm:text-sm font-bold text-slate-900">
+                      <span className="text-sm font-bold text-slate-900">
                         {exp.role}
                       </span>
                       <span className="text-xs font-semibold text-slate-600 ml-1.5">

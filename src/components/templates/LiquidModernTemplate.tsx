@@ -41,7 +41,7 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
           CLEAN HEADER — Direto, elegante e com alta legibilidade
       ========================================================================= */}
       <header className="pb-4 mb-5 border-b border-slate-200">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-row items-center justify-between gap-4">
           <div className="space-y-1 flex-1">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
               {personal.fullName}
@@ -132,7 +132,7 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
           <div className="space-y-4">
             {experiences.map((exp, idx) => (
               <div key={idx} className="space-y-1">
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                <div className="flex flex-row items-baseline justify-between gap-1">
                   <div>
                     <span className="text-xs sm:text-sm font-bold text-slate-900">
                       {exp.role}
@@ -214,7 +214,7 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
 
           <div className="space-y-2">
             {education.map((edu, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 text-xs">
+              <div key={idx} className="flex flex-row items-baseline justify-between gap-1 text-xs">
                 <div>
                   <span className="font-bold text-slate-900">{edu.course}</span>
                   <span className="text-slate-600 ml-1.5">• {edu.institution}</span>

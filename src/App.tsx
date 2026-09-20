@@ -96,7 +96,7 @@ function AppContent() {
 
   // Open saved resume directly from landing page or navbar
   const handleOpenSavedResume = () => {
-    if (savedResumeData) {
+    if (savedResumeData && currentUser) {
       setGeneratedResume(savedResumeData);
       setCurrentView('result');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -339,7 +339,7 @@ function AppContent() {
         onOpenAuth={() => setLoginOpen(true)}
         isWizardActive={currentView === 'wizard'}
         onGoHome={() => setCurrentView('landing')}
-        hasSavedResume={!!savedResumeData}
+        hasSavedResume={!!savedResumeData && !!currentUser}
         onOpenSavedResume={handleOpenSavedResume}
         currentUser={currentUser}
       />
@@ -350,7 +350,7 @@ function AppContent() {
           <LandingHero
             onStartResume={() => handleStartWizard(1)}
             onOpenHowItWorks={() => setHowItWorksOpen(true)}
-            savedResume={savedResumeData}
+            savedResume={currentUser ? savedResumeData : null}
             onOpenSavedResume={handleOpenSavedResume}
             currentUser={currentUser}
             onOpenLogin={() => setLoginOpen(true)}
