@@ -171,6 +171,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud: 'Entrar / Nuvem',
     nav_cta_create: 'Criar Agora',
     nav_mobile_create: 'Criar',
+    nav_header: 'Navegação',
+    nav_smart_features: 'Recursos inteligentes',
+    nav_cloud_active: 'Nuvem Ativa',
+    nav_login_cloud_full: 'Entrar / Salvar na Nuvem',
+    nav_optional: 'Opcional',
 
     // Hero
     hero_badge: 'Inteligência Artificial Feita para Quem Precisa de Resultados',
@@ -527,6 +532,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud: 'Sign in / Cloud',
     nav_cta_create: 'Create Now',
     nav_mobile_create: 'Create',
+    nav_header: 'Navigation',
+    nav_smart_features: 'Smart features',
+    nav_cloud_active: 'Active Cloud',
+    nav_login_cloud_full: 'Sign in / Save to Cloud',
+    nav_optional: 'Optional',
 
     // Hero
     hero_badge: 'Artificial Intelligence Built for Those Who Need Results',
@@ -883,6 +893,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud: 'Ingresar / Nube',
     nav_cta_create: 'Crear Ahora',
     nav_mobile_create: 'Crear',
+    nav_header: 'Navegación',
+    nav_smart_features: 'Recursos inteligentes',
+    nav_cloud_active: 'Nube Activa',
+    nav_login_cloud_full: 'Ingresar / Guardar en la Nube',
+    nav_optional: 'Opcional',
 
     // Hero
     hero_badge: 'Inteligencia Artificial Hecha para Quienes Buscan Resultados',
@@ -1239,6 +1254,11 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud: 'Connexion / Cloud',
     nav_cta_create: 'Créer Maintenant',
     nav_mobile_create: 'Créer',
+    nav_header: 'Navigation',
+    nav_smart_features: 'Fonctionnalités intelligentes',
+    nav_cloud_active: 'Cloud Actif',
+    nav_login_cloud_full: 'Connexion / Sauvegarder dans le Cloud',
+    nav_optional: 'Optionnel',
 
     // Hero
     hero_badge: 'Intelligence Artificielle Conçue pour Ceux Qui Veulent des Résultats',

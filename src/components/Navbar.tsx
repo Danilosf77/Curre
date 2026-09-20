@@ -167,7 +167,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {mobileMenuOpen && (
           <div className="md:hidden mt-2 max-w-6xl mx-auto liquid-glass-card rounded-2xl p-4 shadow-xl border border-white/80 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="px-2 py-1 text-xs font-bold text-sky-700 uppercase tracking-wider">
-            Navegação
+            {t('nav_header')}
           </div>
           {hasSavedResume && onOpenSavedResume && (
             <button
@@ -179,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-full text-left px-3 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-100/90 border border-sky-200 flex items-center gap-2.5 text-sm"
             >
               <FileText className="w-4 h-4 text-sky-700" />
-              Ver Currículo Salvo
+              {t('nav_saved_resume')}
             </button>
           )}
           <button
@@ -191,7 +191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="w-full text-left px-3 py-2.5 rounded-xl font-semibold text-slate-800 hover:bg-sky-50 flex items-center gap-2.5 text-sm"
           >
             <FileText className="w-4 h-4 text-sky-600" />
-            Criar meu currículo
+            {t('nav_create')}
           </button>
           <button
             onClick={() => {
@@ -202,7 +202,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2.5 text-sm"
           >
             <HelpCircle className="w-4 h-4 text-slate-500" />
-            Como funciona
+            {t('nav_how_it_works')}
           </button>
           <button
             onClick={() => {
@@ -213,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="w-full text-left px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2.5 text-sm"
           >
             <Layers className="w-4 h-4 text-slate-500" />
-            Recursos inteligentes
+            {t('nav_smart_features')}
           </button>
           <div className="pt-2 border-t border-slate-200/60">
             {currentUser ? (
@@ -232,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>{currentUser.name}</span>
                 </div>
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                  Nuvem Ativa
+                  {t('nav_cloud_active')}
                 </span>
               </button>
             ) : (
@@ -246,9 +246,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Cloud className="w-4 h-4 text-sky-600" />
-                  <span>Entrar / Salvar na Nuvem</span>
+                  <span>{t('nav_login_cloud_full')}</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium">Opcional</span>
+                <span className="text-[10px] text-slate-400 font-medium">{t('nav_optional')}</span>
               </button>
             )}
           </div>
