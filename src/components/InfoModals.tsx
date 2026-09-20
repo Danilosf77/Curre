@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Sparkles, Layers, ShieldCheck, FileCheck, ArrowRight, Zap, Cloud, Mail, LogOut, Check } from 'lucide-react';
 import { UserProfile } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export interface LoginModalProps {
 }
 
 export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = ({ isOpen, onClose, onStart }) => {
+  const { t } = useLanguage();
+
   if (!isOpen) return null;
 
   return (
@@ -33,8 +36,8 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
             💡
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Como funciona o CURRÊ?</h2>
-            <p className="text-xs text-slate-500">Corra atrás da vaga certa em apenas 3 passos simples</p>
+            <h2 className="text-xl font-bold text-slate-900">{t('how_title')}</h2>
+            <p className="text-xs text-slate-500">{t('how_subtitle')}</p>
           </div>
         </div>
 
@@ -44,9 +47,9 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
               1
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm">Preencha suas informações</h4>
+              <h4 className="font-bold text-slate-900 text-sm">{t('how_step_1_title')}</h4>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                Informe seus dados de contato, formação e experiências. Não se preocupe em usar palavras difíceis — escreva com suas próprias palavras como era sua rotina.
+                {t('how_step_1_desc')}
               </p>
             </div>
           </div>
@@ -56,9 +59,9 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
               2
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm">Cole a vaga desejada (opcional)</h4>
+              <h4 className="font-bold text-slate-900 text-sm">{t('how_step_2_title')}</h4>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                A IA analisa os requisitos e palavras-chave da vaga para destacar as suas experiências e qualificações reais mais compatíveis.
+                {t('how_step_2_desc')}
               </p>
             </div>
           </div>
@@ -68,9 +71,9 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
               3
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm">Receba seu currículo em PDF</h4>
+              <h4 className="font-bold text-slate-900 text-sm">{t('how_step_3_title')}</h4>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                Pronto para envio! Em formato profissional aprovado por recrutadores e pronto para impressão ou envio por e-mail e WhatsApp.
+                {t('how_step_3_desc')}
               </p>
             </div>
           </div>
@@ -78,7 +81,7 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
 
         <div className="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 text-xs text-sky-800 flex items-center gap-2 mb-6">
           <ShieldCheck className="w-4 h-4 text-sky-600 shrink-0" />
-          <span>A IA do CURRÊ nunca inventa experiências falsas. Apenas valoriza sua história real.</span>
+          <span>{t('how_info_box')}</span>
         </div>
 
         <button
@@ -88,7 +91,7 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
           }}
           className="w-full liquid-glass-button text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md shadow-sky-500/30"
         >
-          <span>CRIAR MEU CURRÍCULO AGORA</span>
+          <span>{t('how_btn_start')}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
@@ -97,6 +100,8 @@ export const HowItWorksModal: React.FC<ModalProps & { onStart: () => void }> = (
 };
 
 export const FeaturesModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
+
   if (!isOpen) return null;
 
   return (
@@ -114,41 +119,41 @@ export const FeaturesModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Recursos do CURRÊ</h2>
-            <p className="text-xs text-slate-500">Tecnologia desenhada para seu crescimento profissional</p>
+            <h2 className="text-xl font-bold text-slate-900">{t('feat_modal_title')}</h2>
+            <p className="text-xs text-slate-500">{t('feat_modal_subtitle')}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 my-5">
           <div className="p-4 rounded-2xl bg-white/70 border border-slate-100">
             <Sparkles className="w-5 h-5 text-sky-600 mb-2" />
-            <h4 className="font-bold text-slate-900 text-sm">Refinamento de Redação</h4>
+            <h4 className="font-bold text-slate-900 text-sm">{t('feat_item_1_title')}</h4>
             <p className="text-xs text-slate-600 mt-1">
-              Converte frases simples em marcadores de ação de alto impacto reconhecidos em seleções.
+              {t('feat_item_1_desc')}
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-white/70 border border-slate-100">
             <Zap className="w-5 h-5 text-cyan-600 mb-2" />
-            <h4 className="font-bold text-slate-900 text-sm">Leitor de Vaga Inteligente</h4>
+            <h4 className="font-bold text-slate-900 text-sm">{t('feat_item_2_title')}</h4>
             <p className="text-xs text-slate-600 mt-1">
-              Extrai competências-chave da vaga e posiciona seu perfil com máxima relevância.
+              {t('feat_item_2_desc')}
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-white/70 border border-slate-100">
             <FileCheck className="w-5 h-5 text-blue-600 mb-2" />
-            <h4 className="font-bold text-slate-900 text-sm">Padrão Limpo ATS</h4>
+            <h4 className="font-bold text-slate-900 text-sm">{t('feat_item_3_title')}</h4>
             <p className="text-xs text-slate-600 mt-1">
-              Formatado para passar sem erros em robôs de triagem (Gupy, Kenoby, LinkedIn).
+              {t('feat_item_3_desc')}
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-white/70 border border-slate-100">
             <ShieldCheck className="w-5 h-5 text-emerald-600 mb-2" />
-            <h4 className="font-bold text-slate-900 text-sm">Privacidade Total</h4>
+            <h4 className="font-bold text-slate-900 text-sm">{t('feat_item_4_title')}</h4>
             <p className="text-xs text-slate-600 mt-1">
-              Não pedimos documentos confidenciais como CPF ou RG. Seus dados são seus.
+              {t('feat_item_4_desc')}
             </p>
           </div>
         </div>
@@ -157,7 +162,7 @@ export const FeaturesModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           onClick={onClose}
           className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
         >
-          Fechar
+          {t('feat_modal_btn_close')}
         </button>
       </div>
     </div>

@@ -177,6 +177,30 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud_full: 'Entrar / Salvar na Nuvem',
     nav_optional: 'Opcional',
 
+    // Modals Info
+    how_title: "Como funciona o CURRÊ?",
+    how_subtitle: "Corra atrás da vaga certa em apenas 3 passos simples",
+    how_step_1_title: "Preencha suas informações",
+    how_step_1_desc: "Informe seus dados de contato, formação e experiências. Não se preocupe em usar palavras difíceis — escreva com suas próprias palavras como era sua rotina.",
+    how_step_2_title: "Cole a vaga desejada (opcional)",
+    how_step_2_desc: "A IA analisa os requisitos e palavras-chave da vaga para destacar as suas experiências e qualificações reais mais compatíveis.",
+    how_step_3_title: "Receba seu currículo em PDF",
+    how_step_3_desc: "Pronto para envio! Em formato profissional aprovado por recrutadores e pronto para impressão ou envio por e-mail e WhatsApp.",
+    how_info_box: "A IA do CURRÊ nunca inventa experiências falsas. Apenas valoriza sua história real.",
+    how_btn_start: "CRIAR MEU CURRÍCULO AGORA",
+
+    feat_modal_title: "Recursos do CURRÊ",
+    feat_modal_subtitle: "Tecnologia desenhada para seu crescimento profissional",
+    feat_item_1_title: "Refinamento de Redação",
+    feat_item_1_desc: "Converte frases simples em marcadores de ação de alto impacto reconhecidos em seleções.",
+    feat_item_2_title: "Leitor de Vaga Inteligente",
+    feat_item_2_desc: "Extrai competências-chave da vaga e posiciona seu perfil com máxima relevância.",
+    feat_item_3_title: "Padrão Limpo ATS",
+    feat_item_3_desc: "Formatado para passar sem erros em robôs de triagem (Gupy, Kenoby, LinkedIn).",
+    feat_item_4_title: "Privacidade Total",
+    feat_item_4_desc: "Não pedimos documentos confidenciais como CPF ou RG. Seus dados são seus.",
+    feat_modal_btn_close: "Fechar",
+
     // Hero
     hero_badge: 'Inteligência Artificial Feita para Quem Precisa de Resultados',
     hero_title_p1: 'Seu próximo emprego pode começar com um ',
@@ -537,6 +561,30 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_cloud_active: 'Active Cloud',
     nav_login_cloud_full: 'Sign in / Save to Cloud',
     nav_optional: 'Optional',
+
+    // Modals Info
+    how_title: "How CURRÊ works?",
+    how_subtitle: "Chase the right job in just 3 simple steps",
+    how_step_1_title: "Fill in your information",
+    how_step_1_desc: "Enter your contact details, education, and experience. Don't worry about using difficult words — write in your own words what your routine was like.",
+    how_step_2_title: "Paste the desired job (optional)",
+    how_step_2_desc: "The AI analyzes the requirements and keywords of the job post to highlight your most compatible real experiences and qualifications.",
+    how_step_3_title: "Get your resume in PDF",
+    how_step_3_desc: "Ready to send! In a professional format approved by recruiters and ready for printing or sending via email and WhatsApp.",
+    how_info_box: "CURRÊ's AI never invents false experiences. It only highlights your real story.",
+    how_btn_start: "CREATE MY RESUME NOW",
+
+    feat_modal_title: "CURRÊ Features",
+    feat_modal_subtitle: "Technology designed for your professional growth",
+    feat_item_1_title: "Writing Refinement",
+    feat_item_1_desc: "Converts simple sentences into high-impact action bullet points recognized in job selections.",
+    feat_item_2_title: "Smart Job Reader",
+    feat_item_2_desc: "Extracts key skills from the job post and positions your profile with maximum relevance.",
+    feat_item_3_title: "Clean ATS Format",
+    feat_item_3_desc: "Formatted to pass without errors through sorting robots (such as Gupy, Kenoby, LinkedIn).",
+    feat_item_4_title: "Total Privacy",
+    feat_item_4_desc: "We do not request confidential documents such as SSN, ID, or tax numbers. Your data belongs to you.",
+    feat_modal_btn_close: "Close",
 
     // Hero
     hero_badge: 'Artificial Intelligence Built for Those Who Need Results',
@@ -899,6 +947,30 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_login_cloud_full: 'Ingresar / Guardar en la Nube',
     nav_optional: 'Opcional',
 
+    // Modals Info
+    how_title: "¿Cómo funciona CURRÊ?",
+    how_subtitle: "Persigue el puesto adecuado en solo 3 sencillos pasos",
+    how_step_1_title: "Completa tu información",
+    how_step_1_desc: "Introduce tus datos de contacto, educación y experiencias. No te preocupes por usar palabras difíciles: escribe con tus propias palabras cómo era tu rutina.",
+    how_step_2_title: "Pega la vacante deseada (opcional)",
+    how_step_2_desc: "La IA analiza los requisitos y las palabras clave de la oferta para destacar tus experiencias y cualificaciones reales más compatibles.",
+    how_step_3_title: "Recibe tu currículum en PDF",
+    how_step_3_desc: "¡Listo para enviar! En formato profesional aprobado por reclutadores y listo para imprimir o enviar por correo electrónico y WhatsApp.",
+    how_info_box: "La IA de CURRÊ nunca inventa experiencias falsas. Solo pone en valor tu historia real.",
+    how_btn_start: "CREAR MI CURRÍCULUM AHORA",
+
+    feat_modal_title: "Funcionalidades de CURRÊ",
+    feat_modal_subtitle: "Tecnología diseñada para tu crecimiento profesional",
+    feat_item_1_title: "Refinamiento de Redacción",
+    feat_item_1_desc: "Convierte frases simples en viñetas de acción de alto impacto reconocidas en los procesos de selección.",
+    feat_item_2_title: "Lector de Vacantes Inteligente",
+    feat_item_2_desc: "Extrae las competencias clave de la oferta y posiciona tu perfil con la máxima relevancia.",
+    feat_item_3_title: "Formato ATS Limpio",
+    feat_item_3_desc: "Formateado para superar sin errores los filtros de los sistemas de selección automáticos (Gupy, Kenoby, LinkedIn).",
+    feat_item_4_title: "Privacidad Total",
+    feat_item_4_desc: "No solicitamos documentos confidenciales como CPF o DNI. Tus datos son exclusivamente tuyos.",
+    feat_modal_btn_close: "Cerrar",
+
     // Hero
     hero_badge: 'Inteligencia Artificial Hecha para Quienes Buscan Resultados',
     hero_title_p1: 'Tu próximo empleo puede empezar con un ',
@@ -1259,6 +1331,30 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     nav_cloud_active: 'Cloud Actif',
     nav_login_cloud_full: 'Connexion / Sauvegarder dans le Cloud',
     nav_optional: 'Optionnel',
+
+    // Modals Info
+    how_title: "Comment fonctionne CURRÊ ?",
+    how_subtitle: "Décrochez le bon poste en seulement 3 étapes simples",
+    how_step_1_title: "Remplissez vos informations",
+    how_step_1_desc: "Saisissez vos coordonnées, vos formations et vos expériences. Ne vous souciez pas d'utiliser des mots compliqués — décrivez simplement votre quotidien avec vos propres mots.",
+    how_step_2_title: "Collez l'offre d'emploi souhaitée (facultatif)",
+    how_step_2_desc: "L'IA analyse les exigences et les mots-clés de l'offre pour mettre en valeur vos expériences et qualifications réelles les plus adaptées.",
+    how_step_3_title: "Recevez votre CV en PDF",
+    how_step_3_desc: "Prêt à être envoyé ! Dans un format professionnel approuvé par les recruteurs et prêt à être imprimé ou envoyé par e-mail et WhatsApp.",
+    how_info_box: "L'IA de CURRÊ n'invente jamais de fausses expériences. Elle valorise uniquement votre parcours réel.",
+    how_btn_start: "CRÉER MON CV MAINTENANT",
+
+    feat_modal_title: "Fonctionnalités de CURRÊ",
+    feat_modal_subtitle: "La technologie conçue pour votre évolution professionnelle",
+    feat_item_1_title: "Optimisation de la Rédaction",
+    feat_item_1_desc: "Transforme des phrases simples en formules d'action à fort impact reconnues lors des sélections.",
+    feat_item_2_title: "Lecteur d'Offre Intelligent",
+    feat_item_2_desc: "Extrait les compétences clés de l'offre pour positionner votre profil avec un maximum de pertinence.",
+    feat_item_3_title: "Format ATS Épuré",
+    feat_item_3_desc: "Formaté pour franchir sans encombre les systèmes de tri automatique des candidatures (Gupy, Kenoby, LinkedIn).",
+    feat_item_4_title: "Confidentialité Totale",
+    feat_item_4_desc: "Nous ne demandons aucun document confidentiel (numéro de sécurité sociale, carte d'identité). Vos données vous appartiennent.",
+    feat_modal_btn_close: "Fermer",
 
     // Hero
     hero_badge: 'Intelligence Artificielle Conçue pour Ceux Qui Veulent des Résultats',
