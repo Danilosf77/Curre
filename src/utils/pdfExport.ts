@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 
 // Fallback instantiation to protect against varied ES/CommonJS resolution across Vite/Webpack/Node
 function createJsPDFInstance(options: any): any {
