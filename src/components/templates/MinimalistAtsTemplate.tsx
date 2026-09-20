@@ -49,6 +49,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
             <img
               src={personal.photoUrl}
               alt={personal.fullName}
+              crossOrigin="anonymous"
               className="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-md"
             />
           </div>

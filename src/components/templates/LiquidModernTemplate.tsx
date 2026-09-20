@@ -99,6 +99,7 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
               <img
                 src={personal.photoUrl}
                 alt={personal.fullName}
+                crossOrigin="anonymous"
                 className="w-20 h-20 rounded-xl object-cover border border-slate-200 shadow-sm"
               />
             </div>

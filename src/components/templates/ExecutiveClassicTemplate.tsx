@@ -47,6 +47,7 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
             <img
               src={personal.photoUrl}
               alt={personal.fullName}
+              crossOrigin="anonymous"
               className="w-20 h-20 rounded-full object-cover border-2 border-slate-900 shadow-sm"
             />
           </div>
