@@ -485,6 +485,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           candidateSkills: selectedSkills,
           candidateTools: selectedTools,
           candidateExperiences: experiences,
+          language: language,
         }),
       });
 

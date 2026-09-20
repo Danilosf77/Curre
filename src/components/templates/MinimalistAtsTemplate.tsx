@@ -61,35 +61,35 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
             <User className="w-3.5 h-3.5 text-slate-500" />
             Contato
           </h3>
-          <div className="space-y-2 text-xs text-slate-700 font-medium break-words">
+          <div className="space-y-2 text-xs text-slate-800 font-semibold break-words">
             {personal.cityState && (
-              <div className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span>{personal.cityState}</span>
+              <div className="block">
+                <MapPin className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
+                <span className="inline-block align-middle">{personal.cityState}</span>
               </div>
             )}
             {personal.phone && (
-              <div className="flex items-start gap-2">
-                <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span>{personal.phone}</span>
+              <div className="block">
+                <Phone className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
+                <span className="inline-block align-middle">{personal.phone}</span>
               </div>
             )}
             {personal.email && (
-              <div className="flex items-start gap-2">
-                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span className="text-[11px] break-all">{personal.email}</span>
+              <div className="block">
+                <Mail className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
+                <span className="text-[11px] break-all inline-block align-middle">{personal.email}</span>
               </div>
             )}
             {personal.linkedin && (
-              <div className="flex items-start gap-2">
-                <Linkedin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span className="text-[11px] break-all">{personal.linkedin}</span>
+              <div className="block">
+                <Linkedin className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
+                <span className="text-[11px] break-all inline-block align-middle">{personal.linkedin}</span>
               </div>
             )}
             {personal.portfolio && (
-              <div className="flex items-start gap-2">
-                <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                <span className="text-[11px] break-all">{personal.portfolio}</span>
+              <div className="block">
+                <Globe className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
+                <span className="text-[11px] break-all inline-block align-middle">{personal.portfolio}</span>
               </div>
             )}
           </div>

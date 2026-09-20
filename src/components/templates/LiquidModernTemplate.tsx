@@ -51,42 +51,42 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
             </p>
 
             {/* Linha de contato unificada e limpa com separadores sutis */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 pt-1.5 font-medium">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-800 pt-1.5 font-semibold">
               {personal.cityState && (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  {personal.cityState}
+                <span className="inline-flex items-center gap-1 shrink-0">
+                  <MapPin className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                  <span className="leading-none">{personal.cityState}</span>
                 </span>
               )}
-              {personal.cityState && personal.phone && <span className="text-slate-300">•</span>}
+              {personal.cityState && personal.phone && <span className="text-slate-300 font-normal leading-none">•</span>}
               {personal.phone && (
-                <span className="inline-flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  {personal.phone}
+                <span className="inline-flex items-center gap-1 shrink-0">
+                  <Phone className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                  <span className="leading-none">{personal.phone}</span>
                 </span>
               )}
-              {personal.phone && personal.email && <span className="text-slate-300">•</span>}
+              {personal.phone && personal.email && <span className="text-slate-300 font-normal leading-none">•</span>}
               {personal.email && (
-                <span className="inline-flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  {personal.email}
+                <span className="inline-flex items-center gap-1 shrink-0">
+                  <Mail className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                  <span className="leading-none">{personal.email}</span>
                 </span>
               )}
               {personal.linkedin && (
                 <>
-                  <span className="text-slate-300">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Linkedin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    {personal.linkedin}
+                  <span className="text-slate-300 font-normal leading-none">•</span>
+                  <span className="inline-flex items-center gap-1 shrink-0">
+                    <Linkedin className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                    <span className="leading-none">{personal.linkedin}</span>
                   </span>
                 </>
               )}
               {personal.portfolio && (
                 <>
-                  <span className="text-slate-300">•</span>
-                  <span className="inline-flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    {personal.portfolio}
+                  <span className="text-slate-300 font-normal leading-none">•</span>
+                  <span className="inline-flex items-center gap-1 shrink-0">
+                    <Globe className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                    <span className="leading-none">{personal.portfolio}</span>
                   </span>
                 </>
               )}

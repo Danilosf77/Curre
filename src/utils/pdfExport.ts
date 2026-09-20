@@ -283,58 +283,13 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
       }
     });
 
-    // 5. Read all active stylesheets, convert OKLCH & OKLAB to RGB and apply a giant temporary stylesheet
-    let cssText = '';
-    for (let i = 0; i < document.styleSheets.length; i++) {
-      try {
-        const sheet = document.styleSheets[i];
-        const rules = sheet.cssRules || sheet.rules;
-        if (rules) {
-          for (let j = 0; j < rules.length; j++) {
-            cssText += rules[j].cssText + '\n';
-          }
-        }
-      } catch (e) {
-        try {
-          const sheet = document.styleSheets[i];
-          if (sheet.ownerNode && sheet.ownerNode.nodeName === 'STYLE') {
-            cssText += sheet.ownerNode.textContent + '\n';
-          }
-        } catch (innerE) {
-          // ignore rules reading errors
-        }
-      }
-    }
-
-    const styleTags = document.querySelectorAll('style');
-    styleTags.forEach(tag => {
-      if (tag.id !== 'pdf-temp-styles') {
-        cssText += tag.textContent + '\n';
-      }
-    });
-
-    const convertedCss = convertModernColorsToRgb(cssText);
-
+    // 5. Create a clean empty style tag for pseudo-elements overrides only (appended to document head)
     tempStyleTag = document.createElement('style');
     tempStyleTag.id = 'pdf-temp-styles';
-    tempStyleTag.textContent = convertedCss;
+    tempStyleTag.textContent = '';
     document.head.appendChild(tempStyleTag);
 
-    // 6. Temporarily disable other stylesheets so only our converted one is active
-    for (let i = 0; i < document.styleSheets.length; i++) {
-      try {
-        const sheet = document.styleSheets[i];
-        if (sheet.ownerNode && (sheet.ownerNode as HTMLElement).id === 'pdf-temp-styles') {
-          continue;
-        }
-        disabledSheets.push({ sheet, wasDisabled: sheet.disabled });
-        sheet.disabled = true;
-      } catch (e) {
-        // ignore stylesheet disabling errors
-      }
-    }
-
-    // 7. Advanced self-healing override of remaining computed styles and pseudo-elements
+    // 6. Advanced self-healing override of computed styles and pseudo-elements
     let oklchReplacements = 0;
     let oklabReplacements = 0;
 
@@ -403,7 +358,7 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
 
     console.log("[CURRÊ PDF] COLOR_COMPAT_APPLIED");
 
-    // 8. Start deep diagnostic scanning
+    // 7. Verify all modern colors on the clone are fully neutralized for html2canvas
     console.log("[CURRÊ PDF] COLOR_SCAN_START");
     
     let remainingModernColors = 0;
@@ -478,14 +433,14 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
       logging: false,
       backgroundColor: '#ffffff',
       onclone: (clonedDoc: Document) => {
-        console.log("[CURRÊ PDF] Cloned DOM ready inside html2canvas iframe, filtering stylesheets...");
-        const styles = Array.from(clonedDoc.querySelectorAll('style, link[rel="stylesheet"]'));
-        styles.forEach(tag => {
-          if (tag.id !== 'pdf-temp-styles') {
-            tag.parentNode?.removeChild(tag);
+        console.log("[CURRÊ PDF] Cloned DOM ready inside html2canvas iframe, resolving styles...");
+        // Convert any custom style tag elements inside the cloned iframe to standard RGB
+        const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
+        styleTags.forEach(tag => {
+          if (tag.textContent) {
+            tag.textContent = convertModernColorsToRgb(tag.textContent);
           }
         });
-        console.log("[CURRÊ PDF] All non-converted styles removed from clonedDoc.");
       }
     });
 
