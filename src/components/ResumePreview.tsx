@@ -121,7 +121,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       await exportResumeToPDF('resume-document', resume.personal?.fullName || 'Curriculo');
     } catch (err) {
       console.error('PDF export failed:', err);
-      window.print();
+      alert('Infelizmente, ocorreu um erro ao gerar o seu PDF. Por favor, tente novamente.');
     } finally {
       setIsGeneratingPDF(false);
     }
