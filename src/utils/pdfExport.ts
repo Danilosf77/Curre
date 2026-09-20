@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas-pro';
+import html2canvas from 'html2canvas';
 
 // Fallback instantiation to protect against varied ES/CommonJS resolution across Vite/Webpack/Node
 function createJsPDFInstance(options: any): any {
@@ -37,6 +37,174 @@ function sliceCanvas(originalCanvas: HTMLCanvasElement, yStart: number, height: 
   return slice;
 }
 
+// Robust parser to extract components from an oklch(...) color string
+function parseOklch(str: string) {
+  const clean = str.replace(/oklch\((.*)\)/i, '$1').trim();
+  const parts = clean.split(/[\s,/]+/).filter(Boolean);
+  if (parts.length < 3) return null;
+
+  let L = parseFloat(parts[0]);
+  if (parts[0].includes('%')) L /= 100;
+
+  let C = parseFloat(parts[1]);
+  if (parts[1].includes('%')) C /= 100;
+
+  let H = parseFloat(parts[2]);
+  if (parts[2].includes('deg')) H = parseFloat(parts[2].replace('deg', ''));
+  if (parts[2].includes('rad')) H = (parseFloat(parts[2].replace('rad', '')) * 180) / Math.PI;
+  if (parts[2].includes('grad')) H = (parseFloat(parts[2].replace('grad', '')) * 180) / 200;
+  if (parts[2].includes('turn')) H = parseFloat(parts[2].replace('turn', '')) * 360;
+
+  let A = 1;
+  if (parts.length >= 4) {
+    A = parseFloat(parts[3]);
+    if (parts[3].includes('%')) A /= 100;
+  }
+
+  return { L, C, H, A };
+}
+
+// Convert oklch color strings to standard, parseable rgb() or rgba() colors
+function convertOklchToRgb(colorStr: string): string {
+  if (!colorStr.includes('oklch(')) return colorStr;
+
+  return colorStr.replace(/oklch\([^)]+\)/gi, (match) => {
+    try {
+      const parsed = parseOklch(match);
+      if (!parsed) return match;
+      const { L, C, H, A } = parsed;
+
+      // OKLCH to OKLAB
+      const l_ = L;
+      const hRad = (H * Math.PI) / 180;
+      const a_ = C * Math.cos(hRad);
+      const b_ = C * Math.sin(hRad);
+
+      // OKLAB to LMS
+      const l_p = l_ + 0.3963377774 * a_ + 0.2158037573 * b_;
+      const m_p = l_ - 0.1055613458 * a_ - 0.0638541728 * b_;
+      const s_p = l_ - 0.0894841775 * a_ - 1.2914855480 * b_;
+
+      const l = l_p * l_p * l_p;
+      const m = m_p * m_p * m_p;
+      const s = s_p * s_p * s_p;
+
+      // LMS to Linear RGB
+      const r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+      const g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+      const b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+      // Linear RGB to sRGB
+      const lrgb_to_srgb = (c: number) => {
+        if (c <= 0.0031308) {
+          return c * 12.92;
+        } else {
+          return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+        }
+      };
+
+      const R = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(r) * 255)));
+      const G = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(g) * 255)));
+      const B = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(b) * 255)));
+
+      if (A === 1) {
+        return `rgb(${R}, ${G}, ${B})`;
+      } else {
+        return `rgba(${R}, ${G}, ${B}, ${A})`;
+      }
+    } catch (e) {
+      console.error('Error parsing oklch match:', match, e);
+      return match;
+    }
+  });
+}
+
+// Robust parser to extract components from an oklab(...) color string
+function parseOklab(str: string) {
+  const clean = str.replace(/oklab\((.*)\)/i, '$1').trim();
+  const parts = clean.split(/[\s,/]+/).filter(Boolean);
+  if (parts.length < 3) return null;
+
+  let L = parseFloat(parts[0]);
+  if (parts[0].includes('%')) L /= 100;
+
+  let a = parseFloat(parts[1]);
+  if (parts[1].includes('%')) a /= 100;
+
+  let b = parseFloat(parts[2]);
+  if (parts[2].includes('%')) b /= 100;
+
+  let A = 1;
+  if (parts.length >= 4) {
+    A = parseFloat(parts[3]);
+    if (parts[3].includes('%')) A /= 100;
+  }
+
+  return { L, a, b, A };
+}
+
+// Convert oklab color strings to standard, parseable rgb() or rgba() colors
+function convertOklabToRgb(colorStr: string): string {
+  if (!colorStr.includes('oklab(')) return colorStr;
+
+  return colorStr.replace(/oklab\([^)]+\)/gi, (match) => {
+    try {
+      const parsed = parseOklab(match);
+      if (!parsed) return match;
+      const { L, a, b, A } = parsed;
+
+      // OKLAB to LMS
+      const l_p = L + 0.3963377774 * a + 0.2158037573 * b;
+      const m_p = L - 0.1055613458 * a - 0.0638541728 * b;
+      const s_p = L - 0.0894841775 * a - 1.2914855480 * b;
+
+      const l = l_p * l_p * l_p;
+      const m = m_p * m_p * m_p;
+      const s = s_p * s_p * s_p;
+
+      // LMS to Linear RGB
+      const r = +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+      const g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+      const b_ch = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+
+      // Linear RGB to sRGB
+      const lrgb_to_srgb = (c: number) => {
+        if (c <= 0.0031308) {
+          return c * 12.92;
+        } else {
+          return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+        }
+      };
+
+      const R = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(r) * 255)));
+      const G = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(g) * 255)));
+      const B = Math.max(0, Math.min(255, Math.round(lrgb_to_srgb(b_ch) * 255)));
+
+      if (A === 1) {
+        return `rgb(${R}, ${G}, ${B})`;
+      } else {
+        return `rgba(${R}, ${G}, ${B}, ${A})`;
+      }
+    } catch (e) {
+      console.error('Error parsing oklab match:', match, e);
+      return match;
+    }
+  });
+}
+
+// Convert both oklch and oklab colors to standard rgb/rgba
+function convertModernColorsToRgb(colorStr: string): string {
+  let res = colorStr;
+  if (res.includes('oklch(')) {
+    res = convertOklchToRgb(res);
+  }
+  if (res.includes('oklab(')) {
+    res = convertOklabToRgb(res);
+  }
+  return res;
+}
+
+// Temporary style tag and containers are managed inside the export function
 export async function exportResumeToPDF(elementId: string, candidateName: string = 'Curriculo'): Promise<boolean> {
   console.log("[CURRÊ PDF] START");
   
@@ -53,52 +221,272 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
   }
 
   console.log("[CURRÊ PDF] ELEMENT_FOUND");
-  console.log(`[CURRÊ PDF] Dimensões do elemento: ${element.clientWidth}px x ${element.clientHeight}px`);
+  console.log(`[CURRÊ PDF] Dimensões do elemento original: ${element.clientWidth}px x ${element.clientHeight}px`);
 
-  // Guard original styles to restore in finally block
-  const originalWidth = element.style.width;
-  const originalMaxWidth = element.style.maxWidth;
-  const originalBoxShadow = element.style.boxShadow;
-  const originalBorder = element.style.border;
-  const originalBorderRadius = element.style.borderRadius;
-  const originalTransform = element.style.transform;
-  const originalTransformOrigin = element.style.transformOrigin;
-  const originalFlexShrink = element.style.flexShrink;
-  const originalPaddingBottom = element.style.paddingBottom;
-  const originalMarginBottom = element.style.marginBottom;
-
-  // Let's keep a track of the current stage for fine diagnostics
+  // Track the current stage for fine diagnostics
   let currentStage = 'INITIALIZATION';
   let computedCanvasWidth = 0;
   let computedCanvasHeight = 0;
   let calculatedPagesCount = 0;
 
+  // Variables for cleanup in the finally block
+  let tempContainer: HTMLDivElement | null = null;
+  let tempStyleTag: HTMLStyleElement | null = null;
+  const disabledSheets: { sheet: CSSStyleSheet; wasDisabled: boolean }[] = [];
+
   try {
-    currentStage = 'APPLYING_STYLES';
-    console.log("[CURRÊ PDF] STYLES_APPLIED");
-    element.classList.add('pdf-exporting');
+    currentStage = 'CLONE_CREATION';
     
-    // Força o tamanho padrão de preview para garantir que o layout fique exatamente igual ao desktop
-    element.style.width = '820px';
-    element.style.maxWidth = 'none';
-    element.style.boxShadow = 'none';
-    element.style.border = 'none';
-    element.style.borderRadius = '0px';
-    element.style.transform = 'none';
-    element.style.transformOrigin = 'initial';
-    element.style.flexShrink = '0';
-    element.style.paddingBottom = '0px';
-    element.style.marginBottom = '0px';
+    // 1. Create a deep clone of the element to preserve all classes and original structure
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.id = 'resume-document-clone';
+    console.log("[CURRÊ PDF] CLONE_CREATED");
+
+    // 2. Set identical layout width of 820px on the clone and neutralize mobile scaling
+    clone.style.width = '820px';
+    clone.style.maxWidth = 'none';
+    clone.style.boxShadow = 'none';
+    clone.style.border = 'none';
+    clone.style.borderRadius = '0px';
+    clone.style.transform = 'none';
+    clone.style.transformOrigin = 'initial';
+    clone.style.flexShrink = '0';
+    clone.style.paddingBottom = '0px';
+    clone.style.marginBottom = '0px';
+
+    // 3. Place clone in a temporary off-screen container in the body to allow rendering
+    tempContainer = document.createElement('div');
+    tempContainer.id = 'pdf-export-temp-container';
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '820px';
+    tempContainer.style.height = 'auto';
+    tempContainer.style.overflow = 'visible';
+    tempContainer.style.background = '#ffffff';
+    tempContainer.style.boxSizing = 'border-box';
+    
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
+
+    currentStage = 'COLOR_COMPAT_START';
+    console.log("[CURRÊ PDF] COLOR_COMPAT_START");
+
+    // 4. First-pass inline style conversion on cloned elements
+    const clonedElements = [clone, ...Array.from(clone.querySelectorAll('*'))] as HTMLElement[];
+    clonedElements.forEach((el) => {
+      if (el.style) {
+        const styleAttr = el.getAttribute('style');
+        if (styleAttr && (styleAttr.includes('oklch(') || styleAttr.includes('oklab('))) {
+          el.setAttribute('style', convertModernColorsToRgb(styleAttr));
+        }
+      }
+    });
+
+    // 5. Read all active stylesheets, convert OKLCH & OKLAB to RGB and apply a giant temporary stylesheet
+    let cssText = '';
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      try {
+        const sheet = document.styleSheets[i];
+        const rules = sheet.cssRules || sheet.rules;
+        if (rules) {
+          for (let j = 0; j < rules.length; j++) {
+            cssText += rules[j].cssText + '\n';
+          }
+        }
+      } catch (e) {
+        try {
+          const sheet = document.styleSheets[i];
+          if (sheet.ownerNode && sheet.ownerNode.nodeName === 'STYLE') {
+            cssText += sheet.ownerNode.textContent + '\n';
+          }
+        } catch (innerE) {
+          // ignore rules reading errors
+        }
+      }
+    }
+
+    const styleTags = document.querySelectorAll('style');
+    styleTags.forEach(tag => {
+      if (tag.id !== 'pdf-temp-styles') {
+        cssText += tag.textContent + '\n';
+      }
+    });
+
+    const convertedCss = convertModernColorsToRgb(cssText);
+
+    tempStyleTag = document.createElement('style');
+    tempStyleTag.id = 'pdf-temp-styles';
+    tempStyleTag.textContent = convertedCss;
+    document.head.appendChild(tempStyleTag);
+
+    // 6. Temporarily disable other stylesheets so only our converted one is active
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      try {
+        const sheet = document.styleSheets[i];
+        if (sheet.ownerNode && (sheet.ownerNode as HTMLElement).id === 'pdf-temp-styles') {
+          continue;
+        }
+        disabledSheets.push({ sheet, wasDisabled: sheet.disabled });
+        sheet.disabled = true;
+      } catch (e) {
+        // ignore stylesheet disabling errors
+      }
+    }
+
+    // 7. Advanced self-healing override of remaining computed styles and pseudo-elements
+    let oklchReplacements = 0;
+    let oklabReplacements = 0;
+
+    clonedElements.forEach((el, idx) => {
+      try {
+        const computed = window.getComputedStyle(el);
+        const propertiesToFix = [
+          'color', 'backgroundColor', 'borderColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor',
+          'outlineColor', 'textDecorationColor', 'boxShadow', 'textShadow', 'fill', 'stroke'
+        ];
+        propertiesToFix.forEach(prop => {
+          const val = (computed as any)[prop];
+          if (val && typeof val === 'string' && (val.includes('oklch(') || val.includes('oklab('))) {
+            if (val.includes('oklch(')) oklchReplacements++;
+            if (val.includes('oklab(')) oklabReplacements++;
+            const converted = convertModernColorsToRgb(val);
+            (el.style as any)[prop] = converted;
+          }
+        });
+
+        // Resolve custom properties via style.setProperty
+        const commonCustomProps = [
+          '--tw-bg-opacity', '--tw-text-opacity', '--tw-border-opacity', '--tw-shadow', '--tw-ring-color'
+        ];
+        commonCustomProps.forEach(prop => {
+          const val = computed.getPropertyValue(prop);
+          if (val && (val.includes('oklch(') || val.includes('oklab('))) {
+            if (val.includes('oklch(')) oklchReplacements++;
+            if (val.includes('oklab(')) oklabReplacements++;
+            const converted = convertModernColorsToRgb(val);
+            el.style.setProperty(prop, converted);
+          }
+        });
+
+        // Resolve pseudo-elements styles by writing direct rules to the temp style sheet
+        ['::before', '::after'].forEach(pseudo => {
+          const computedPseudo = window.getComputedStyle(el, pseudo);
+          const propertiesToFixPseudo = [
+            'color', 'background-color', 'border-color', 'outline-color', 'box-shadow', 'text-shadow', 'fill', 'stroke'
+          ];
+          let hasPseudoIssue = false;
+          let pseudoStyleRules = '';
+
+          propertiesToFixPseudo.forEach(prop => {
+            const val = computedPseudo.getPropertyValue(prop);
+            if (val && (val.includes('oklch(') || val.includes('oklab('))) {
+              hasPseudoIssue = true;
+              if (val.includes('oklch(')) oklchReplacements++;
+              if (val.includes('oklab(')) oklabReplacements++;
+              const converted = convertModernColorsToRgb(val);
+              pseudoStyleRules += `${prop}: ${converted} !important;\n`;
+            }
+          });
+
+          if (hasPseudoIssue) {
+            const uniqueIdAttr = `pdf-pseudo-target-${idx}`;
+            el.setAttribute('data-pdf-pseudo-id', uniqueIdAttr);
+            const rule = `[data-pdf-pseudo-id="${uniqueIdAttr}"]${pseudo} {\n${pseudoStyleRules}}\n`;
+            tempStyleTag!.textContent += '\n' + rule;
+          }
+        });
+      } catch (e) {
+        // ignore computed style errors during fixing
+      }
+    });
+
+    console.log("[CURRÊ PDF] COLOR_COMPAT_APPLIED");
+
+    // 8. Start deep diagnostic scanning
+    console.log("[CURRÊ PDF] COLOR_SCAN_START");
+    
+    let remainingModernColors = 0;
+    const remainingIssuesList: { selector: string; property: string; value: string }[] = [];
+
+    function getElementSelector(el: HTMLElement): string {
+      if (el.id) return `#${el.id}`;
+      let selector = el.tagName.toLowerCase();
+      if (el.className) {
+        const classes = el.className.split(/\s+/).filter(Boolean).slice(0, 3).join('.');
+        if (classes) selector += `.${classes}`;
+      }
+      return selector;
+    }
+
+    clonedElements.forEach((el) => {
+      try {
+        const computed = window.getComputedStyle(el);
+        const propertiesToTest = [
+          'color', 'background-color', 'border-color', 'outline-color', 'box-shadow', 'text-shadow', 'fill', 'stroke'
+        ];
+        propertiesToTest.forEach(prop => {
+          const val = computed.getPropertyValue(prop);
+          if (val && (val.includes('oklch(') || val.includes('oklab('))) {
+            remainingModernColors++;
+            remainingIssuesList.push({
+              selector: getElementSelector(el),
+              property: prop,
+              value: val
+            });
+          }
+        });
+
+        ['::before', '::after'].forEach(pseudo => {
+          const computedPseudo = window.getComputedStyle(el, pseudo);
+          propertiesToTest.forEach(prop => {
+            const val = computedPseudo.getPropertyValue(prop);
+            if (val && (val.includes('oklch(') || val.includes('oklab('))) {
+              remainingModernColors++;
+              remainingIssuesList.push({
+                selector: `${getElementSelector(el)}${pseudo}`,
+                property: prop,
+                value: val
+              });
+            }
+          });
+        });
+      } catch (e) {
+        // ignore scanning read errors
+      }
+    });
+
+    console.log(`[CURRÊ PDF] OKLCH_REPLACEMENTS: ${oklchReplacements}`);
+    console.log(`[CURRÊ PDF] OKLAB_REPLACEMENTS: ${oklabReplacements}`);
+    console.log(`[CURRÊ PDF] REMAINING_MODERN_COLORS: ${remainingModernColors}`);
+
+    if (remainingModernColors > 0) {
+      console.warn("[CURRÊ PDF] MODERN_COLOR_REMAINING DETECTED! Printing detailed logs:");
+      remainingIssuesList.forEach(issue => {
+        console.warn(`[CURRÊ PDF] MODERN_COLOR_REMAINING\n- selector: ${issue.selector}\n- property: ${issue.property}\n- value: ${issue.value}`);
+      });
+      throw new Error(`Abort canvas capture: ${remainingModernColors} modern colors remaining in clone DOM`);
+    }
 
     currentStage = 'CANVAS_CAPTURE';
     console.log("[CURRÊ PDF] CANVAS_START");
-    
-    const canvas = await renderCanvas(element, {
+
+    const canvas = await renderCanvas(clone, {
       scale: 2, // Resolução perfeita sem sobrecarregar a memória
       windowWidth: 820, // Força a largura de viewport interna para bater com o layout desktop de 820px
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
+      onclone: (clonedDoc: Document) => {
+        console.log("[CURRÊ PDF] Cloned DOM ready inside html2canvas iframe, filtering stylesheets...");
+        const styles = Array.from(clonedDoc.querySelectorAll('style, link[rel="stylesheet"]'));
+        styles.forEach(tag => {
+          if (tag.id !== 'pdf-temp-styles') {
+            tag.parentNode?.removeChild(tag);
+          }
+        });
+        console.log("[CURRÊ PDF] All non-converted styles removed from clonedDoc.");
+      }
     });
 
     console.log("[CURRÊ PDF] CANVAS_SUCCESS");
@@ -160,7 +548,6 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
 
     for (let i = 0; i < calculatedPagesCount; i++) {
       currentStage = `PAGINATING_PAGE_${i + 1}`;
-      console.log(`[CURRÊ PDF] PAGE_CREATED (Página ${i + 1}/${calculatedPagesCount})`);
       
       const yStart = i * pxPageHeightForSlicing;
       // Para a última página ou se ultrapassar o tamanho, limitamos à altura máxima restante do canvas
@@ -182,7 +569,6 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
       console.log(`[CURRÊ PDF] IMAGE_ADDED (Página ${i + 1}/${calculatedPagesCount})`);
 
       // PASSAGEM DIRETA DO HTMLCanvasElement PARA O jsPDF.addImage()
-      // Isso evita completamente o toDataURL() base64 gigantesco, poupando memória física e CPU!
       if (compressToFit) {
         // Se estamos comprimindo para caber no limite, cada fatia preenche exatamente a página inteira
         pdf.addImage(slice, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
@@ -234,17 +620,35 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
     alert('Não foi possível gerar o PDF do currículo. Verifique os dados e tente novamente.');
     return false;
   } finally {
-    console.log("[CURRÊ PDF] Restaurando estilos originais do elemento...");
-    element.classList.remove('pdf-exporting');
-    element.style.width = originalWidth;
-    element.style.maxWidth = originalMaxWidth;
-    element.style.boxShadow = originalBoxShadow;
-    element.style.border = originalBorder;
-    element.style.borderRadius = originalBorderRadius;
-    element.style.transform = originalTransform;
-    element.style.transformOrigin = originalTransformOrigin;
-    element.style.flexShrink = originalFlexShrink;
-    element.style.paddingBottom = originalPaddingBottom;
-    element.style.marginBottom = originalMarginBottom;
+    console.log("[CURRÊ PDF] Restaurando estilos e removendo elementos temporários...");
+    
+    // 1. Re-enable all disabled original style sheets
+    for (const item of disabledSheets) {
+      try {
+        item.sheet.disabled = item.wasDisabled;
+      } catch (e) {
+        console.error("[CURRÊ PDF] Error re-enabling style sheet:", e);
+      }
+    }
+
+    // 2. Remove temporary style tag
+    if (tempStyleTag && tempStyleTag.parentNode) {
+      try {
+        tempStyleTag.parentNode.removeChild(tempStyleTag);
+        console.log("[CURRÊ PDF] Temporary style sheet removed.");
+      } catch (e) {
+        console.error("[CURRÊ PDF] Error removing temporary style sheet:", e);
+      }
+    }
+
+    // 3. Remove temporary container containing the clone
+    if (tempContainer && tempContainer.parentNode) {
+      try {
+        tempContainer.parentNode.removeChild(tempContainer);
+        console.log("[CURRÊ PDF] Temporary export container removed.");
+      } catch (e) {
+        console.error("[CURRÊ PDF] Error removing temporary container:", e);
+      }
+    }
   }
 }
