@@ -102,24 +102,85 @@ export function generateFallbackJobAnalysis(
     ];
   }
 
-  const foundSkills = (candidateSkills || []).filter((s: string) => words.includes(s.toLowerCase()));
-  const matchScore = Math.min(92, Math.max(72, 68 + foundSkills.length * 6));
+  const skillTranslationMap: Record<string, Record<string, string>> = {
+    en: {
+      'comunicação assertiva': 'Assertive communication',
+      'comunicação': 'Communication',
+      'organização': 'Organization',
+      'trabalho em equipe': 'Teamwork',
+      'proatividade': 'Proactivity',
+      'foco em resultados': 'Results focus',
+      'liderança': 'Leadership',
+      'resolução de problemas': 'Problem solving',
+      'gestão do tempo': 'Time management',
+      'pacote office': 'Microsoft Office',
+      'excel': 'Excel',
+      'excel avançado': 'Advanced Excel',
+      'sistemas de gestão': 'Management systems',
+      'atendimento ao cliente': 'Customer service',
+      'negociação': 'Negotiation',
+    },
+    es: {
+      'comunicação assertiva': 'Comunicación asertiva',
+      'comunicação': 'Comunicación',
+      'organização': 'Organización',
+      'trabalho em equipe': 'Trabajo en equipo',
+      'proatividade': 'Proactividad',
+      'foco em resultados': 'Enfoque en resultados',
+      'liderança': 'Liderazgo',
+      'resolução de problemas': 'Resolución de problemas',
+      'gestão do tempo': 'Gestión del tiempo',
+      'pacote office': 'Paquete Office',
+      'excel': 'Excel',
+      'excel avançado': 'Excel avanzado',
+      'sistemas de gestão': 'Sistemas de gestión',
+      'atendimento ao cliente': 'Atención al cliente',
+      'negociação': 'Negociación',
+    },
+    fr: {
+      'comunicação assertiva': 'Communication assertive',
+      'comunicação': 'Communication',
+      'organização': 'Organisation',
+      'trabalho em equipe': 'Travail d\'équipe',
+      'proatividade': 'Proactivité',
+      'foco em resultados': 'Orientation résultats',
+      'liderança': 'Leadership',
+      'resolução de problemas': 'Résolution de problèmes',
+      'gestão do tempo': 'Gestion du temps',
+      'pacote office': 'Pack Office',
+      'excel': 'Excel',
+      'excel avançado': 'Excel avancé',
+      'sistemas de gestão': 'Systèmes de gestion',
+      'atendimento ao cliente': 'Service client',
+      'negociação': 'Négociation',
+    },
+  };
+
+  const translateSkill = (skill: string): string => {
+    if (lang === 'pt') return skill;
+    const lower = skill.toLowerCase().trim();
+    return skillTranslationMap[lang]?.[lower] || skill;
+  };
+
+  const rawFound = (candidateSkills || []).filter((s: string) => words.includes(s.toLowerCase()));
+  const foundSkills = (rawFound.length > 0 ? rawFound : (candidateSkills || []).slice(0, 3)).map(translateSkill);
+  const matchScore = Math.min(92, Math.max(72, 68 + rawFound.length * 6));
 
   return {
     roleIdentified: detectedRole,
     mainRequirements,
-    desiredSkills,
+    desiredSkills: desiredSkills.map(translateSkill),
     toolsAndTech,
     experienceRequired,
     keywords: extractedKeywords,
     matchPercentage: matchScore,
-    foundSkills: foundSkills.length > 0 ? foundSkills : (candidateSkills || []).slice(0, 3),
+    foundSkills: foundSkills.length > 0 ? foundSkills : (lang === 'en' ? ['Communication', 'Organization', 'Teamwork'] : lang === 'es' ? ['Comunicación', 'Organización', 'Trabajo en equipo'] : lang === 'fr' ? ['Communication', 'Organisation', 'Travail d\'équipe'] : ['Comunicação', 'Organização', 'Trabalho em equipe']),
     relevantExperiences: (candidateExperiences || [])
       .map((e: any) => {
-        if (lang === 'en') return `${e.role || 'Role'} at previous company ${e.company || ''}`;
-        if (lang === 'es') return `${e.role || 'Cargo'} en la empresa anterior ${e.company || ''}`;
-        if (lang === 'fr') return `${e.role || 'Poste'} chez l'entreprise précédente ${e.company || ''}`;
-        return `${e.role || 'Função'} na empresa anterior ${e.company || ''}`;
+        if (lang === 'en') return `${e.role || 'Role'} at ${e.company || 'previous company'}`;
+        if (lang === 'es') return `${e.role || 'Cargo'} en ${e.company || 'empresa anterior'}`;
+        if (lang === 'fr') return `${e.role || 'Poste'} chez ${e.company || 'entreprise précédente'}`;
+        return `${e.role || 'Função'} na empresa ${e.company || 'anterior'}`;
       })
       .filter((s: string) => s.length > 0)
       .slice(0, 2),
@@ -161,58 +222,59 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const prompt = `Você é o especialista sênior em recrutamento e seleção da plataforma CURRÊ.
-Analise a descrição de vaga abaixo e compare-a com o perfil fornecido do candidato.
+    const prompt = `You are a senior recruitment and hiring specialist for the professional resume platform CURRÊ.
+Analyze the job description provided below and compare it with the candidate's profile.
 
 =============================================================================
-REGRA CRÍTICA DE IDIOMA (MANDATÓRIA E DE MÁXIMA PRIORIDADE):
-Você DEVE gerar ESTRITAMENTE todas as respostas textuais em: ${langName} (${currentLang.toUpperCase()}).
-- O cargo principal (roleIdentified) DEVE estar em ${langName}.
-- Todos os requisitos (mainRequirements) DEVEM estar em ${langName}.
-- Todas as competências recomendadas (desiredSkills) DEVEM estar em ${langName}.
-- Todas as ferramentas sugeridas (toolsAndTech) DEVEM estar em ${langName}.
-- O resumo da experiência necessária (experienceRequired) DEVE estar em ${langName}.
-- Todas as palavras-chave (keywords) DEVEM estar em ${langName}.
-- Todas as competências que combinam (foundSkills) DEVEM estar em ${langName}.
-- As experiências aderentes (relevantExperiences) DEVEM ser descritas em ${langName}.
-- Os pontos da formação (compatibleEducation) DEVEM estar em ${langName}.
-- Todas as dicas de aprimoramento (improvements) DEVEM estar em ${langName}.
+CRITICAL LANGUAGE REQUIREMENT (STRICT, MANDATORY AND HIGHEST PRIORITY):
+You MUST strictly generate ALL textual values, titles, bullets, and tips in: ${langName} (${currentLang.toUpperCase()}).
+DO NOT output any Portuguese unless the requested language is Portuguese.
+- roleIdentified MUST be in ${langName}.
+- All mainRequirements MUST be in ${langName}.
+- All desiredSkills MUST be in ${langName}.
+- All toolsAndTech MUST be in ${langName}.
+- experienceRequired MUST be in ${langName}.
+- All keywords MUST be in ${langName}.
+- All foundSkills MUST be in ${langName} (translate/adapt the candidate's matching skills into ${langName}).
+- All relevantExperiences descriptions MUST be in ${langName}.
+- All compatibleEducation points MUST be in ${langName}.
+- All improvements tips MUST be in ${langName}.
 =============================================================================
 
-IMPORTANTE:
-- NUNCA invente informações, cargos ou competências que o candidato não tenha.
-- Seja realista, honesto, construtivo e encorajador.
-- Identifique o cargo, principais requisitos da vaga, competências desejadas, ferramentas e palavras-chave.
-- Compare com as competências e ferramentas reais do candidato e calcule uma taxa de compatibilidade estimada realista (entre 65% e 92%).
+GUIDELINES:
+- NEVER invent information, jobs, or skills that the candidate does not have.
+- Be realistic, constructive, and encouraging.
+- Identify the target role, key job requirements, desired skills, tools, and keywords from the job description.
+- Compare with the candidate's actual profile and compute a realistic matchPercentage (between 65% and 92%).
 
-VAGA:
+JOB DESCRIPTION:
 """
 ${jobDescription}
 """
 
-DADOS REAIS DO CANDIDATO:
-- Cargo Almejado: ${candidateRole || 'Não especificado'}
-- Competências informadas: ${JSON.stringify(candidateSkills || [])}
-- Ferramentas informadas: ${JSON.stringify(candidateTools || [])}
-- Experiências informadas: ${JSON.stringify((candidateExperiences || []).map((e: any) => ({ empresa: e.company, cargo: e.role, atividades: e.activitiesRaw, resultados: e.resultsRaw })))}
+CANDIDATE DATA:
+- Target Role: ${candidateRole || 'Not specified'}
+- Skills: ${JSON.stringify(candidateSkills || [])}
+- Tools: ${JSON.stringify(candidateTools || [])}
+- Experiences: ${JSON.stringify((candidateExperiences || []).map((e: any) => ({ company: e.company, role: e.role, activities: e.activitiesRaw, results: e.resultsRaw })))}
 
-Retorne APENAS um objeto JSON válido com este formato exato:
+Return ONLY a valid JSON object with this exact structure (ALL text values in ${langName}):
 {
-  "roleIdentified": "string com o cargo principal da vaga no idioma ${langName}",
-  "mainRequirements": ["array com 3 a 5 requisitos principais encontrados na vaga no idioma ${langName}"],
-  "desiredSkills": ["array com 3 a 6 competências comportamentais/técnicas da vaga no idioma ${langName}"],
-  "toolsAndTech": ["array com ferramentas/softwares exigidos ou desejados no idioma ${langName}"],
-  "experienceRequired": "resumo do nível de experiência demandado no idioma ${langName}",
-  "keywords": ["array com 5 a 8 palavras-chave essenciais da vaga no idioma ${langName}"],
+  "roleIdentified": "target job title in ${langName}",
+  "mainRequirements": ["array of 3 to 5 key requirements from the job in ${langName}"],
+  "desiredSkills": ["array of 3 to 6 behavioral/technical skills from the job in ${langName}"],
+  "toolsAndTech": ["array of tools/software required or desired in ${langName}"],
+  "experienceRequired": "summary of required experience level in ${langName}",
+  "keywords": ["array of 5 to 8 essential job keywords in ${langName}"],
   "matchPercentage": 82,
-  "foundSkills": ["competências que o candidato REALMENTE possui e combinam com a vaga no idioma ${langName}"],
-  "relevantExperiences": ["quais experiências reais do candidato têm mais aderência no idioma ${langName}"],
-  "compatibleEducation": ["pontos da formação do candidato que agregam à vaga no idioma ${langName}"],
-  "improvements": ["1 a 3 dicas pontuais de como o candidato pode apresentar melhor seus pontos fortes reais no idioma ${langName}"]
+  "foundSkills": ["candidate skills matching the job translated to ${langName}"],
+  "relevantExperiences": ["which candidate experiences have strongest relevance in ${langName}"],
+  "compatibleEducation": ["candidate educational points relevant to the job in ${langName}"],
+  "improvements": ["1 to 3 actionable tips for the candidate in ${langName}"]
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',

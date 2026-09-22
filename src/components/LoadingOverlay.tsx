@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, BrainCircuit, CheckCircle2, FileText, Loader2 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface LoadingOverlayProps {
   onComplete?: () => void;
 }
 
-const PHASES = [
-  { label: 'Analisando seu perfil...', icon: BrainCircuit },
-  { label: 'Organizando suas experiências...', icon: FileText },
-  { label: 'Adaptando seu currículo...', icon: Sparkles },
-  { label: 'Finalizando...', icon: CheckCircle2 },
-];
-
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = () => {
+  const { t } = useLanguage();
   const [phaseIndex, setPhaseIndex] = useState(0);
+
+  const PHASES = [
+    { label: t('loading_phase_1'), icon: BrainCircuit },
+    { label: t('loading_phase_2'), icon: FileText },
+    { label: t('loading_phase_3'), icon: Sparkles },
+    { label: t('loading_phase_4'), icon: CheckCircle2 },
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,7 +23,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = () => {
     }, 1200);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [PHASES.length]);
 
   const CurrentIcon = PHASES[phaseIndex].icon;
 
@@ -41,7 +43,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = () => {
 
         {/* Brand */}
         <span className="text-[11px] font-extrabold uppercase tracking-widest text-sky-700 bg-sky-100/70 px-2.5 py-1 rounded-full">
-          CURRÊ • IA em Ação
+          {t('loading_brand_badge')}
         </span>
 
         {/* Current phase text with smooth transition */}
@@ -50,7 +52,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = () => {
         </h3>
 
         <p className="text-xs text-slate-500 max-w-xs mx-auto mb-6">
-          Refinando suas palavras, estruturando cronologia e aplicando padrões de triagem profissional.
+          {t('loading_description')}
         </p>
 
         {/* Step progress pills */}
@@ -71,7 +73,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = () => {
 
         <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 mt-4">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" />
-          <span>Apenas alguns instantes...</span>
+          <span>{t('loading_moment')}</span>
         </div>
       </div>
     </div>

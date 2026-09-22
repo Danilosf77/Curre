@@ -147,7 +147,7 @@ const MODAL_T = {
     
     features_title: 'Recursos de CURRÊ',
     features_subtitle: 'Tecnología diseñada para tu crecimiento profesional',
-    feat_1_title: 'Refinamento de Redação',
+    feat_1_title: 'Refinamiento de Redacción',
     feat_1_desc: 'Convierte frases simples en viñetas de acción de alto impacto reconocidas en procesos de selección.',
     feat_2_title: 'Lector de Vacantes Inteligente',
     feat_2_desc: 'Extrae competencias clave de la vacante y posiciona tu perfil con la máxima relevancia.',
@@ -176,7 +176,7 @@ const MODAL_T = {
     login_email_ph: 'ej: tuemail@gmail.com',
     login_submit_email: 'Acceder a la Cuenta y Activar Nube',
     login_submit_email_loading: 'Sincronizando...',
-    login_back: 'Voltar para opções',
+    login_back: 'Volver a opciones',
     login_disclaimer: 'Acceso instantáneo sin contraseña para el plan gratuito.',
 
     privacy_title: 'Términos de Uso y Privacidad',
@@ -185,7 +185,7 @@ const MODAL_T = {
     privacy_sec_1_desc: 'CURRÊ no vende, no comercializa y no comparte tu información personal, contactos o historiales profesionales con terceras empresas con fines publicitarios.',
     privacy_sec_2_title: '2. No Solicitamos Documentos Confidenciales',
     privacy_sec_2_desc: 'En cumplimiento con las buenas prácticas de seguridad, nunca solicitamos números de documentos confidenciales como pasaportes, identificaciones, licencias o datos bancarios.',
-    privacy_sec_3_title: '3. Inteligência Artificial Responsável',
+    privacy_sec_3_title: '3. Inteligencia Artificial Responsable',
     privacy_sec_3_desc: 'Los textos ingresados se procesan de forma segura exclusivamente para mejorar la redacción de tu currículum y compararlo con los requisitos de la vacante deseada. La IA no inventa datos y trabaja como asistente de redacción profesional.',
     privacy_sec_4_title: '4. Almacenamiento y Eliminación',
     privacy_sec_4_desc: 'Tus currículos se guardan en tu propio navegador y, si utilizas el inicio de sesión opcional, se asocian de forma segura a tu cuenta. Puedes borrar los datos del navegador en cualquier momento.',

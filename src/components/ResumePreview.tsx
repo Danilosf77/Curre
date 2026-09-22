@@ -22,12 +22,20 @@ import {
   FileText,
   ScanText,
   Cloud,
+  ShieldCheck,
+  Zap,
+  Building2,
 } from 'lucide-react';
 import { OptimizedResume, UserProfile } from '../types';
 import { exportResumeToPDF } from '../utils/pdfExport';
 import { LiquidModernTemplate } from './templates/LiquidModernTemplate';
 import { ExecutiveClassicTemplate } from './templates/ExecutiveClassicTemplate';
 import { MinimalistAtsTemplate } from './templates/MinimalistAtsTemplate';
+import { AtsProfessionalTemplate } from './templates/AtsProfessionalTemplate';
+import { ImpactTemplate } from './templates/ImpactTemplate';
+import { CorporatePremiumTemplate } from './templates/CorporatePremiumTemplate';
+import { runAtsDiagnostic, AtsDiagnosticResult } from '../utils/atsDiagnostic';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ResumePreviewProps {
   resume: OptimizedResume;
@@ -48,12 +56,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   currentUser,
   onOpenLogin,
 }) => {
-  const [template, setTemplate] = useState<'liquid-modern' | 'executive-clean' | 'minimalist'>(
-    resume.templateStyle || 'liquid-modern'
-  );
+  const { t } = useLanguage();
+  const [template, setTemplate] = useState<
+    'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist'
+  >(resume.templateStyle || 'liquid-modern');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showCompatibility, setShowCompatibility] = useState(true);
+  const [atsDiagnostic, setAtsDiagnostic] = useState<AtsDiagnosticResult | null>(null);
 
   const resumeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,10 +105,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     };
   }, [updateScale]);
 
-  // Force scale recalculation when template or resume changes
+  // Force scale recalculation and run ATS diagnostic when template or resume changes
   React.useEffect(() => {
     const timer = setTimeout(() => {
       updateScale();
+      if (resumeRef.current) {
+        const diag = runAtsDiagnostic(resumeRef.current, template);
+        setAtsDiagnostic(diag);
+      }
     }, 150);
     return () => clearTimeout(timer);
   }, [template, resume, updateScale]);
@@ -150,7 +164,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <button
               onClick={onBackToHome}
               className="p-2 rounded-xl text-slate-600 hover:text-slate-900 bg-white/80 border border-slate-200 shadow-sm cursor-pointer"
-              title="Voltar ao início"
+              title={t('nav_home')}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -158,12 +172,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Currículo Pronto
+                  {t('prev_ready_badge')}
                 </span>
-                <span className="text-xs text-slate-400">• Otimizado com IA</span>
+                <span className="text-xs text-slate-400">{t('prev_ai_optimized')}</span>
               </div>
               <h1 className="text-xl font-extrabold text-slate-900 mt-0.5">
-                {personal.fullName || 'Seu Currículo'}
+                {personal.fullName || t('prev_default_title')}
               </h1>
             </div>
           </div>
@@ -174,30 +188,30 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               onClick={onAdaptOtherJob}
               id="btn-adapt-other-job"
               className="px-4 py-2.5 rounded-xl text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200 hover:bg-sky-100 flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
-              title="Adaptar este currículo para uma nova vaga"
+              title={t('prev_btn_adapt')}
             >
               <Sparkles className="w-4 h-4 text-sky-600" />
-              <span>Adaptar para vaga</span>
+              <span>{t('prev_btn_adapt')}</span>
             </button>
 
             <button
               onClick={onEdit}
               id="btn-edit-resume"
               className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
-              title="Voltar para a Etapa 8 (Revisão e Ajustes)"
+              title={t('prev_btn_edit')}
             >
               <Edit className="w-4 h-4 text-slate-500" />
-              <span>Editar</span>
+              <span>{t('prev_btn_edit')}</span>
             </button>
 
             <button
               onClick={onRegenerate}
               id="btn-regenerate"
               className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
-              title="Gerar novamente aprimorando o texto"
+              title={t('prev_btn_regenerate')}
             >
               <RotateCcw className="w-4 h-4 text-slate-500" />
-              <span>Gerar novamente</span>
+              <span>{t('prev_btn_regenerate')}</span>
             </button>
 
             <button
@@ -206,7 +220,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
               <BookmarkCheck className="w-4 h-4 text-emerald-600" />
-              <span>{savedSuccess ? 'Salvo!' : 'Salvar'}</span>
+              <span>{savedSuccess ? t('prev_btn_saved') : t('prev_btn_save')}</span>
             </button>
           </div>
         </div>
@@ -222,12 +236,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {isGeneratingPDF ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>GERANDO PDF PROFISSIONAL...</span>
+                <span>{t('prev_btn_downloading')}</span>
               </>
             ) : (
               <>
                 <Download className="w-5 h-5 text-sky-100" />
-                <span>BAIXAR CURRÍCULO EM PDF</span>
+                <span>{t('prev_btn_download')}</span>
               </>
             )}
           </button>
@@ -243,19 +257,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
-                    Nuvem Sincronizada
+                    {t('prev_cloud_synced_badge')}
                   </span>
                   <span className="text-xs font-bold text-slate-900">
-                    Conectado como {currentUser.name} ({currentUser.email})
+                    {t('prev_cloud_connected')} {currentUser.name} ({currentUser.email})
                   </span>
                 </div>
                 <p className="text-xs text-emerald-800/80 mt-0.5">
-                  Este currículo está salvo na sua nuvem e protegido para acesso em qualquer dispositivo.
+                  {t('prev_cloud_synced_desc')}
                 </p>
               </div>
             </div>
             <span className="hidden sm:inline-block text-[11px] font-bold text-emerald-700 bg-white/80 px-3 py-1.5 rounded-xl border border-emerald-200 shrink-0">
-              Salvo na Nuvem
+              {t('prev_cloud_synced_tag')}
             </span>
           </div>
         ) : (
@@ -267,14 +281,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800 bg-sky-100 px-2 py-0.5 rounded-md border border-sky-200">
-                    Opcional • Salvar na Nuvem
+                    {t('prev_cloud_opt_badge')}
                   </span>
                   <span className="text-xs font-bold text-slate-900">
-                    Deseja acessar este currículo em outro celular ou computador?
+                    {t('prev_cloud_prompt_title')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                  Seu currículo já está pronto e salvo no navegador atual. Se preferir deixá-lo guardado na nuvem para não perder, faça login gratuito (com 1 clique).
+                  {t('prev_cloud_prompt_desc')}
                 </p>
               </div>
             </div>
@@ -285,7 +299,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all shrink-0"
               >
                 <Cloud className="w-3.5 h-3.5" />
-                <span>Salvar na Nuvem (Login)</span>
+                <span>{t('prev_cloud_btn')}</span>
               </button>
             )}
           </div>
@@ -296,85 +310,143 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
               <Palette className="w-4 h-4 text-sky-600" />
-              <span>Escolha o Estilo do Currículo:</span>
+              <span>{t('prev_tmpl_style_title')}</span>
             </div>
 
             <div className="text-[11px] text-slate-400">
-              Dica: Clique em <strong>BAIXAR PDF</strong> para exportar com fidelidade máxima.
+              {t('prev_tip_download')}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mt-3">
             {/* Template 1: Moderno Clean */}
             <button
               onClick={() => setTemplate('liquid-modern')}
               id="template-btn-modern"
-              className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer relative ${
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'liquid-modern'
                   ? 'bg-sky-50/90 border-sky-500 shadow-md ring-2 ring-sky-400/20'
                   : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                  <LayoutGrid className="w-3.5 h-3.5 text-sky-600" />
-                  Moderno Clean
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <LayoutGrid className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                    Modern Clean
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 inline-block mb-1.5">
+                  {t('tmpl_modern_badge')}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-100 text-sky-700">
-                  Tech & Inovação
-                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_modern_desc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                Design limpo, objetivo e sem ruído visual, baseado no padrão mais buscado por big techs e startups.
-              </p>
             </button>
 
-            {/* Template 2: Executivo Clássico */}
+            {/* Template 2: Executivo */}
             <button
               onClick={() => setTemplate('executive-clean')}
               id="template-btn-executive"
-              className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer relative ${
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'executive-clean'
                   ? 'bg-slate-100/90 border-slate-900 shadow-md ring-2 ring-slate-900/10'
                   : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-slate-800" />
-                  Executivo Clássico
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-slate-800 shrink-0" />
+                    Executive
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 inline-block mb-1.5">
+                  {t('tmpl_executive_badge')}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-200 text-slate-800">
-                  Corporativo
-                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_executive_desc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                Diagramação nobre centralizada com tipografia serifada e divisores duplos. Padrão para liderança e finanças.
-              </p>
             </button>
 
-            {/* Template 3: Lateral Estruturado */}
+            {/* Template 3: ATS Professional */}
             <button
-              onClick={() => setTemplate('minimalist')}
-              id="template-btn-sidebar"
-              className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer relative ${
-                template === 'minimalist'
-                  ? 'bg-indigo-50/90 border-indigo-600 shadow-md ring-2 ring-indigo-500/20'
+              onClick={() => setTemplate('ats-professional')}
+              id="template-btn-ats"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'ats-professional'
+                  ? 'bg-emerald-50/90 border-emerald-600 shadow-md ring-2 ring-emerald-500/20'
                   : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                  <ScanText className="w-3.5 h-3.5 text-indigo-600" />
-                  Lateral Estruturado (2 Colunas)
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    ATS Professional
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 inline-block mb-1.5">
+                  {t('tmpl_ats_badge')}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800">
-                  Design & Impacto
-                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_ats_desc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                Layout moderno em duas colunas com painel lateral dedicado para competências, contato e formação.
-              </p>
+            </button>
+
+            {/* Template 4: Impact */}
+            <button
+              onClick={() => setTemplate('impact')}
+              id="template-btn-impact"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'impact'
+                  ? 'bg-amber-50/90 border-amber-600 shadow-md ring-2 ring-amber-500/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    Impact
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 inline-block mb-1.5">
+                  {t('tmpl_impact_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_impact_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 5: Corporate Premium */}
+            <button
+              onClick={() => setTemplate('corporate-premium')}
+              id="template-btn-corporate"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'corporate-premium'
+                  ? 'bg-blue-50/90 border-blue-700 shadow-md ring-2 ring-blue-600/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                    Corporate Premium
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 inline-block mb-1.5">
+                  {t('tmpl_corporate_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_corporate_desc')}
+                </p>
+              </div>
             </button>
           </div>
         </div>
@@ -392,10 +464,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-700 bg-sky-100 px-2 py-0.5 rounded">
-                  Recurso Inteligente • Análise de Vaga
+                  {t('job_analysis_badge')}
                 </span>
                 <h3 className="text-base font-bold text-slate-900">
-                  Compatibilidade com esta vaga
+                  {t('job_analysis_title')}
                 </h3>
               </div>
             </div>
@@ -405,7 +477,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {jobAnalysis.matchPercentage}%
               </span>
               <span className="text-[11px] text-slate-500 block -mt-1 font-medium">
-                Aderência ao perfil
+                {t('job_analysis_match')}
               </span>
             </div>
           </div>
@@ -415,7 +487,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="p-3.5 rounded-2xl bg-white/70 border border-slate-100">
               <span className="font-bold text-emerald-800 flex items-center gap-1.5 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Competências Encontradas
+                {t('job_analysis_skills_found')}
               </span>
               <ul className="space-y-1">
                 {jobAnalysis.foundSkills.slice(0, 4).map((s, i) => (
@@ -431,7 +503,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="p-3.5 rounded-2xl bg-white/70 border border-slate-100">
               <span className="font-bold text-sky-800 flex items-center gap-1.5 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                Experiências Relevantes
+                {t('job_analysis_exp_relevant')}
               </span>
               <ul className="space-y-1">
                 {jobAnalysis.relevantExperiences.slice(0, 2).map((exp, i) => (
@@ -447,7 +519,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
               <span className="font-bold text-amber-900 flex items-center gap-1.5 mb-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
-                Pontos de Melhoria
+                {t('job_analysis_improvements')}
               </span>
               <ul className="space-y-1 text-slate-700">
                 {jobAnalysis.improvements.slice(0, 2).map((imp, i) => (
@@ -462,8 +534,35 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
           {/* Ethical Disclaimer mandated by rules */}
           <p className="text-[11px] text-slate-400 mt-4 text-center">
-            * A análise de compatibilidade é um diagnóstico técnico comparativo e não garante contratação nem aprovação em processos seletivos.
+            {t('job_analysis_disclaimer')}
           </p>
+        </div>
+      )}
+
+      {/* =========================================================================
+          AUDITORIA ESTRUTURAL DE COMPATIBILIDADE ATS
+      ========================================================================= */}
+      {atsDiagnostic && (
+        <div className="no-print max-w-4xl mx-auto mb-4 px-4 py-3 rounded-2xl bg-white/90 border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
+            <div>
+              <span className="font-extrabold text-slate-900 mr-2">
+                {t('ats_audit_title')}:
+              </span>
+              <span className="text-slate-600">
+                {atsDiagnostic.sectionsFound} {t('ats_audit_sections')} • {t('ats_audit_order')} • {t('ats_audit_indexable')}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200/80 text-[11px]">
+              {t('ats_audit_score')}: {atsDiagnostic.score}/100
+            </span>
+            <span className="text-[10px] text-slate-400">
+              ({t('ats_audit_verification')})
+            </span>
+          </div>
         </div>
       )}
 
@@ -486,11 +585,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           onCut={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
           className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none ${
-            template === 'liquid-modern'
-              ? 'p-6 sm:p-10 font-sans'
+            template === 'impact' || template === 'minimalist'
+              ? 'p-0 font-sans'
               : template === 'executive-clean'
               ? 'p-6 sm:p-10 font-serif'
-              : 'p-0 font-sans'
+              : 'p-6 sm:p-10 font-sans'
           }`}
           style={{
             width: '820px',
@@ -528,8 +627,47 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             />
           )}
 
+          {template === 'ats-professional' && (
+            <AtsProfessionalTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'impact' && (
+            <ImpactTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'corporate-premium' && (
+            <CorporatePremiumTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
           {template === 'minimalist' && (
-            <MinimalistAtsTemplate
+            <ImpactTemplate
               personal={personal}
               targetRole={targetRole}
               professionalSummary={professionalSummary}
@@ -554,12 +692,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {isGeneratingPDF ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Criando PDF...</span>
+                <span>{t('prev_btn_downloading')}</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Baixar PDF</span>
+                <span>{t('prev_btn_download')}</span>
               </>
             )}
           </button>
@@ -567,7 +705,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             onClick={onEdit}
             className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700"
           >
-            Editar
+            {t('prev_btn_edit')}
           </button>
         </div>
       </div>

@@ -1,5 +1,8 @@
 import React from 'react';
 import { PersonalData, EducationItem, CourseItem } from '../../types';
+import { MapPin, Phone, Mail, Linkedin, Globe } from 'lucide-react';
+import { ContactItem } from './ContactItem';
+import { useLanguage, translateEduStatus } from '../../i18n/LanguageContext';
 
 interface TemplateProps {
   personal: PersonalData;
@@ -20,10 +23,14 @@ interface TemplateProps {
 }
 
 /**
- * Executivo Clássico — O padrão corporativo tradicional de alto nível.
- * Diagramação nobre com cabeçalho centralizado, tipografia serifada formal,
- * divisores duplos e estrutura cronológica tradicional. Preferido por diretorias,
- * conselhos, grandes corporações, finanças e consultorias estratégicas.
+ * TEMPLATE 2 — EXECUTIVE
+ * 
+ * Perfil: Administração, Gestão, Finanças, Direito, Consultoria, Cargos de Liderança.
+ * Características:
+ * - Diagramação clássica nobre com tipografia serifada formal
+ * - Cabeçalho centralizado com divisor duplo de alta autoridade
+ * - Domínio da experiência profissional com foco em realizações estratégicas
+ * - Alinhamento determinístico e pixel-perfect no PDF
  */
 export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
   personal,
@@ -35,10 +42,11 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
   tools,
   courses,
 }) => {
+  const { t } = useLanguage();
   return (
-    <div className="w-full text-slate-950 font-serif leading-normal p-2 sm:p-4">
+    <div className="w-full text-slate-950 font-serif leading-normal p-4 sm:p-6 select-text">
       {/* =========================================================================
-          CABEÇALHO NOBRE CENTRALIZADO — Tradição e Autoridade
+          CABEÇALHO EXECUTIVO CENTRALIZADO — Tradição e Autoridade
       ========================================================================= */}
       <header className="text-center pb-3">
         {/* Foto centralizada opcional se o candidato anexou */}
@@ -53,42 +61,78 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
           </div>
         )}
 
-        <h1 className="text-3xl sm:text-4xl font-serif font-black uppercase tracking-[0.18em] text-slate-950">
+        <h1 className="text-3xl sm:text-4xl font-serif font-black uppercase tracking-[0.16em] text-slate-950">
           {personal.fullName}
         </h1>
 
-        <p className="text-sm font-serif italic text-slate-800 font-semibold tracking-wider mt-1.5 uppercase">
+        <p className="text-xs sm:text-sm font-serif italic text-slate-800 font-semibold tracking-wider mt-1.5 uppercase">
           {targetRole}
         </p>
 
-        {/* Linha de contato unificada com losangos clássicos */}
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-slate-700 font-sans mt-3 font-medium">
-          {personal.cityState && <span>{personal.cityState}</span>}
-          {personal.cityState && personal.phone && <span className="text-slate-400">◆</span>}
-          {personal.phone && <span>{personal.phone}</span>}
-          {personal.phone && personal.email && <span className="text-slate-400">◆</span>}
-          {personal.email && <span>{personal.email}</span>}
-          {personal.email && personal.linkedin && <span className="text-slate-400">◆</span>}
-          {personal.linkedin && <span>{personal.linkedin}</span>}
+        {/* Linha de contato determinística executiva */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3.5 gap-y-1 text-xs text-slate-800 font-sans mt-3 font-medium">
+          {personal.cityState && (
+            <ContactItem
+              icon={<MapPin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+              text={personal.cityState}
+            />
+          )}
+
+          {personal.cityState && personal.phone && (
+            <span className="text-slate-400 font-normal select-none">◆</span>
+          )}
+
+          {personal.phone && (
+            <ContactItem
+              icon={<Phone size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+              text={personal.phone}
+            />
+          )}
+
+          {personal.phone && personal.email && (
+            <span className="text-slate-400 font-normal select-none">◆</span>
+          )}
+
+          {personal.email && (
+            <ContactItem
+              icon={<Mail size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+              text={personal.email}
+              href={`mailto:${personal.email}`}
+            />
+          )}
+
+          {personal.linkedin && (
+            <>
+              <span className="text-slate-400 font-normal select-none">◆</span>
+              <ContactItem
+                icon={<Linkedin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                text={personal.linkedin}
+              />
+            </>
+          )}
+
           {personal.portfolio && (
             <>
-              <span className="text-slate-400">◆</span>
-              <span>{personal.portfolio}</span>
+              <span className="text-slate-400 font-normal select-none">◆</span>
+              <ContactItem
+                icon={<Globe size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                text={personal.portfolio}
+              />
             </>
           )}
         </div>
 
-        {/* Linha divisória dupla tradicional */}
-        <div className="border-t-2 border-b border-slate-950 py-[1.5px] mt-4 mb-6" />
+        {/* Linha divisória dupla tradicional executiva */}
+        <div className="border-t-2 border-b border-slate-950 py-[1.5px] mt-4 mb-5" />
       </header>
 
       {/* =========================================================================
           RESUMO EXECUTIVO DE QUALIFICAÇÕES
       ========================================================================= */}
       {professionalSummary && (
-        <section className="mb-6">
+        <section className="mb-5">
           <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-2.5">
-            Resumo de Qualificações
+            {t('tmpl_qualifications')}
           </h2>
           <p className="text-xs sm:text-[13px] font-serif text-slate-900 leading-relaxed text-justify">
             {professionalSummary}
@@ -97,43 +141,45 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
       )}
 
       {/* =========================================================================
-          HISTÓRICO PROFISSIONAL EXECUTIVO
+          TRAJETÓRIA PROFISSIONAL EXECUTIVA
       ========================================================================= */}
       {experiences && experiences.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-3.5">
-            Experiência Profissional
+        <section className="mb-5">
+          <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-3">
+            {t('tmpl_trajectory')}
           </h2>
 
           <div className="space-y-4">
             {experiences.map((exp, idx) => (
-              <div key={idx} className="space-y-1">
-                {/* Linha da Empresa e Período */}
-                <div className="flex flex-row items-baseline justify-between font-serif gap-0.5">
-                  <span className="text-sm font-black text-slate-950 uppercase tracking-wide">
-                    {exp.company}
-                  </span>
-                  <span className="text-xs font-bold text-slate-700 italic whitespace-nowrap font-serif">
+              <div key={exp.id || idx} className="space-y-1">
+                {/* Linha Principal com Cargo e Metadados */}
+                <div className="flex flex-row items-baseline justify-between gap-2">
+                  <div>
+                    <span className="text-xs sm:text-sm font-serif font-bold text-slate-950">
+                      {exp.role}
+                    </span>
+                    <span className="text-xs font-serif italic text-slate-800 ml-1.5">
+                      — {exp.company}
+                    </span>
+                  </div>
+                  <span className="text-xs font-sans font-semibold text-slate-700 uppercase tracking-wider whitespace-nowrap">
                     {exp.period}
                   </span>
                 </div>
 
-                {/* Cargo em itálico clássico */}
-                <div className="text-xs font-serif font-bold italic text-slate-800 tracking-wide pb-0.5">
-                  {exp.role}
-                </div>
-
-                {/* Marcadores clássicos formais com recuo */}
-                <ul className="pl-4 space-y-1 text-xs font-serif text-slate-900 leading-relaxed list-disc">
+                {/* Bullets de Conquistas Executivas */}
+                <ul className="space-y-1 text-xs font-serif text-slate-900 leading-relaxed pl-1">
                   {exp.bullets && exp.bullets.length > 0 ? (
                     exp.bullets.map((bullet, bIdx) => (
-                      <li key={bIdx} className="text-justify pl-1">
-                        {bullet}
+                      <li key={bIdx} className="flex items-start gap-2">
+                        <span className="text-slate-800 font-bold shrink-0 mt-0.5">▪</span>
+                        <span className="text-justify">{bullet}</span>
                       </li>
                     ))
                   ) : (
-                    <li className="text-justify pl-1">
-                      Condução e execução das responsabilidades do cargo de atuação.
+                    <li className="flex items-start gap-2">
+                      <span className="text-slate-800 font-bold shrink-0 mt-0.5">▪</span>
+                      <span>{t('tmpl_default_bullet_exec')}</span>
                     </li>
                   )}
                 </ul>
@@ -144,25 +190,27 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
       )}
 
       {/* =========================================================================
-          FORMAÇÃO ACADÊMICA
+          FORMAÇÃO ACADÊMICA & EDUCAÇÃO EXECUTIVA
       ========================================================================= */}
       {education && education.length > 0 && (
-        <section className="mb-6">
+        <section className="mb-5">
           <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-2.5">
-            Formação Acadêmica
+            {t('tmpl_education')}
           </h2>
 
           <div className="space-y-2">
             {education.map((edu, idx) => (
-              <div key={idx} className="flex flex-row items-baseline justify-between gap-1 text-xs font-serif">
+              <div key={edu.id || idx} className="flex justify-between items-baseline gap-2 text-xs font-serif">
                 <div>
-                  <span className="font-bold text-slate-950 uppercase">{edu.course}</span>
-                  <span className="text-slate-700 italic ml-1.5">— {edu.institution}</span>
-                  <span className="text-slate-600 text-[11px] ml-1.5 font-sans">
-                    ({edu.status})
-                  </span>
+                  <span className="font-bold text-slate-950">{edu.course}</span>
+                  <span className="text-slate-800 italic ml-1.5">— {edu.institution}</span>
+                  {edu.status && (
+                    <span className="text-slate-600 text-[11px] ml-1.5 font-sans">
+                      ({translateEduStatus(edu.status, t)})
+                    </span>
+                  )}
                 </div>
-                <span className="text-slate-600 italic whitespace-nowrap">
+                <span className="text-slate-700 font-sans font-medium whitespace-nowrap">
                   {edu.startYear} — {edu.endYear}
                 </span>
               </div>
@@ -172,30 +220,34 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
       )}
 
       {/* =========================================================================
-          COMPETÊNCIAS & GESTÃO
+          COMPETÊNCIAS DIRETIVAS & GESTÃO ESTRATÉGICA
       ========================================================================= */}
       {((skills && skills.length > 0) || (tools && tools.length > 0)) && (
-        <section className="mb-6">
+        <section className="mb-5">
           <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-2.5">
-            Competências, Ferramentas & Liderança
+            {t('tmpl_exec_skills')}
           </h2>
 
-          <div className="space-y-2 text-xs font-serif text-slate-900 leading-relaxed">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-serif">
             {skills && skills.length > 0 && (
-              <div>
-                <strong className="text-slate-950 uppercase text-[11px] tracking-wide">
-                  Principais Competências:
-                </strong>{' '}
-                <span className="text-slate-800">{skills.join(', ')}.</span>
+              <div className="border-l-2 border-slate-900 pl-3">
+                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-slate-950 block mb-1">
+                  {t('tmpl_exec_mgmt')}
+                </span>
+                <p className="text-slate-900 leading-relaxed">
+                  {skills.join(' · ')}
+                </p>
               </div>
             )}
 
             {tools && tools.length > 0 && (
-              <div>
-                <strong className="text-slate-950 uppercase text-[11px] tracking-wide">
-                  Sistemas, Softwares & Ferramentas:
-                </strong>{' '}
-                <span className="text-slate-800">{tools.join(', ')}.</span>
+              <div className="border-l-2 border-slate-900 pl-3">
+                <span className="font-sans font-bold text-[10px] uppercase tracking-wider text-slate-950 block mb-1">
+                  {t('tmpl_exec_systems')}
+                </span>
+                <p className="text-slate-900 leading-relaxed">
+                  {tools.join(' · ')}
+                </p>
               </div>
             )}
           </div>
@@ -203,24 +255,24 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
       )}
 
       {/* =========================================================================
-          CURSOS DE APERFEIÇOAMENTO & CERTIFICAÇÕES
+          CERTIFICAÇÕES & APERFEIÇOAMENTO
       ========================================================================= */}
       {courses && courses.length > 0 && (
         <section>
           <h2 className="text-xs font-serif font-black uppercase tracking-[0.15em] text-slate-950 border-b-2 border-slate-950 pb-1 mb-2.5">
-            Qualificação Complementar & Certificações
+            {t('tmpl_exec_cert')}
           </h2>
 
-          <div className="space-y-1.5 text-xs font-serif">
+          <div className="space-y-1 text-xs font-serif">
             {courses.map((course, idx) => (
-              <div key={idx} className="flex justify-between items-baseline">
+              <div key={course.id || idx} className="flex justify-between items-baseline gap-2">
                 <div>
                   <span className="font-bold text-slate-950">{course.name}</span>
-                  <span className="text-slate-700 italic ml-1.5">
+                  <span className="text-slate-800 italic ml-1">
                     — {course.institution} {course.hours ? `(${course.hours})` : ''}
                   </span>
                 </div>
-                <span className="text-slate-600 italic whitespace-nowrap">{course.year}</span>
+                <span className="text-slate-700 font-sans font-medium whitespace-nowrap">{course.year}</span>
               </div>
             ))}
           </div>

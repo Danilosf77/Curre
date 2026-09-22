@@ -27,22 +27,22 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
   const simulationSteps = [
     {
       title: t('sim_title_1'),
-      detail: "João Silva • Analista Administrativo",
+      detail: t('sim_detail_1'),
       badge: t('sim_badge_1'),
     },
     {
       title: t('sim_title_2'),
-      detail: '"Cuidava das notas e planilhas no setor..."',
+      detail: t('sim_detail_2'),
       badge: t('sim_badge_2'),
     },
     {
       title: t('sim_title_3'),
-      detail: '→ "Gerenciou rotinas fiscais e controle de faturamento via Excel"',
+      detail: t('sim_detail_3'),
       badge: t('sim_badge_3'),
     },
     {
       title: t('sim_title_4'),
-      detail: 'Requisitos correspondentes: 92% de compatibilidade',
+      detail: t('sim_detail_4'),
       badge: t('sim_badge_4'),
     },
   ];
@@ -96,11 +96,11 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                       {t('hero_saved_session')}
                     </span>
                     <span className="text-xs font-bold text-slate-900 truncate max-w-[200px] sm:max-w-xs">
-                      {savedResume.personal?.fullName || 'Currículo Salvo'}
+                      {savedResume.personal?.fullName || t('hero_saved_resume_title')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Cargo: <strong>{savedResume.targetRole || 'Profissional'}</strong> • {t('hero_saved_ready')}
+                    {t('step_3_field_role')}: <strong>{savedResume.targetRole || t('sim_default_role')}</strong> • {t('hero_saved_ready')}
                   </p>
                 </div>
               </div>
@@ -158,14 +158,14 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             {currentUser ? (
               <div className="flex items-center gap-1.5 text-sky-800 font-semibold bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200">
                 <Cloud className="w-3.5 h-3.5 text-sky-600" />
-                <span>Nuvem ativa ({currentUser.name})</span>
+                <span>{t('nav_cloud_active_title')} ({currentUser.name})</span>
               </div>
             ) : (
               onOpenLogin && (
                 <button
                   onClick={onOpenLogin}
                   className="flex items-center gap-1.5 text-sky-700 hover:text-sky-950 font-bold bg-sky-50/80 hover:bg-sky-100 px-2.5 py-1 rounded-lg border border-sky-200 transition-all cursor-pointer"
-                  title="Deseja salvar na nuvem? Login gratuito opcional"
+                  title={t('hero_saved_cloud_tooltip')}
                 >
                   <Cloud className="w-3.5 h-3.5 text-sky-600" />
                   <span>{t('hero_trust_cloud')}</span>
@@ -189,12 +189,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
                   <div className="w-3 h-3 rounded-full bg-amber-400/80" />
                   <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
                   <span className="text-xs font-semibold text-slate-400 ml-1">
-                    CURRÊ • Transformação em Tempo Real
+                    {t('sim_header_brand')}
                   </span>
                 </div>
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
                   <Sparkles className="w-3 h-3 text-sky-500" />
-                  IA Ativa
+                  {t('sim_header_ai_active')}
                 </span>
               </div>
 

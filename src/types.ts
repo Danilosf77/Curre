@@ -81,7 +81,7 @@ export interface OptimizedResume {
   tools: string[];
   courses: CourseItem[];
   jobAnalysis?: JobAnalysisResult;
-  templateStyle: 'liquid-modern' | 'executive-clean' | 'minimalist';
+  templateStyle: 'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist';
   language?: string;
   generatedAt: string;
 }

@@ -468,7 +468,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   // AI Job analyzer handler
   const handleAnalyzeJobWithAI = async () => {
     if (!targetJob.jobDescription?.trim()) {
-      setJobAnalysisError('Cole a descrição da vaga no campo acima para analisar.');
+      setJobAnalysisError(t('step_7_err_paste_job'));
       return;
     }
 
@@ -497,7 +497,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
       setJobAnalysis(result);
     } catch (err: any) {
       console.error(err);
-      setJobAnalysisError('Não foi possível analisar a vaga agora. Você pode continuar mesmo assim.');
+      setJobAnalysisError(t('step_7_err_fail'));
     } finally {
       setIsAnalyzingJob(false);
     }
@@ -743,7 +743,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               onClick={handleJumpToReview}
               id="wizard-btn-skip-to-review-top"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 px-3 py-1.5 rounded-lg border border-sky-300 transition-all cursor-pointer shadow-sm"
-              title="Salvar alterações e voltar diretamente à Etapa 8 de Revisão e Geração"
+              title={t('wiz_jump_review')}
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
               <span>{t('wiz_jump_review')}</span>
@@ -754,7 +754,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             onClick={handleLoadSample}
             id="wizard-btn-fill-sample"
             className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-50/90 hover:bg-sky-100/80 px-3 py-1.5 rounded-lg border border-sky-200/70 transition-all cursor-pointer"
-            title="Preenche dados de exemplo para testar rapidamente"
+            title={t('wiz_fill_sample')}
           >
             <Wand2 className="w-3.5 h-3.5 text-sky-600" />
             <span>{t('wiz_fill_sample')}</span>
@@ -979,7 +979,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                       className="hidden"
                     />
                     <p className="text-[11px] text-slate-400 mt-1">
-                      Dica: Use uma foto nítida e com boa iluminação.
+                      {t('field_photo_tip')}
                     </p>
                   </div>
                 </div>

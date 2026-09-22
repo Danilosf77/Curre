@@ -159,7 +159,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: systemPrompt,
       config: {
         responseMimeType: 'application/json',

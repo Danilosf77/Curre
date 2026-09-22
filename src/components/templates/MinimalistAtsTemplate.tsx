@@ -1,6 +1,8 @@
 import React from 'react';
 import { PersonalData, EducationItem, CourseItem } from '../../types';
 import { MapPin, Phone, Mail, Linkedin, Globe, Award, GraduationCap, Wrench, Sparkles, Briefcase, User } from 'lucide-react';
+import { ContactItem } from './ContactItem';
+import { useLanguage, translateEduStatus } from '../../i18n/LanguageContext';
 
 interface TemplateProps {
   personal: PersonalData;
@@ -37,6 +39,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
   tools,
   courses,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className="w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full">
       {/* =========================================================================
@@ -59,37 +62,51 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
         <div>
           <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-slate-500" />
-            Contato
+            {t('tmpl_contact')}
           </h3>
           <div className="space-y-2 text-xs text-slate-800 font-semibold break-words">
             {personal.cityState && (
               <div className="block">
-                <MapPin className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
-                <span className="inline-block align-middle">{personal.cityState}</span>
+                <ContactItem
+                  icon={<MapPin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                  text={personal.cityState}
+                />
               </div>
             )}
             {personal.phone && (
               <div className="block">
-                <Phone className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
-                <span className="inline-block align-middle">{personal.phone}</span>
+                <ContactItem
+                  icon={<Phone size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                  text={personal.phone}
+                />
               </div>
             )}
             {personal.email && (
               <div className="block">
-                <Mail className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
-                <span className="text-[11px] break-all inline-block align-middle">{personal.email}</span>
+                <ContactItem
+                  icon={<Mail size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                  text={personal.email}
+                  href={`mailto:${personal.email}`}
+                  textClassName="text-[11px] break-all"
+                />
               </div>
             )}
             {personal.linkedin && (
               <div className="block">
-                <Linkedin className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
-                <span className="text-[11px] break-all inline-block align-middle">{personal.linkedin}</span>
+                <ContactItem
+                  icon={<Linkedin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                  text={personal.linkedin}
+                  textClassName="text-[11px] break-all"
+                />
               </div>
             )}
             {personal.portfolio && (
               <div className="block">
-                <Globe className="w-3.5 h-3.5 text-slate-600 inline-block align-middle mr-2 shrink-0" />
-                <span className="text-[11px] break-all inline-block align-middle">{personal.portfolio}</span>
+                <ContactItem
+                  icon={<Globe size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-600 shrink-0" />}
+                  text={personal.portfolio}
+                  textClassName="text-[11px] break-all"
+                />
               </div>
             )}
           </div>
@@ -100,7 +117,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <div>
             <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-slate-500" />
-              Competências
+              {t('tmpl_skills_main')}
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {skills.map((skill, idx) => (
@@ -120,7 +137,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <div>
             <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5 flex items-center gap-1.5">
               <Wrench className="w-3.5 h-3.5 text-slate-500" />
-              Ferramentas
+              {t('tmpl_tools_soft')}
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {tools.map((tool, idx) => (
@@ -140,7 +157,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <div>
             <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5 flex items-center gap-1.5">
               <GraduationCap className="w-3.5 h-3.5 text-slate-500" />
-              Formação
+              {t('tmpl_education_short')}
             </h3>
             <div className="space-y-2.5 text-xs">
               {education.map((edu, idx) => (
@@ -148,7 +165,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
                   <div className="font-bold text-slate-900 text-xs">{edu.course}</div>
                   <div className="text-slate-600 text-[11px]">{edu.institution}</div>
                   <div className="text-slate-500 text-[10px] font-medium">
-                    {edu.startYear} — {edu.endYear} • {edu.status}
+                    {edu.startYear} — {edu.endYear}{edu.status ? ` • ${translateEduStatus(edu.status, t)}` : ''}
                   </div>
                 </div>
               ))}
@@ -161,7 +178,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <div>
             <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1.5 mb-2.5 flex items-center gap-1.5">
               <Award className="w-3.5 h-3.5 text-slate-500" />
-              Cursos & Certificados
+              {t('tmpl_courses_short')}
             </h3>
             <div className="space-y-2 text-xs">
               {courses.map((course, idx) => (
@@ -196,7 +213,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <section className="mb-6">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-2.5 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-slate-500" />
-              Perfil Profissional
+              {t('tmpl_profile')}
             </h2>
             <p className="text-[13px] text-slate-700 leading-relaxed text-justify">
               {professionalSummary}
@@ -209,7 +226,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
           <section className="mb-4 flex-1">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-3.5 flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5 text-slate-500" />
-              Experiência Profissional
+              {t('tmpl_experience')}
             </h2>
 
             <div className="space-y-4">
@@ -241,7 +258,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
                     ) : (
                       <li className="flex items-start gap-2">
                         <span className="text-slate-400 font-bold shrink-0 mt-0.5">•</span>
-                        <span>Atuação e desenvolvimento de atividades do setor.</span>
+                        <span>{t('tmpl_default_bullet_ats')}</span>
                       </li>
                     )}
                   </ul>

@@ -406,7 +406,7 @@ function AppContent() {
       <AdaptJobModal
         isOpen={adaptJobOpen}
         onClose={() => setAdaptJobOpen(false)}
-        currentRole={generatedResume?.targetRole || formDataCache?.targetJob.roleTitle || 'Profissional'}
+        currentRole={generatedResume?.targetRole || formDataCache?.targetJob.roleTitle || (language === 'en' ? 'Professional' : language === 'fr' ? 'Professionnel' : language === 'es' ? 'Profesional' : 'Profissional')}
         onConfirmAdapt={handleAdaptToNewJob}
         isLoading={isLoading}
       />

@@ -1,6 +1,8 @@
 import React from 'react';
 import { PersonalData, EducationItem, CourseItem } from '../../types';
 import { MapPin, Phone, Mail, Linkedin, Globe } from 'lucide-react';
+import { ContactItem } from './ContactItem';
+import { useLanguage, translateEduStatus } from '../../i18n/LanguageContext';
 
 interface TemplateProps {
   personal: PersonalData;
@@ -21,9 +23,14 @@ interface TemplateProps {
 }
 
 /**
- * Moderno Clean — O padrão de ouro buscado pelas principais empresas e startups de tecnologia.
- * Focado no princípio "Recruiter 6-Second Scan": legibilidade impecável, hierarquia tipográfica
- * precisa, espaçamento equilibrado e ausência de ruído ou poluição visual.
+ * TEMPLATE 1 — MODERN CLEAN
+ * 
+ * Perfil: Tecnologia, Startups, Marketing, Administrativo Moderno, Inovação.
+ * Focado em:
+ * - Leitura visual instantânea em 3 segundos
+ * - Espaço em branco generoso e equilibrado
+ * - Hierarquia tipográfica marcante: Cargo destacado e empresa subordinada
+ * - Alinhamento determinístico e pixel-perfect dos dados de contato com SVGs inline
  */
 export const LiquidModernTemplate: React.FC<TemplateProps> = ({
   personal,
@@ -35,65 +42,78 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
   tools,
   courses,
 }) => {
+  const { t } = useLanguage();
   return (
-    <div className="w-full text-slate-800 font-sans leading-normal p-2 sm:p-4">
+    <div className="w-full text-slate-800 font-sans leading-normal p-4 sm:p-6 select-text">
       {/* =========================================================================
-          CLEAN HEADER — Direto, elegante e com alta legibilidade
+          CABEÇALHO MODERNO LIMPO
       ========================================================================= */}
-      <header className="pb-4 mb-5 border-b border-slate-200">
-        <div className="flex flex-row items-center justify-between gap-4">
-          <div className="space-y-1 flex-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950">
+      <header className="pb-4 mb-5 border-b border-slate-200/90">
+        <div className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5 flex-1">
+            <h1 className="text-2xl sm:text-[30px] font-extrabold tracking-tight text-slate-950 leading-none">
               {personal.fullName}
             </h1>
-            <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-800">
+
+            <p className="text-xs sm:text-[13px] font-bold uppercase tracking-wider text-sky-700">
               {targetRole}
             </p>
 
-            {/* Linha de contato unificada e limpa com separadores sutis */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-800 pt-1.5 font-semibold">
+            {/* Linha de contatos determinística com ícones SVG inline */}
+            <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-slate-700 pt-1 font-medium">
               {personal.cityState && (
-                <span className="inline-flex items-center gap-1 shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                  <span className="leading-none">{personal.cityState}</span>
-                </span>
+                <ContactItem
+                  icon={<MapPin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-500 shrink-0" />}
+                  text={personal.cityState}
+                />
               )}
-              {personal.cityState && personal.phone && <span className="text-slate-300 font-normal leading-none">•</span>}
+
+              {personal.cityState && personal.phone && (
+                <span className="text-slate-300 font-normal leading-none select-none">•</span>
+              )}
+
               {personal.phone && (
-                <span className="inline-flex items-center gap-1 shrink-0">
-                  <Phone className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                  <span className="leading-none">{personal.phone}</span>
-                </span>
+                <ContactItem
+                  icon={<Phone size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-500 shrink-0" />}
+                  text={personal.phone}
+                />
               )}
-              {personal.phone && personal.email && <span className="text-slate-300 font-normal leading-none">•</span>}
+
+              {personal.phone && personal.email && (
+                <span className="text-slate-300 font-normal leading-none select-none">•</span>
+              )}
+
               {personal.email && (
-                <span className="inline-flex items-center gap-1 shrink-0">
-                  <Mail className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                  <span className="leading-none">{personal.email}</span>
-                </span>
+                <ContactItem
+                  icon={<Mail size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-500 shrink-0" />}
+                  text={personal.email}
+                  href={`mailto:${personal.email}`}
+                />
               )}
+
               {personal.linkedin && (
                 <>
-                  <span className="text-slate-300 font-normal leading-none">•</span>
-                  <span className="inline-flex items-center gap-1 shrink-0">
-                    <Linkedin className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                    <span className="leading-none">{personal.linkedin}</span>
-                  </span>
+                  <span className="text-slate-300 font-normal leading-none select-none">•</span>
+                  <ContactItem
+                    icon={<Linkedin size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-500 shrink-0" />}
+                    text={personal.linkedin}
+                  />
                 </>
               )}
+
               {personal.portfolio && (
                 <>
-                  <span className="text-slate-300 font-normal leading-none">•</span>
-                  <span className="inline-flex items-center gap-1 shrink-0">
-                    <Globe className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-                    <span className="leading-none">{personal.portfolio}</span>
-                  </span>
+                  <span className="text-slate-300 font-normal leading-none select-none">•</span>
+                  <ContactItem
+                    icon={<Globe size={13} strokeWidth={2} className="block w-3.5 h-3.5 text-slate-500 shrink-0" />}
+                    text={personal.portfolio}
+                  />
                 </>
               )}
             </div>
           </div>
 
-          {/* Foto opcional discreta e profissional */}
+          {/* Foto opcional discreta e geométrica */}
           {personal.hasPhoto && personal.photoUrl && (
             <div className="shrink-0">
               <img
@@ -112,8 +132,8 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
       ========================================================================= */}
       {professionalSummary && (
         <section className="mb-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-2">
-            Resumo Profissional
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-2">
+            {t('tmpl_summary')}
           </h2>
           <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed text-justify">
             {professionalSummary}
@@ -126,28 +146,29 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
       ========================================================================= */}
       {experiences && experiences.length > 0 && (
         <section className="mb-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-3">
-            Experiência Profissional
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-3">
+            {t('tmpl_experience')}
           </h2>
 
           <div className="space-y-4">
             {experiences.map((exp, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex flex-row items-baseline justify-between gap-1">
+              <div key={exp.id || idx} className="space-y-1">
+                {/* Linha de Cargo e Metadados */}
+                <div className="flex flex-row items-baseline justify-between gap-2">
                   <div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className="text-xs sm:text-sm font-bold text-slate-950">
                       {exp.role}
                     </span>
-                    <span className="text-xs font-semibold text-slate-600 ml-1.5">
-                      — {exp.company}
+                    <span className="text-xs font-semibold text-slate-700 ml-1.5">
+                      · {exp.company}
                     </span>
                   </div>
-                  <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+                  <span className="text-xs font-semibold text-slate-500 whitespace-nowrap">
                     {exp.period}
                   </span>
                 </div>
 
-                {/* Bullets com marcadores elegantes e leitura clara */}
+                {/* Bullets de Resultados e Responsabilidades */}
                 <ul className="space-y-1 text-xs text-slate-700 leading-relaxed pl-1">
                   {exp.bullets && exp.bullets.length > 0 ? (
                     exp.bullets.map((bullet, bIdx) => (
@@ -159,7 +180,7 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
                   ) : (
                     <li className="flex items-start gap-2">
                       <span className="text-slate-400 font-bold shrink-0 mt-0.5">•</span>
-                      <span>Atuação no cumprimento e desenvolvimento de rotinas do setor.</span>
+                      <span>{t('tmpl_default_bullet_modern')}</span>
                     </li>
                   )}
                 </ul>
@@ -170,33 +191,33 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
       )}
 
       {/* =========================================================================
-          COMPETÊNCIAS & FERRAMENTAS (Organização limpa e escaneável)
+          COMPETÊNCIAS & FERRAMENTAS (Palavras-chave em texto puro para ATS)
       ========================================================================= */}
       {((skills && skills.length > 0) || (tools && tools.length > 0)) && (
         <section className="mb-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-2.5">
-            Competências & Tecnologias
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-2.5">
+            {t('tmpl_skills')}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {skills && skills.length > 0 && (
-              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-100">
-                <span className="font-bold text-slate-800 block mb-1.5 text-[11px] uppercase tracking-wide">
-                  Competências Principais
+              <div className="bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                <span className="font-bold text-slate-900 block mb-1.5 text-[11px] uppercase tracking-wide">
+                  {t('tmpl_skills_main')}
                 </span>
                 <p className="text-slate-700 leading-relaxed">
-                  {skills.join(' • ')}
+                  {skills.join(' · ')}
                 </p>
               </div>
             )}
 
             {tools && tools.length > 0 && (
-              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-100">
-                <span className="font-bold text-slate-800 block mb-1.5 text-[11px] uppercase tracking-wide">
-                  Ferramentas & Softwares
+              <div className="bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                <span className="font-bold text-slate-900 block mb-1.5 text-[11px] uppercase tracking-wide">
+                  {t('tmpl_tools_soft')}
                 </span>
                 <p className="text-slate-700 leading-relaxed">
-                  {tools.join(' • ')}
+                  {tools.join(' · ')}
                 </p>
               </div>
             )}
@@ -209,19 +230,21 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
       ========================================================================= */}
       {education && education.length > 0 && (
         <section className="mb-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-2.5">
-            Formação Acadêmica
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-2.5">
+            {t('tmpl_education')}
           </h2>
 
           <div className="space-y-2">
             {education.map((edu, idx) => (
-              <div key={idx} className="flex flex-row items-baseline justify-between gap-1 text-xs">
+              <div key={edu.id || idx} className="flex flex-row items-baseline justify-between gap-2 text-xs">
                 <div>
                   <span className="font-bold text-slate-900">{edu.course}</span>
-                  <span className="text-slate-600 ml-1.5">• {edu.institution}</span>
-                  <span className="text-slate-500 text-[11px] ml-1.5 font-medium">
-                    ({edu.status})
-                  </span>
+                  <span className="text-slate-700 ml-1.5">· {edu.institution}</span>
+                  {edu.status && (
+                    <span className="text-slate-500 text-[11px] ml-1.5 font-medium">
+                      ({translateEduStatus(edu.status, t)})
+                    </span>
+                  )}
                 </div>
                 <span className="text-slate-500 font-medium whitespace-nowrap">
                   {edu.startYear} — {edu.endYear}
@@ -237,17 +260,17 @@ export const LiquidModernTemplate: React.FC<TemplateProps> = ({
       ========================================================================= */}
       {courses && courses.length > 0 && (
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 pb-1 mb-2.5">
-            Cursos & Certificações
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-2.5">
+            {t('tmpl_courses')}
           </h2>
 
           <div className="space-y-1.5 text-xs">
             {courses.map((course, idx) => (
-              <div key={idx} className="flex justify-between items-baseline">
+              <div key={course.id || idx} className="flex justify-between items-baseline gap-2">
                 <div>
                   <span className="font-bold text-slate-900">{course.name}</span>
-                  <span className="text-slate-600 ml-1">
-                    — {course.institution} {course.hours ? `(${course.hours})` : ''}
+                  <span className="text-slate-700 ml-1">
+                    · {course.institution} {course.hours ? `(${course.hours})` : ''}
                   </span>
                 </div>
                 <span className="text-slate-500 font-medium whitespace-nowrap">{course.year}</span>

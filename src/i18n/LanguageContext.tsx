@@ -390,17 +390,38 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tmpl_experience: 'Experiência Profissional',
     tmpl_skills: 'Competências & Tecnologias',
     tmpl_skills_core: 'Principais Competências',
+    tmpl_skills_main: 'Competências Principais',
     tmpl_tools: 'Sistemas, Softwares & Ferramentas',
+    tmpl_tools_soft: 'Ferramentas & Softwares',
     tmpl_education: 'Formação Acadêmica',
+    tmpl_education_short: 'Formação',
     tmpl_courses: 'Cursos & Certificações',
+    tmpl_courses_short: 'Cursos',
+    tmpl_certifications: 'Certificações',
     tmpl_contact: 'Contato',
     tmpl_present: 'Atual',
     tmpl_status_completed: 'Concluído',
     tmpl_status_in_progress: 'Em andamento',
     tmpl_status_interrupted: 'Interrompido',
     tmpl_qualifications: 'Resumo de Qualificações',
-    tmpl_history: 'Histórico Profissional Executivo',
+    tmpl_qualifications_synthesis: 'Síntese de Qualificações',
+    tmpl_profile: 'Perfil Profissional',
+    tmpl_trajectory: 'Trajetória Profissional',
+    tmpl_exec_skills: 'Competências Diretivas & Ferramentas',
+    tmpl_exec_mgmt: 'Gestão & Liderança',
+    tmpl_exec_systems: 'Sistemas & Tecnologias',
+    tmpl_exec_cert: 'Certificações & Aperfeiçoamento Profissional',
+    tmpl_skills_tech_alt: 'Competências & Habilidades Técnicas',
+    tmpl_skills_label: 'Competências:',
+    tmpl_tools_label: 'Ferramentas & Tecnologias:',
     tmpl_default_bullet: 'Condução e execução das responsabilidades operacionais e estratégicas da função.',
+    tmpl_default_bullet_modern: 'Atuação direcionada ao atingimento de metas operacionais e estratégicas.',
+    tmpl_default_bullet_exec: 'Liderança de iniciativas estratégicas e gestão contínua de processos organizacionais.',
+    tmpl_default_bullet_ats: 'Execução de rotinas operacionais e projetos corporativos da área.',
+    tmpl_default_bullet_corp: 'Responsável pela condução de processos técnicos e atendimento a requisitos organizacionais.',
+    step_7_err_paste_job: 'Cole a descrição da vaga no campo acima para analisar.',
+    step_7_err_fail: 'Não foi possível analisar a vaga agora. Você pode continuar mesmo assim.',
+    field_photo_tip: 'Dica: Use uma foto nítida e com boa iluminação.',
 
     // Preview
     prev_download_pdf: 'Baixar Currículo PDF',
@@ -421,10 +442,87 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_prompt_desc: 'Seu currículo já está pronto e salvo no navegador atual. Se preferir deixá-lo guardado na nuvem para não perder, faça login gratuito (com 1 clique).',
     prev_cloud_btn: 'Salvar na Nuvem (Login)',
     prev_match_title: 'Compatibilidade com esta vaga',
+    prev_match_badge: 'Recurso Inteligente • Análise de Vaga',
+    prev_match_score_sub: 'Aderência ao perfil',
     prev_match_found_skills: 'Competências Encontradas',
     prev_match_relevant_exp: 'Experiências Relevantes',
     prev_match_improvements: 'Pontos de Melhoria',
     prev_match_disclaimer: '* A análise de compatibilidade é um diagnóstico técnico comparativo e não garante contratação nem aprovação em processos seletivos.',
+
+    // Preview extra & badges
+    prev_ready_badge: 'Currículo Pronto',
+    prev_ai_optimized: '• Otimizado com IA',
+    prev_default_title: 'Seu Currículo',
+    prev_cloud_synced_badge: 'Nuvem Sincronizada',
+    prev_cloud_synced_desc: 'Este currículo está salvo na sua nuvem e protegido para acesso em qualquer dispositivo.',
+    prev_cloud_synced_tag: 'Salvo na Nuvem',
+    prev_cloud_opt_badge: 'Opcional • Salvar na Nuvem',
+    prev_tmpl_style_title: 'Escolha o Estilo do Currículo:',
+    prev_tip_download: 'Dica: Clique em BAIXAR PDF para exportar com fidelidade máxima.',
+
+    // Templates Ribbon
+    tmpl_modern_badge: 'Tech & Inovação',
+    tmpl_modern_desc: 'Design limpo e objetivo, sem ruído visual. Padrão para startups e big techs.',
+    tmpl_executive_badge: 'Liderança & Finanças',
+    tmpl_executive_desc: 'Diagramação nobre com tipografia serifada e autoridade executiva.',
+    tmpl_ats_badge: 'Triagem Online & ATS',
+    tmpl_ats_desc: 'Coluna única 100% linear, otimizada para robôs de recrutamento e portais.',
+    tmpl_impact_badge: 'Vendas & Produto',
+    tmpl_impact_desc: 'Painel lateral estruturado com alto contraste e presença visual memorável.',
+    tmpl_corporate_badge: 'Bancos & Multinacionais',
+    tmpl_corporate_desc: 'Grid matemático minimalista para grandes indústrias e governança global.',
+    tmpl_achievements: 'Conquistas & Resultados',
+    tmpl_skills_tools: 'Competências & Tecnologias',
+
+    // ATS Audit Bar
+    ats_audit_title: 'Auditoria de Leitura ATS:',
+    ats_audit_sections: 'seções estruturadas • Ordem determinística • 100% texto indexável',
+    ats_score_label: 'Score Estrutural:',
+    ats_verification_note: '(Verificação técnica de parsing)',
+
+    // Mobile bar
+    prev_mobile_creating: 'Criando PDF...',
+    prev_mobile_download: 'Baixar PDF',
+    prev_mobile_edit: 'Editar',
+
+    // Landing Hero Simulation
+    sim_header_brand: 'CURRÊ • Transformação em Tempo Real',
+    sim_header_ai_active: 'IA Ativa',
+    sim_detail_1: 'João Silva • Analista Administrativo',
+    sim_detail_2: '"Cuidava das notas e planilhas no setor..."',
+    sim_detail_3: '→ "Gerenciou rotinas fiscais e controle de faturamento via Excel"',
+    sim_detail_4: 'Requisitos correspondentes: 92% de compatibilidade',
+    sim_default_role: 'Profissional',
+
+    // Landing Hero Saved Resume
+    hero_saved_resume_title: 'Currículo Salvo',
+    hero_saved_cloud_tooltip: 'Deseja salvar na nuvem? Login gratuito opcional',
+
+    // Navbar Tooltips
+    nav_cloud_connected_title: 'Conta conectada na nuvem',
+    nav_cloud_active_title: 'Nuvem ativa',
+    nav_login_tooltip: 'Entrar (Opcional - para salvar na nuvem)',
+    nav_menu_aria: 'Abrir menu',
+
+    // Adapt Job Modal
+    adapt_modal_title: 'Adaptar para Outra Vaga',
+    adapt_current_role: 'Cargo atual do currículo:',
+    adapt_modal_desc: 'Cole a descrição ou requisitos da nova vaga que você deseja disputar. O CURRÊ vai reanalisar suas experiências reais e destacar os pontos mais compatíveis para esta nova oportunidade.',
+    adapt_job_label: 'Descrição da nova vaga',
+    adapt_job_placeholder: 'Cole aqui o texto da nova vaga (requisitos, atividades, conhecimentos desejados)...',
+    adapt_truth_guarantee: 'Suas experiências e dados cadastrados serão mantidos 100% verdadeiros.',
+    adapt_cancel: 'Cancelar',
+    adapt_submitting: 'Adaptando com IA...',
+    adapt_submit: 'Adaptar Currículo',
+
+    // Loading Overlay
+    loading_phase_1: 'Analisando seu perfil...',
+    loading_phase_2: 'Organizando suas experiências...',
+    loading_phase_3: 'Adaptando seu currículo...',
+    loading_phase_4: 'Finalizando...',
+    loading_brand_badge: 'CURRÊ • IA em Ação',
+    loading_description: 'Refinando suas palavras, estruturando cronologia e aplicando padrões de triagem profissional.',
+    loading_moment: 'Apenas alguns instantes...',
   },
 
   en: {
@@ -775,17 +873,38 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tmpl_experience: 'Work Experience',
     tmpl_skills: 'Skills & Technologies',
     tmpl_skills_core: 'Core Competencies',
+    tmpl_skills_main: 'Core Competencies',
     tmpl_tools: 'Systems, Software & Tools',
+    tmpl_tools_soft: 'Tools & Software',
     tmpl_education: 'Education',
+    tmpl_education_short: 'Education',
     tmpl_courses: 'Courses & Certifications',
+    tmpl_courses_short: 'Courses',
+    tmpl_certifications: 'Certifications',
     tmpl_contact: 'Contact',
     tmpl_present: 'Present',
     tmpl_status_completed: 'Completed',
     tmpl_status_in_progress: 'In progress',
     tmpl_status_interrupted: 'Interrupted',
-    tmpl_qualifications: 'Executive Summary',
-    tmpl_history: 'Professional Career History',
+    tmpl_qualifications: 'Qualifications Summary',
+    tmpl_qualifications_synthesis: 'Qualifications Summary',
+    tmpl_profile: 'Professional Profile',
+    tmpl_trajectory: 'Career History',
+    tmpl_exec_skills: 'Executive Skills & Tools',
+    tmpl_exec_mgmt: 'Management & Leadership',
+    tmpl_exec_systems: 'Systems & Technologies',
+    tmpl_exec_cert: 'Certifications & Professional Development',
+    tmpl_skills_tech_alt: 'Technical Skills & Competencies',
+    tmpl_skills_label: 'Skills:',
+    tmpl_tools_label: 'Tools & Technologies:',
     tmpl_default_bullet: 'Executed operational duties and delivered strategic contributions in this role.',
+    tmpl_default_bullet_modern: 'Dedicated performance toward achieving operational and strategic milestones.',
+    tmpl_default_bullet_exec: 'Leadership of strategic initiatives and ongoing optimization of business processes.',
+    tmpl_default_bullet_ats: 'Execution of day-to-day operations and area corporate projects.',
+    tmpl_default_bullet_corp: 'Responsible for conducting technical procedures and delivering organizational goals.',
+    step_7_err_paste_job: 'Paste the job description in the field above to analyze.',
+    step_7_err_fail: 'Could not analyze the job right now. You can continue anyway.',
+    field_photo_tip: 'Tip: Use a clear photo with good lighting.',
 
     // Preview
     prev_download_pdf: 'Download Resume PDF',
@@ -806,10 +925,87 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_prompt_desc: 'Your resume is ready and saved in this browser. To back it up securely in the cloud, sign in for free with 1 click.',
     prev_cloud_btn: 'Save to Cloud (Sign in)',
     prev_match_title: 'Compatibility with this job',
+    prev_match_badge: 'Smart Feature • Job Analysis',
+    prev_match_score_sub: 'Profile match',
     prev_match_found_skills: 'Matching Skills Found',
     prev_match_relevant_exp: 'Relevant Experience',
     prev_match_improvements: 'Areas for Improvement',
     prev_match_disclaimer: '* Compatibility analysis is an informational assessment and does not guarantee job hiring or interview calls.',
+
+    // Preview extra & badges
+    prev_ready_badge: 'Resume Ready',
+    prev_ai_optimized: '• AI-Optimized',
+    prev_default_title: 'Your Resume',
+    prev_cloud_synced_badge: 'Cloud Synchronized',
+    prev_cloud_synced_desc: 'This resume is saved in your cloud and protected for access on any device.',
+    prev_cloud_synced_tag: 'Saved in Cloud',
+    prev_cloud_opt_badge: 'Optional • Save to Cloud',
+    prev_tmpl_style_title: 'Choose Resume Style:',
+    prev_tip_download: 'Tip: Click DOWNLOAD PDF for maximum fidelity export.',
+
+    // Templates Ribbon
+    tmpl_modern_badge: 'Tech & Innovation',
+    tmpl_modern_desc: 'Clean, focused design with zero visual clutter. Standard for tech and modern businesses.',
+    tmpl_executive_badge: 'Leadership & Finance',
+    tmpl_executive_desc: 'Refined layout with serif typography and executive presence.',
+    tmpl_ats_badge: 'Online ATS & Screening',
+    tmpl_ats_desc: '100% linear single-column layout, optimized for recruiter bots and HR portals.',
+    tmpl_impact_badge: 'Sales & Product',
+    tmpl_impact_desc: 'Structured high-contrast sidebar panel creating a memorable visual impression.',
+    tmpl_corporate_badge: 'Corporate & Finance',
+    tmpl_corporate_desc: 'Minimalist mathematical grid tailored for corporate enterprises and global institutions.',
+    tmpl_achievements: 'Key Achievements & Impact',
+    tmpl_skills_tools: 'Skills & Technologies',
+
+    // ATS Audit Bar
+    ats_audit_title: 'ATS Parsing Audit:',
+    ats_audit_sections: 'structured sections • Deterministic order • 100% indexable text',
+    ats_score_label: 'Structural Score:',
+    ats_verification_note: '(Technical parsing verification)',
+
+    // Mobile bar
+    prev_mobile_creating: 'Creating PDF...',
+    prev_mobile_download: 'Download PDF',
+    prev_mobile_edit: 'Edit',
+
+    // Landing Hero Simulation
+    sim_header_brand: 'CURRÊ • Real-time Transformation',
+    sim_header_ai_active: 'Active AI',
+    sim_detail_1: 'John Doe • Operations Analyst',
+    sim_detail_2: '"Handled department invoices and spreadsheets..."',
+    sim_detail_3: '→ "Managed tax routines and billing operations via Excel"',
+    sim_detail_4: 'Matching requirements: 92% match',
+    sim_default_role: 'Professional',
+
+    // Landing Hero Saved Resume
+    hero_saved_resume_title: 'Saved Resume',
+    hero_saved_cloud_tooltip: 'Want to save to cloud? Optional free sign-in',
+
+    // Navbar Tooltips
+    nav_cloud_connected_title: 'Account connected to cloud',
+    nav_cloud_active_title: 'Cloud active',
+    nav_login_tooltip: 'Sign in (Optional - to save to cloud)',
+    nav_menu_aria: 'Open menu',
+
+    // Adapt Job Modal
+    adapt_modal_title: 'Tailor to Another Job',
+    adapt_current_role: 'Current resume role:',
+    adapt_modal_desc: 'Paste the description or requirements of the new job. CURRÊ will re-analyze your real experiences and highlight the strongest matches for this opportunity.',
+    adapt_job_label: 'New job description',
+    adapt_job_placeholder: 'Paste the new job text here (requirements, responsibilities, desired skills)...',
+    adapt_truth_guarantee: 'Your real experiences and recorded data remain 100% truthful.',
+    adapt_cancel: 'Cancel',
+    adapt_submitting: 'Tailoring with AI...',
+    adapt_submit: 'Tailor Resume',
+
+    // Loading Overlay
+    loading_phase_1: 'Analyzing your profile...',
+    loading_phase_2: 'Organizing your experiences...',
+    loading_phase_3: 'Tailoring your resume...',
+    loading_phase_4: 'Finalizing...',
+    loading_brand_badge: 'CURRÊ • AI in Action',
+    loading_description: 'Refining your words, structuring chronology, and applying professional recruitment standards.',
+    loading_moment: 'Just a few moments...',
   },
 
   es: {
@@ -1160,17 +1356,38 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tmpl_experience: 'Experiencia Laboral',
     tmpl_skills: 'Competencias & Tecnologías',
     tmpl_skills_core: 'Competencias Principales',
+    tmpl_skills_main: 'Competencias Principales',
     tmpl_tools: 'Sistemas, Software & Herramientas',
+    tmpl_tools_soft: 'Herramientas & Software',
     tmpl_education: 'Educación y Formación',
+    tmpl_education_short: 'Educación',
     tmpl_courses: 'Cursos & Certificaciones',
+    tmpl_courses_short: 'Cursos',
+    tmpl_certifications: 'Certificaciones',
     tmpl_contact: 'Contacto',
     tmpl_present: 'Actual',
     tmpl_status_completed: 'Completado',
     tmpl_status_in_progress: 'En curso',
     tmpl_status_interrupted: 'Interrumpido',
     tmpl_qualifications: 'Resumen de Cualificaciones',
-    tmpl_history: 'Historial Profesional',
+    tmpl_qualifications_synthesis: 'Síntesis de Cualificaciones',
+    tmpl_profile: 'Perfil Profesional',
+    tmpl_trajectory: 'Trayectoria Profesional',
+    tmpl_exec_skills: 'Competencias Directivas & Herramientas',
+    tmpl_exec_mgmt: 'Gestión & Liderazgo',
+    tmpl_exec_systems: 'Sistemas & Tecnologías',
+    tmpl_exec_cert: 'Certificaciones & Perfeccionamiento Profesional',
+    tmpl_skills_tech_alt: 'Competencias & Habilidades Técnicas',
+    tmpl_skills_label: 'Competencias:',
+    tmpl_tools_label: 'Herramientas & Tecnologías:',
     tmpl_default_bullet: 'Gestión y ejecución de las responsabilidades operativas del cargo.',
+    tmpl_default_bullet_modern: 'Actuación orientada al cumplimiento de objetivos operativos y estratégicos.',
+    tmpl_default_bullet_exec: 'Liderazgo de iniciativas estratégicas y gestión continua de procesos organizacionales.',
+    tmpl_default_bullet_ats: 'Ejecución de rutinas operativas y proyectos corporativos del área.',
+    tmpl_default_bullet_corp: 'Responsable de la conducción de procesos técnicos y cumplimiento de metas corporativas.',
+    step_7_err_paste_job: 'Pegue la descripción de la vacante en el campo de arriba para analizar.',
+    step_7_err_fail: 'No fue posible analizar la vacante ahora. Puede continuar de todos modos.',
+    field_photo_tip: 'Consejo: Utilice una foto clara y con buena iluminación.',
 
     // Preview
     prev_download_pdf: 'Descargar Currículum PDF',
@@ -1191,10 +1408,87 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_prompt_desc: 'Tu currículum ya está guardado en este navegador. Para asegurarlo en la nube y no perderlo, inicia sesión gratis con 1 clic.',
     prev_cloud_btn: 'Guardar en la Nube (Acceder)',
     prev_match_title: 'Compatibilidad con esta vacante',
+    prev_match_badge: 'Función Inteligente • Análisis de Vacante',
+    prev_match_score_sub: 'Afinidad con el perfil',
     prev_match_found_skills: 'Competencias Encontradas',
     prev_match_relevant_exp: 'Experiencias Relevantes',
     prev_match_improvements: 'Puntos de Mejora',
     prev_match_disclaimer: '* El análisis de compatibilidad es una orientación técnica y no garantiza contratación.',
+
+    // Preview extra & badges
+    prev_ready_badge: 'Currículum Listo',
+    prev_ai_optimized: '• Optimizado con IA',
+    prev_default_title: 'Tu Currículum',
+    prev_cloud_synced_badge: 'Nube Sincronizada',
+    prev_cloud_synced_desc: 'Este currículum está guardado en tu nube y protegido para acceder desde cualquier dispositivo.',
+    prev_cloud_synced_tag: 'Guardado en la Nube',
+    prev_cloud_opt_badge: 'Opcional • Guardar en la Nube',
+    prev_tmpl_style_title: 'Elige el Estilo del Currículum:',
+    prev_tip_download: 'Consejo: Haz clic en DESCARGAR PDF para exportar con fidelidad total.',
+
+    // Templates Ribbon
+    tmpl_modern_badge: 'Tecnología & Innovación',
+    tmpl_modern_desc: 'Diseño limpio y enfocado, sin saturación visual. Estándar para startups y tecnológicas.',
+    tmpl_executive_badge: 'Liderazgo & Finanzas',
+    tmpl_executive_desc: 'Diagramación noble con tipografía serif y fuerte presencia ejecutiva.',
+    tmpl_ats_badge: 'Filtro Online & ATS',
+    tmpl_ats_desc: 'Columna única 100% lineal, optimizada para robots de reclutamiento y portales.',
+    tmpl_impact_badge: 'Ventas & Producto',
+    tmpl_impact_desc: 'Panel lateral estructurado con alto contraste y presencia visual memorable.',
+    tmpl_corporate_badge: 'Bancos & Corporaciones',
+    tmpl_corporate_desc: 'Cuadrícula matemática minimalista para grandes industrias y gobernanza global.',
+    tmpl_achievements: 'Logros Principales & Resultados',
+    tmpl_skills_tools: 'Competencias & Tecnologías',
+
+    // ATS Audit Bar
+    ats_audit_title: 'Auditoría de Lectura ATS:',
+    ats_audit_sections: 'secciones estructuradas • Orden determinista • 100% texto indexable',
+    ats_score_label: 'Score Estructural:',
+    ats_verification_note: '(Verificación técnica de parsing)',
+
+    // Mobile bar
+    prev_mobile_creating: 'Creando PDF...',
+    prev_mobile_download: 'Descargar PDF',
+    prev_mobile_edit: 'Editar',
+
+    // Landing Hero Simulation
+    sim_header_brand: 'CURRÊ • Transformación en Tiempo Real',
+    sim_header_ai_active: 'IA Activa',
+    sim_detail_1: 'Carlos López • Analista Administrativo',
+    sim_detail_2: '"Cuidaba de las facturas y planillas en el sector..."',
+    sim_detail_3: '→ "Gestionó rutinas fiscales y control de facturación en Excel"',
+    sim_detail_4: 'Requisitos correspondientes: 92% de compatibilidad',
+    sim_default_role: 'Profesional',
+
+    // Landing Hero Saved Resume
+    hero_saved_resume_title: 'Currículum Guardado',
+    hero_saved_cloud_tooltip: '¿Deseas guardarlo en la nube? Acceso gratis opcional',
+
+    // Navbar Tooltips
+    nav_cloud_connected_title: 'Cuenta conectada en la nube',
+    nav_cloud_active_title: 'Nube activa',
+    nav_login_tooltip: 'Iniciar sesión (Opcional - guardar en nube)',
+    nav_menu_aria: 'Abrir menú',
+
+    // Adapt Job Modal
+    adapt_modal_title: 'Adaptar para Otra Vacante',
+    adapt_current_role: 'Cargo actual del currículum:',
+    adapt_modal_desc: 'Pega la descripción o requisitos de la nueva vacante. CURRÊ volverá a analizar tus experiencias reales y destacará los puntos más compatibles para esta oportunidad.',
+    adapt_job_label: 'Descripción de la nueva vacante',
+    adapt_job_placeholder: 'Pega aquí el texto de la nueva vacante (requisitos, responsabilidades, conocimientos)...',
+    adapt_truth_guarantee: 'Tus experiencias y datos registrados se mantendrán 100% verídicos.',
+    adapt_cancel: 'Cancelar',
+    adapt_submitting: 'Adaptando con IA...',
+    adapt_submit: 'Adaptar Currículum',
+
+    // Loading Overlay
+    loading_phase_1: 'Analizando tu perfil...',
+    loading_phase_2: 'Organizando tus experiencias...',
+    loading_phase_3: 'Adaptando tu currículum...',
+    loading_phase_4: 'Finalizando...',
+    loading_brand_badge: 'CURRÊ • IA en Acción',
+    loading_description: 'Refinando tus palabras, estructurando cronología y aplicando estándares profesionales.',
+    loading_moment: 'Solo unos instantes...',
   },
 
   fr: {
@@ -1545,17 +1839,38 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     tmpl_experience: 'Expérience Professionnelle',
     tmpl_skills: 'Compétences & Outils',
     tmpl_skills_core: 'Compétences Clés',
+    tmpl_skills_main: 'Compétences Principales',
     tmpl_tools: 'Logiciels & Outils Maîtrisés',
+    tmpl_tools_soft: 'Outils & Logiciels',
     tmpl_education: 'Formation & Diplômes',
+    tmpl_education_short: 'Formation',
     tmpl_courses: 'Formations & Certifications',
+    tmpl_courses_short: 'Formations',
+    tmpl_certifications: 'Certifications',
     tmpl_contact: 'Contact',
     tmpl_present: 'Présent',
     tmpl_status_completed: 'Terminé',
     tmpl_status_in_progress: 'En cours',
     tmpl_status_interrupted: 'Interrompu',
     tmpl_qualifications: 'Résumé de Qualifications',
-    tmpl_history: 'Parcours Professionnel',
+    tmpl_qualifications_synthesis: 'Synthèse de Qualifications',
+    tmpl_profile: 'Profil Professionnel',
+    tmpl_trajectory: 'Parcours Professionnel',
+    tmpl_exec_skills: 'Compétences Dirigeantes & Outils',
+    tmpl_exec_mgmt: 'Management & Leadership',
+    tmpl_exec_systems: 'Systèmes & Technologies',
+    tmpl_exec_cert: 'Certifications & Perfectionnement Professionnel',
+    tmpl_skills_tech_alt: 'Compétences & Aptitudes Techniques',
+    tmpl_skills_label: 'Compétences :',
+    tmpl_tools_label: 'Outils & Technologies :',
     tmpl_default_bullet: 'Prise en charge des missions opérationnelles et contribution aux objectifs du service.',
+    tmpl_default_bullet_modern: 'Action orientée vers l\'atteinte des objectifs opérationnels et stratégiques.',
+    tmpl_default_bullet_exec: 'Pilotage d\'initiatives stratégiques et gestion continue des processus d\'organisation.',
+    tmpl_default_bullet_ats: 'Exécution des opérations quotidiennes et conduite des projets d\'entreprise du secteur.',
+    tmpl_default_bullet_corp: 'Responsable de la conduite des processus techniques et du respect des exigences de l\'entreprise.',
+    step_7_err_paste_job: 'Collez la description de l\'offre dans le champ ci-dessus pour analyser.',
+    step_7_err_fail: 'Impossible d\'analyser l\'offre pour l\'instant. Vous pouvez continuer quand même.',
+    field_photo_tip: 'Conseil : Utilisez une photo nette avec un bon éclairage.',
 
     // Preview
     prev_download_pdf: 'Télécharger le CV en PDF',
@@ -1576,10 +1891,87 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_prompt_desc: 'Votre CV est prêt et sauvegardé dans ce navigateur. Pour le conserver en toute sécurité dans le cloud, connectez-vous gratuitement en 1 clic.',
     prev_cloud_btn: 'Sauvegarder dans le Cloud (Connexion)',
     prev_match_title: 'Adéquation avec ce poste',
+    prev_match_badge: 'Fonction Intelligente • Analyse de l\'Offre',
+    prev_match_score_sub: 'Adéquation au profil',
     prev_match_found_skills: 'Compétences Identifiées',
     prev_match_relevant_exp: 'Expériences Pertinentes',
     prev_match_improvements: 'Pistes d\'Amélioration',
     prev_match_disclaimer: '* L\'analyse d\'adéquation est une évaluation technique et ne garantit pas l\'embauche.',
+
+    // Preview extra & badges
+    prev_ready_badge: 'CV Prêt',
+    prev_ai_optimized: '• Optimisé par IA',
+    prev_default_title: 'Votre CV',
+    prev_cloud_synced_badge: 'Cloud Synchronisé',
+    prev_cloud_synced_desc: 'Ce CV est sauvegardé dans votre cloud et protégé pour un accès sur tout appareil.',
+    prev_cloud_synced_tag: 'Sauvegardé dans le Cloud',
+    prev_cloud_opt_badge: 'Optionnel • Sauvegarder dans le Cloud',
+    prev_tmpl_style_title: 'Choisissez le Style du CV :',
+    prev_tip_download: 'Conseil : Cliquez sur TÉLÉCHARGER LE CV EN PDF pour une fidélité d\'export maximale.',
+
+    // Templates Ribbon
+    tmpl_modern_badge: 'Tech & Innovation',
+    tmpl_modern_desc: 'Design épuré et percutant, sans surcharge visuelle. Idéal pour tech et startups.',
+    tmpl_executive_badge: 'Direction & Finance',
+    tmpl_executive_desc: 'Mise en page noble avec typographie avec empattements et autorité exécutive.',
+    tmpl_ats_badge: 'Filtrage ATS en Ligne',
+    tmpl_ats_desc: 'Colonne unique 100% linéaire, optimisée pour les robots de recrutement et portails.',
+    tmpl_impact_badge: 'Vente & Produit',
+    tmpl_impact_desc: 'Panneau latéral structuré à fort contraste pour une présence mémorable.',
+    tmpl_corporate_badge: 'Grandes Entreprises & Banques',
+    tmpl_corporate_desc: 'Grille mathématique minimaliste pour grands groupes et gouvernance internationale.',
+    tmpl_achievements: 'Réalisations Clés & Résultats',
+    tmpl_skills_tools: 'Compétences & Technologies',
+
+    // ATS Audit Bar
+    ats_audit_title: 'Audit de Lecture ATS :',
+    ats_audit_sections: 'sections structurées • Ordre déterministe • 100% texte indexable',
+    ats_score_label: 'Score Structurel :',
+    ats_verification_note: '(Vérification technique de parsing)',
+
+    // Mobile bar
+    prev_mobile_creating: 'Création du PDF...',
+    prev_mobile_download: 'Télécharger le PDF',
+    prev_mobile_edit: 'Modifier',
+
+    // Landing Hero Simulation
+    sim_header_brand: 'CURRÊ • Transformation en Temps Réel',
+    sim_header_ai_active: 'IA Active',
+    sim_detail_1: 'Thomas Martin • Analyste Opérationnel',
+    sim_detail_2: '"Gérait les factures et tableaux du service..."',
+    sim_detail_3: '→ "A piloté les opérations fiscales et le suivi de facturation sous Excel"',
+    sim_detail_4: 'Critères correspondants : 92% d\'adéquation',
+    sim_default_role: 'Professionnel',
+
+    // Landing Hero Saved Resume
+    hero_saved_resume_title: 'CV Sauvegardé',
+    hero_saved_cloud_tooltip: 'Sauvegarder dans le cloud ? Connexion gratuite optionnelle',
+
+    // Navbar Tooltips
+    nav_cloud_connected_title: 'Compte connecté au cloud',
+    nav_cloud_active_title: 'Cloud actif',
+    nav_login_tooltip: 'Connexion (Optionnel - sauvegarde cloud)',
+    nav_menu_aria: 'Ouvrir le menu',
+
+    // Adapt Job Modal
+    adapt_modal_title: 'Adapter à une Autre Offre',
+    adapt_current_role: 'Poste actuel sur le CV :',
+    adapt_modal_desc: 'Collez la description ou les exigences du nouveau poste. CURRÊ va réanalyser vos expériences réelles pour valoriser les points les plus pertinents pour cette opportunité.',
+    adapt_job_label: 'Description du nouveau poste',
+    adapt_job_placeholder: 'Collez ici l\'annonce (missions, profil recherché, compétences souhaitées)...',
+    adapt_truth_guarantee: 'Vos expériences et informations renseignées demeurent 100% véridiques.',
+    adapt_cancel: 'Annuler',
+    adapt_submitting: 'Adaptation par IA...',
+    adapt_submit: 'Adapter le CV',
+
+    // Loading Overlay
+    loading_phase_1: 'Analyse de votre profil...',
+    loading_phase_2: 'Organisation de vos expériences...',
+    loading_phase_3: 'Adaptation de votre CV...',
+    loading_phase_4: 'Finalisation...',
+    loading_brand_badge: 'CURRÊ • IA en Action',
+    loading_description: 'Optimisation de vos formulations, structuration chronologique et application des critères de recrutement.',
+    loading_moment: 'Encore quelques instants...',
   },
 };
 
@@ -1686,3 +2078,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 };
 
 export const useLanguage = () => useContext(LanguageContext);
+
+export function translateEduStatus(status: string | undefined, t: (k: string) => string): string {
+  if (!status) return '';
+  const s = status.toLowerCase().trim();
+  if (s.includes('conclu') || s.includes('complete') || s.includes('termin')) {
+    return t('tmpl_status_completed');
+  }
+  if (s.includes('anda') || s.includes('prog') || s.includes('cours') || s.includes('curs')) {
+    return t('tmpl_status_in_progress');
+  }
+  if (s.includes('interr') || s.includes('incomp') || s.includes('pause')) {
+    return t('tmpl_status_interrupted');
+  }
+  return status;
+}
