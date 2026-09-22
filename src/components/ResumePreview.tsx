@@ -194,39 +194,39 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <button
               onClick={onAdaptOtherJob}
               id="btn-adapt-other-job"
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-sky-800 bg-sky-50 border border-sky-200 hover:bg-sky-100 flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60 flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors"
               title={t('prev_btn_adapt')}
             >
-              <Sparkles className="w-4 h-4 text-sky-600" />
+              <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               <span>{t('prev_btn_adapt')}</span>
             </button>
 
             <button
               onClick={onEdit}
               id="btn-edit-resume"
-              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1.5 shadow-sm cursor-pointer"
               title={t('prev_btn_edit')}
             >
-              <Edit className="w-4 h-4 text-slate-500" />
+              <Edit className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>{t('prev_btn_edit')}</span>
             </button>
 
             <button
               onClick={onRegenerate}
               id="btn-regenerate"
-              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1.5 shadow-sm cursor-pointer"
               title={t('prev_btn_regenerate')}
             >
-              <RotateCcw className="w-4 h-4 text-slate-500" />
+              <RotateCcw className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>{t('prev_btn_regenerate')}</span>
             </button>
 
             <button
               onClick={handleSaveLocally}
               id="btn-save-resume"
-              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
-              <BookmarkCheck className="w-4 h-4 text-emerald-600" />
+              <BookmarkCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{savedSuccess ? t('prev_btn_saved') : t('prev_btn_save')}</span>
             </button>
           </div>

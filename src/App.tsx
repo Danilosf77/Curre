@@ -20,6 +20,7 @@ import {
 import { formatExperienceBullets } from './utils/textBeautifier';
 import { Sparkles, Heart } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import { auth, loadResumeFromCloud, saveResumeToCloud, logoutFirebase } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -471,41 +472,41 @@ function AppContent() {
       />
 
       {/* Clean Footer (hidden on print) */}
-      <footer id="app-footer" className="no-print mt-auto py-8 px-6 sm:px-8 border-t border-slate-200/80 bg-white/70 backdrop-blur-sm text-xs text-slate-500">
+      <footer id="app-footer" className="no-print mt-auto py-8 px-6 sm:px-8 border-t border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm text-xs text-slate-500 dark:text-slate-400">
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Top Row: Brand & Description vs. Links */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="space-y-2 max-w-xl text-left">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-extrabold text-slate-900 tracking-tight text-sm">
+                <span className="font-extrabold text-slate-900 dark:text-white tracking-tight text-sm">
                   CURRÊ
                 </span>
-                <span className="text-slate-300">|</span>
-                <span className="text-xs text-slate-500 font-medium">
+                <span className="text-slate-300 dark:text-slate-700">|</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                   {t('brand_slogan')}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed text-left">
+              <p className="text-[11px] text-slate-400 dark:text-slate-400 leading-relaxed text-left">
                 {t('footer_tagline')}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
               <button
                 onClick={() => setHowItWorksOpen(true)}
-                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+                className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer whitespace-nowrap"
               >
                 {t('nav_how_it_works')}
               </button>
               <button
                 onClick={() => setFeaturesOpen(true)}
-                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+                className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer whitespace-nowrap"
               >
                 {t('nav_features')}
               </button>
               <button
                 onClick={() => setPrivacyOpen(true)}
-                className="hover:text-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+                className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer whitespace-nowrap"
               >
                 {t('footer_terms')}
               </button>
@@ -513,17 +514,17 @@ function AppContent() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-slate-100" />
+          <div className="border-t border-slate-100 dark:border-slate-800" />
 
           {/* Bottom Row: Attribution & Copyright */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px]">
-            <div className="text-slate-500 inline-flex items-center gap-1.5">
+            <div className="text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5">
               <span>{t('footer_developed_by')}</span>
-              <span className="text-slate-700 font-semibold whitespace-nowrap">
+              <span className="text-slate-700 dark:text-slate-200 font-semibold whitespace-nowrap">
                 Danilo Freitas
               </span>
             </div>
-            <div className="text-slate-400">
+            <div className="text-slate-400 dark:text-slate-500">
               &copy; {new Date().getFullYear()} CURRÊ. All rights reserved.
             </div>
           </div>
@@ -535,9 +536,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

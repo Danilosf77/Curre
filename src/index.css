@@ -1,10 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --glass-bg: rgba(255, 255, 255, 0.72);
     --glass-border: rgba(255, 255, 255, 0.65);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  }
+
+  :root.dark {
+    --glass-bg: rgba(15, 23, 42, 0.75);
+    --glass-border: rgba(51, 65, 85, 0.6);
+    --glass-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.4);
   }
 
   body {
@@ -14,16 +22,31 @@
     color: #0f172a;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  html.dark body {
+    background: radial-gradient(circle at 20% 15%, rgba(14, 116, 144, 0.18) 0%, rgba(15, 23, 42, 0.95) 45%, rgba(10, 15, 29, 1) 85%);
+    background-attachment: fixed;
+    color: #f1f5f9;
   }
 }
 
-/* Liquid Glass Utilities */
+/* Liquid Glass Utilities with Dark Mode adaptations */
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.85);
   box-shadow: 0 10px 30px -10px rgba(14, 116, 144, 0.08), 0 20px 40px -20px rgba(0, 0, 0, 0.05);
+}
+
+html.dark .liquid-glass {
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .liquid-glass-subtle {
@@ -33,12 +56,27 @@
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
+html.dark .liquid-glass-subtle {
+  background: rgba(30, 41, 59, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+}
+
 .liquid-glass-card {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 12px 36px -12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+}
+
+html.dark .liquid-glass-card {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 .liquid-glass-card-dark {
@@ -64,6 +102,70 @@
   background: rgba(241, 245, 249, 0.75);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.dark .liquid-glass-pill {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+}
+
+/* Global input & form adjustments in dark mode (excluding the resume document sheet) */
+html.dark input:not(#resume-document *),
+html.dark textarea:not(#resume-document *),
+html.dark select:not(#resume-document *) {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+}
+
+/* Modals & Dialogs dark theme consistency */
+html.dark .liquid-glass-card {
+  color: #f1f5f9;
+}
+
+html.dark .liquid-glass-card h1,
+html.dark .liquid-glass-card h2,
+html.dark .liquid-glass-card h3,
+html.dark .liquid-glass-card h4 {
+  color: #f8fafc;
+}
+
+html.dark .liquid-glass-card p:not(.text-sky-600):not(.text-emerald-600):not(.text-amber-600) {
+  color: #cbd5e1;
+}
+
+html.dark .liquid-glass-card .bg-slate-50,
+html.dark .liquid-glass-card .bg-white\/70,
+html.dark .liquid-glass-card .bg-white\/80,
+html.dark .liquid-glass-card .bg-white\/90 {
+  background-color: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark input:not(#resume-document *)::placeholder,
+html.dark textarea:not(#resume-document *)::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.dark input:not(#resume-document *):focus,
+html.dark textarea:not(#resume-document *):focus,
+html.dark select:not(#resume-document *):focus {
+  border-color: #38bdf8 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Critical Rule: Resume Document MUST always preserve crisp white paper, optimal ATS readability and exact print colors */
+#resume-document,
+#resume-document * {
+  color-scheme: light !important;
+}
+
+.resume-paper {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 /* Resume Document Styling for Screen & Print */

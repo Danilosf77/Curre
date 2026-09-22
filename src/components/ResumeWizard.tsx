@@ -2255,7 +2255,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </button>
             )}
 
-            {currentStep < 8 ? (
+            {currentStep < 8 && (
               <button
                 type="button"
                 onClick={handleNext}
@@ -2268,21 +2268,6 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               >
                 <span>{t('wiz_next')}</span>
                 <ChevronRight className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleFinalSubmit}
-                id="wizard-btn-final-bottom"
-                disabled={!isAllValid()}
-                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
-                  isAllValid()
-                    ? 'liquid-glass-button text-white shadow-lg shadow-sky-500/30 cursor-pointer transform hover:scale-[1.02]'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                }`}
-              >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>{t('wiz_generate_btn')}</span>
               </button>
             )}
           </div>

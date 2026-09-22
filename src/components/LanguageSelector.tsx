@@ -26,26 +26,26 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = () => {
         id="btn-language-selector"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 hover:bg-white border border-slate-200/90 shadow-xs hover:shadow hover:border-sky-300 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+        className="flex items-center justify-center gap-1.5 h-7 w-[84px] px-2 rounded-full bg-white/95 dark:bg-slate-800/95 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow hover:border-sky-300 dark:hover:border-sky-500 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 shrink-0"
         title={`Idioma: ${currentOption.shortLabel} - ${currentOption.label}`}
         aria-label="Selecionar Idioma"
       >
         <img
           src={currentOption.googleFlagSvg}
           alt={`Bandeira ${currentOption.shortLabel}`}
-          className="w-4 h-3 sm:w-5 sm:h-3.5 object-cover rounded-[2px] shadow-xs border border-slate-200/70 shrink-0"
+          className="w-4 h-3 object-cover rounded-[2px] shadow-xs border border-slate-200/70 dark:border-slate-600/70 shrink-0"
           referrerPolicy="no-referrer"
           loading="eager"
         />
-        <span className="text-xs font-bold text-slate-800 tracking-wider leading-none">
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wider leading-none">
           {currentOption.shortLabel}
         </span>
       </button>
 
       {/* Dropdown ao clicar: Bandeira Google + Sigla do Idioma + Nome */}
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-48 rounded-2xl bg-white shadow-xl border border-slate-200/90 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
+        <div className="absolute right-0 mt-1.5 w-48 rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200/90 dark:border-slate-700 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700/70 mb-1">
             Idioma / Language
           </div>
           {LANGUAGES.map((opt) => {
@@ -61,23 +61,23 @@ export const LanguageSelector: React.FC<{ compact?: boolean }> = () => {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors cursor-pointer text-left whitespace-nowrap ${
                   isSelected
-                    ? 'bg-sky-50 text-sky-900 font-bold'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-900 dark:text-sky-300 font-bold'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <img
                     src={opt.googleFlagSvg}
                     alt={opt.shortLabel}
-                    className="w-5 h-3.5 object-cover rounded-[2px] shadow-xs border border-slate-200/70 shrink-0"
+                    className="w-5 h-3.5 object-cover rounded-[2px] shadow-xs border border-slate-200/70 dark:border-slate-600/70 shrink-0"
                     referrerPolicy="no-referrer"
                   />
-                  <span className="font-bold tracking-wide text-slate-900">{opt.shortLabel}</span>
-                  <span className="text-slate-400 font-normal text-[11px] truncate">
+                  <span className="font-bold tracking-wide text-slate-900 dark:text-slate-100">{opt.shortLabel}</span>
+                  <span className="text-slate-400 dark:text-slate-400 font-normal text-[11px] truncate">
                     {opt.label}
                   </span>
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-sky-600 ml-1.5 shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 ml-1.5 shrink-0" />}
               </button>
             );
           })}
