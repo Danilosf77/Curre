@@ -119,6 +119,27 @@ html.dark select:not(#resume-document *) {
   border-color: rgba(71, 85, 105, 0.6) !important;
 }
 
+/* Form Labels, Field Titles and Helper Texts in Dark Mode */
+html.dark label:not(#resume-document *),
+html.dark .liquid-glass-card label,
+html.dark .form-label {
+  color: #f1f5f9 !important; /* crisp slate-100 */
+}
+
+html.dark label:not(#resume-document *) > span:first-child,
+html.dark .liquid-glass-card label > span:first-child {
+  color: #f8fafc !important; /* bright white for label title */
+}
+
+/* Helper text like "Obrigatório", "(opcional)", "Padrão: (11) 98765-4321" */
+html.dark label:not(#resume-document *) span.text-slate-400,
+html.dark label:not(#resume-document *) span.text-slate-500,
+html.dark label:not(#resume-document *) span.font-normal,
+html.dark .liquid-glass-card label span.text-slate-400,
+html.dark .liquid-glass-card label span.text-slate-500 {
+  color: #cbd5e1 !important; /* clearly legible soft slate-300 */
+}
+
 /* Modals & Dialogs dark theme consistency */
 html.dark .liquid-glass-card {
   color: #f1f5f9;

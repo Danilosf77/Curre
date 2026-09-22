@@ -725,13 +725,13 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-2 pb-20">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-3 sm:pt-4 pb-20">
       {/* Top Bar with Step Count & Pre-fill Shortcut */}
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <button
           onClick={handlePrev}
           id="wizard-btn-back-top"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/70 px-3 py-1.5 rounded-lg border border-slate-200/80 cursor-pointer transition-all"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white/80 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-700 cursor-pointer transition-all shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>{currentStep === 1 ? t('wiz_back_home') : t('wiz_prev_step')}</span>
@@ -742,10 +742,10 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             <button
               onClick={handleJumpToReview}
               id="wizard-btn-skip-to-review-top"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 px-3 py-1.5 rounded-lg border border-sky-300 transition-all cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 dark:text-sky-200 bg-sky-100 dark:bg-sky-950/70 hover:bg-sky-200 dark:hover:bg-sky-900/70 px-3 py-1.5 rounded-lg border border-sky-300 dark:border-sky-800 transition-all cursor-pointer shadow-sm"
               title={t('wiz_jump_review')}
             >
-              <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               <span>{t('wiz_jump_review')}</span>
             </button>
           )}
@@ -753,10 +753,10 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           <button
             onClick={handleLoadSample}
             id="wizard-btn-fill-sample"
-            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-50/90 hover:bg-sky-100/80 px-3 py-1.5 rounded-lg border border-sky-200/70 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700 dark:text-sky-300 bg-sky-50/90 dark:bg-sky-950/60 hover:bg-sky-100/80 dark:hover:bg-sky-900/60 px-3 py-1.5 rounded-lg border border-sky-200/70 dark:border-sky-800 transition-all cursor-pointer shadow-sm"
             title={t('wiz_fill_sample')}
           >
-            <Wand2 className="w-3.5 h-3.5 text-sky-600" />
+            <Wand2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>{t('wiz_fill_sample')}</span>
           </button>
         </div>
@@ -766,20 +766,20 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
       <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 mb-6">
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-100/70 dark:bg-sky-950/70 px-2 py-0.5 rounded-md">
               {t('wiz_step_label')} {currentStep} {t('wiz_of_label')} 8
             </span>
-            <h2 className="text-sm sm:text-base font-bold text-slate-900">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
               {stepTitles[currentStep - 1]}
             </h2>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-300">
             {Math.round((currentStep / 8) * 100)}%
           </span>
         </div>
 
         {/* Visual progress bar */}
-        <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5">
+        <div className="w-full bg-slate-100 dark:bg-slate-800/80 rounded-full h-2.5 overflow-hidden p-0.5">
           <div
             className="bg-gradient-to-r from-sky-500 to-cyan-500 h-full rounded-full transition-all duration-300 shadow-sm"
             style={{ width: `${(currentStep / 8) * 100}%` }}
@@ -795,19 +795,19 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_1_heading')}</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{t('step_1_heading')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-300">
                 {t('step_1_sub')}
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                   <span>
                     {t('field_full_name')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{t('label_required')}</span>
                 </label>
                 <input
                   type="text"
@@ -829,11 +829,11 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                   <span>
                     {t('field_city_state')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{t('label_required')}</span>
                 </label>
                 <input
                   type="text"
@@ -855,11 +855,11 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                   <span>
                     {t('field_phone')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">{phoneConfig.formatLabel}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{phoneConfig.formatLabel}</span>
                 </label>
                 <input
                   type="tel"
@@ -882,11 +882,11 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                   <span>
                     {t('field_email')} <span className="text-rose-500">*</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{t('label_required')}</span>
                 </label>
                 <input
                   type="email"
@@ -908,7 +908,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5">
                   {t('field_linkedin')}
                 </label>
                 <input
@@ -921,7 +921,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5">
                   {t('field_portfolio')}
                 </label>
                 <input
@@ -935,7 +935,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             </div>
 
             {/* Optional Photo Toggle */}
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
               <label className="flex items-center gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -943,10 +943,10 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   onChange={(e) => setPersonal({ ...personal, hasPhoto: e.target.checked })}
                   className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500"
                 />
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                   {t('field_photo_toggle')}
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">({t('label_optional')})</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">({t('label_optional')})</span>
               </label>
 
               {personal.hasPhoto && (
@@ -994,18 +994,18 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-1">{t('step_2_heading')}</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{t('step_2_heading')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-300">
                 {t('step_2_sub')}
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5 flex items-center justify-between">
                 <span>
                   {t('step_2_role_label')} <span className="text-rose-500">*</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">{t('label_required')}</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-300 font-medium">{t('label_required')}</span>
               </label>
               <input
                 type="text"
@@ -1027,7 +1027,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
 
               {/* Suggestions chips */}
               <div className="mt-3">
-                <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-300 block mb-1.5">
                   {t('step_2_suggestions_label')}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -1039,7 +1039,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                       className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
                         targetJob.roleTitle === role
                           ? 'bg-sky-600 text-white border-sky-600 font-bold'
-                          : 'bg-white/80 text-slate-600 border-slate-200 hover:bg-sky-50 hover:text-sky-700'
+                          : 'bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 dark:hover:bg-slate-700 hover:text-sky-700 dark:hover:text-sky-300'
                       }`}
                     >
                       {role}
@@ -1050,7 +1050,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-100 mb-1.5">
                 {t('step_2_goal_label')}
               </label>
               <textarea
@@ -1062,8 +1062,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
               />
 
               {/* Friendly reassurance prompt */}
-              <div className="mt-2.5 p-3 rounded-xl bg-sky-50/80 border border-sky-100 flex items-start gap-2.5 text-xs text-sky-900">
-                <HelpCircle className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
+              <div className="mt-2.5 p-3 rounded-xl bg-sky-50/80 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900 flex items-start gap-2.5 text-xs text-sky-900 dark:text-sky-200">
+                <HelpCircle className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                 <p className="leading-relaxed">
                   {t('step_2_ai_tip')}
                 </p>
