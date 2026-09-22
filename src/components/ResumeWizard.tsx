@@ -1100,7 +1100,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             </div>
 
             {/* First Job / No Experience Toggle */}
-            <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200/80 flex items-start sm:items-center justify-between gap-3">
+            <div className="p-4 rounded-2xl bg-sky-50/80 dark:bg-sky-950/50 border border-sky-200/80 dark:border-sky-800/60 flex items-start sm:items-center justify-between gap-3">
               <label className="flex items-start sm:items-center gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1112,10 +1112,10 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 mt-0.5 sm:mt-0 cursor-pointer"
                 />
                 <div>
-                  <span className="text-xs font-bold text-slate-900 block">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
                     {t('step_3_no_exp_title')}
                   </span>
-                  <span className="text-[11px] text-slate-600 block mt-0.5">
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">
                     {t('step_3_no_exp_sub')}
                   </span>
                 </div>
@@ -1123,18 +1123,18 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             </div>
 
             {noExperience ? (
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-cyan-50/40 border border-sky-200 text-center space-y-3">
-                <Sparkles className="w-8 h-8 text-sky-600 mx-auto animate-pulse" />
-                <h4 className="text-sm font-bold text-slate-900">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-cyan-50/40 dark:from-sky-950/40 dark:to-slate-900 border border-sky-200 dark:border-sky-800 text-center space-y-3">
+                <Sparkles className="w-8 h-8 text-sky-600 dark:text-sky-400 mx-auto animate-pulse" />
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                   {t('step_3_no_exp_alert_title')}
                 </h4>
-                <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-lg mx-auto leading-relaxed">
                   {t('step_3_no_exp_alert_desc')}
                 </p>
                 <button
                   type="button"
                   onClick={() => setNoExperience(false)}
-                  className="text-xs font-bold text-sky-700 underline hover:text-sky-900 pt-1 cursor-pointer"
+                  className="text-xs font-bold text-sky-700 dark:text-sky-300 underline hover:text-sky-900 dark:hover:text-white pt-1 cursor-pointer"
                 >
                   {t('step_3_no_exp_revert')}
                 </button>
@@ -1142,16 +1142,16 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             ) : (
               <>
                 {/* Helper reassurance text */}
-                <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/70 text-xs text-amber-900 flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <p>
+                <div className="p-3.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200/90 dark:border-amber-700/60 flex items-start gap-2.5 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-xs font-semibold text-amber-950 dark:text-amber-200 leading-relaxed">
                     {t('step_3_ai_tip')}
                   </p>
                 </div>
 
                 {showErrors && !isStep3Valid() && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-200 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                     <span>
                       {experiences.length === 0
                         ? t('step_3_err_add_one')

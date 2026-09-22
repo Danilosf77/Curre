@@ -434,6 +434,47 @@ export async function exportResumeToPDF(elementId: string, candidateName: string
       backgroundColor: '#ffffff',
       onclone: (clonedDoc: Document) => {
         console.log("[CURRÊ PDF] Cloned DOM ready inside html2canvas iframe, resolving styles...");
+
+        // FIX: converte os ícones SVG (lucide-react) dentro dos itens de contato
+        // em background-image. O html2canvas tem um pipeline próprio e inconsistente
+        // pra desenhar <svg> inline (é isso que causa o ícone "flutuando" desalinhado
+        // no PDF mesmo com o preview perfeito no navegador). Um <span> com
+        // background-image usa o caminho de renderização de "background", que é
+        // muito mais confiável e sempre fica centralizado exatamente na caixa.
+        const contactIcons = clonedDoc.querySelectorAll('.contact-item svg, .contact-icon svg, .contact-icon-abs svg, .contact-icon-cell svg');
+        contactIcons.forEach((svgNode) => {
+          try {
+            const svg = svgNode as SVGElement;
+            const parent = svg.parentElement;
+            if (!parent) return;
+
+            if (!svg.getAttribute('xmlns')) {
+              svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            }
+            const width = svg.getAttribute('width') || '14';
+            const height = svg.getAttribute('height') || '14';
+
+            const svgMarkup = svg.outerHTML;
+            const encoded = btoa(unescape(encodeURIComponent(svgMarkup)));
+            const dataUri = `data:image/svg+xml;base64,${encoded}`;
+
+            const replacement = clonedDoc.createElement('span');
+            replacement.style.display = 'inline-block';
+            replacement.style.width = `${width}px`;
+            replacement.style.height = `${height}px`;
+            replacement.style.backgroundImage = `url("${dataUri}")`;
+            replacement.style.backgroundSize = 'contain';
+            replacement.style.backgroundRepeat = 'no-repeat';
+            replacement.style.backgroundPosition = 'center center';
+            replacement.style.verticalAlign = 'middle';
+            replacement.style.flexShrink = '0';
+
+            parent.replaceChild(replacement, svg);
+          } catch (e) {
+            console.warn('[CURRÊ PDF] Falha ao converter ícone SVG em background-image:', e);
+          }
+        });
+
         // Convert any custom style tag elements inside the cloned iframe to standard RGB
         const styleTags = Array.from(clonedDoc.querySelectorAll('style'));
         styleTags.forEach(tag => {
