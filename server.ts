@@ -22,13 +22,76 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ============================================================
+// PROTEÇÃO CONTRA ABUSO / ESTOURO DE COTA DA API GEMINI
+// ============================================================
+
+// --- 1. Rate limit por IP: no máx. 8 chamadas de IA a cada 15 min ---
+const RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+const RATE_MAX_PER_IP = 8;
+const ipHits = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimitByIp(req: any, res: any, next: any) {
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  const now = Date.now();
+  const entry = ipHits.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return next();
+  }
+
+  if (entry.count >= RATE_MAX_PER_IP) {
+    const waitMin = Math.ceil((entry.resetAt - now) / 60000);
+    return res.status(429).json({
+      error: `Muitas requisições. Tente novamente em ${waitMin} minuto(s).`,
+    });
+  }
+
+  entry.count++;
+  next();
+}
+
+// Limpa entradas antigas do Map de tempos em tempos, pra não vazar memória
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ipHits.entries()) {
+    if (now > entry.resetAt) ipHits.delete(ip);
+  }
+}, RATE_WINDOW_MS);
+
+// --- 2. Teto diário global: protege contra ataques distribuídos (vários IPs) ---
+const DAILY_BUDGET = 500; // limite diário de cota/orçamento
+let dailyCalls = 0;
+let dailyResetAt = new Date().setHours(24, 0, 0, 0);
+
+function dailyBudgetGuard(req: any, res: any, next: any) {
+  const now = Date.now();
+  if (now > dailyResetAt) {
+    dailyCalls = 0;
+    dailyResetAt = new Date().setHours(24, 0, 0, 0);
+  }
+
+  if (dailyCalls >= DAILY_BUDGET) {
+    return res.status(429).json({
+      error: 'Limite diário de geração de currículos atingido. Tente novamente amanhã.',
+    });
+  }
+
+  dailyCalls++;
+  next();
+}
+
+// Aplica as duas proteções só nas rotas que chamam a IA (custam cota)
+const aiGuards = [rateLimitByIp, dailyBudgetGuard];
+
 // Funções Serverless montadas nas rotas de API
 // Suporta tanto /api/ai/* quanto /api/* para compatibilidade total
-app.all('/api/ai/analyze-job', analyzeJobHandler);
-app.all('/api/analyze-job', analyzeJobHandler);
+app.all('/api/ai/analyze-job', ...aiGuards, analyzeJobHandler);
+app.all('/api/analyze-job', ...aiGuards, analyzeJobHandler);
 
-app.all('/api/ai/optimize-resume', optimizeResumeHandler);
-app.all('/api/optimize-resume', optimizeResumeHandler);
+app.all('/api/ai/optimize-resume', ...aiGuards, optimizeResumeHandler);
+app.all('/api/optimize-resume', ...aiGuards, optimizeResumeHandler);
 
 // Vite Middleware for development vs Static serving for production
 async function startServer() {
