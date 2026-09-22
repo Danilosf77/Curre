@@ -20,6 +20,8 @@ import {
 import { formatExperienceBullets } from './utils/textBeautifier';
 import { Sparkles, Heart } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
+import { auth, loadResumeFromCloud, saveResumeToCloud, logoutFirebase } from './lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function AppContent() {
   const { language, t } = useLanguage();
@@ -49,7 +51,7 @@ function AppContent() {
   const [adaptJobOpen, setAdaptJobOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
-  // Check if user is logged in
+  // Listen to Firebase auth changes & load user profile
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('curre_user_profile');
@@ -59,18 +61,64 @@ function AppContent() {
     } catch (e) {
       console.error('Error reading user profile:', e);
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        const profile: UserProfile = {
+          id: fbUser.uid,
+          name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuário',
+          email: fbUser.email || '',
+          avatarUrl: fbUser.photoURL || undefined,
+          provider: fbUser.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email',
+          createdAt: new Date().toISOString(),
+        };
+        setCurrentUser(profile);
+        try {
+          localStorage.setItem('curre_user_profile', JSON.stringify(profile));
+        } catch (e) {
+          console.error(e);
+        }
+
+        // Fetch user's saved resume from cloud if available
+        try {
+          const cloudResume = await loadResumeFromCloud(fbUser.uid);
+          if (cloudResume && cloudResume.personal?.fullName) {
+            setSavedResumeData(cloudResume);
+            localStorage.setItem('curre_saved_resume', JSON.stringify(cloudResume));
+          }
+        } catch (err) {
+          console.error('Error loading cloud resume on auth state change:', err);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLoginSuccess = (user: UserProfile) => {
+  const handleLoginSuccess = async (user: UserProfile) => {
     setCurrentUser(user);
     try {
       localStorage.setItem('curre_user_profile', JSON.stringify(user));
+      // Load saved cloud resume if available
+      const cloudResume = await loadResumeFromCloud(user.id);
+      if (cloudResume && cloudResume.personal?.fullName) {
+        setSavedResumeData(cloudResume);
+        localStorage.setItem('curre_saved_resume', JSON.stringify(cloudResume));
+      } else if (savedResumeData) {
+        // Sync existing local resume to new cloud account
+        await saveResumeToCloud(user.id, savedResumeData);
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutFirebase();
+    } catch (err) {
+      console.warn('Firebase logout warning:', err);
+    }
     setCurrentUser(null);
     try {
       localStorage.removeItem('curre_user_profile');
@@ -263,6 +311,11 @@ function AppContent() {
         setSavedResumeData(resultResume);
         try {
           localStorage.setItem('curre_saved_resume', JSON.stringify(resultResume));
+          if (currentUser?.id) {
+            saveResumeToCloud(currentUser.id, resultResume).catch((err) => {
+              console.warn('Erro ao salvar currículo gerado no Firestore:', err);
+            });
+          }
         } catch (e) {
           console.error(e);
         }
@@ -466,9 +519,9 @@ function AppContent() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px]">
             <div className="text-slate-500 inline-flex items-center gap-1.5">
               <span>{t('footer_developed_by')}</span>
-              <strong className="text-slate-800 font-bold bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/40 whitespace-nowrap inline-block">
+              <span className="text-slate-700 font-semibold whitespace-nowrap">
                 Danilo Freitas
-              </strong>
+              </span>
             </div>
             <div className="text-slate-400">
               &copy; {new Date().getFullYear()} CURRÊ. All rights reserved.

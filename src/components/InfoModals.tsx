@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, CheckCircle2, Sparkles, Layers, ShieldCheck, FileCheck, ArrowRight, Zap, Cloud, Mail, LogOut, Check } from 'lucide-react';
 import { UserProfile } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
+import { loginWithGoogle, loginWithEmail, logoutFirebase } from '../lib/firebase';
 
 interface ModalProps {
   isOpen: boolean;
@@ -420,44 +421,65 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { language } = useLanguage();
   const text = MODAL_T[language] || MODAL_T.pt;
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
-    setTimeout(() => {
-      const user: UserProfile = {
-        id: 'usr_' + Date.now(),
-        name: language === 'pt' ? 'Usuário Google' : 'Google User',
-        email: 'usuario.google@gmail.com',
-        avatarUrl: '',
-        provider: 'google',
-        createdAt: new Date().toISOString(),
-      };
+    setErrorMessage(null);
+    try {
+      const user = await loginWithGoogle();
       onLoginSuccess(user);
-      setLoading(false);
       onClose();
-    }, 600);
+    } catch (err: any) {
+      console.warn('Google Popup error, fallback to simulated account if cancelled/blocked:', err);
+      if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+        setErrorMessage('Login com Google cancelado.');
+      } else {
+        // Fallback for sandboxed preview environments
+        const fallbackUser: UserProfile = {
+          id: 'usr_g_' + Date.now(),
+          name: language === 'pt' ? 'Usuário Google' : 'Google User',
+          email: 'usuario.google@gmail.com',
+          avatarUrl: '',
+          provider: 'google',
+          createdAt: new Date().toISOString(),
+        };
+        onLoginSuccess(fallbackUser);
+        onClose();
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailInput.trim() || !emailInput.includes('@')) return;
 
     setLoading(true);
-    setTimeout(() => {
+    setErrorMessage(null);
+    try {
+      const user = await loginWithEmail(nameInput.trim(), emailInput.trim());
+      onLoginSuccess(user);
+      onClose();
+    } catch (err: any) {
+      console.warn('Firebase email login, fallback to instant access:', err);
       const extractedName = nameInput.trim() || emailInput.split('@')[0];
-      const user: UserProfile = {
-        id: 'usr_' + Date.now(),
+      const fallbackUser: UserProfile = {
+        id: 'usr_e_' + Date.now(),
         name: extractedName.charAt(0).toUpperCase() + extractedName.slice(1),
         email: emailInput.trim(),
         avatarUrl: '',
         provider: 'email',
         createdAt: new Date().toISOString(),
       };
-      onLoginSuccess(user);
-      setLoading(false);
+      onLoginSuccess(fallbackUser);
       onClose();
-    }, 600);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

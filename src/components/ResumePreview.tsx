@@ -36,6 +36,7 @@ import { ImpactTemplate } from './templates/ImpactTemplate';
 import { CorporatePremiumTemplate } from './templates/CorporatePremiumTemplate';
 import { runAtsDiagnostic, AtsDiagnosticResult } from '../utils/atsDiagnostic';
 import { useLanguage } from '../i18n/LanguageContext';
+import { saveResumeToCloud } from '../lib/firebase';
 
 interface ResumePreviewProps {
   resume: OptimizedResume;
@@ -117,7 +118,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     return () => clearTimeout(timer);
   }, [template, resume, updateScale]);
 
-  // Auto-salva no navegador assim que o currículo é gerado/visualizado
+  // Auto-salva no navegador e na nuvem Firestore se o usuário estiver autenticado
   React.useEffect(() => {
     if (resume && resume.personal?.fullName) {
       try {
@@ -125,8 +126,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       } catch (e) {
         console.error(e);
       }
+
+      if (currentUser?.id) {
+        saveResumeToCloud(currentUser.id, resume).catch((err) => {
+          console.warn('Erro ao sincronizar currículo com Firestore:', err);
+        });
+      }
     }
-  }, [resume]);
+  }, [resume, currentUser]);
 
   // Handle Real PDF Download
   const handleDownloadPDF = async () => {
