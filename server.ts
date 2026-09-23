@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import optimizeResumeHandler from './api/optimize-resume.js';
 import analyzeJobHandler from './api/analyze-job.js';
+import generatePdfHandler from './api/generate-pdf.js';
 
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -92,6 +93,9 @@ app.all('/api/analyze-job', ...aiGuards, analyzeJobHandler);
 
 app.all('/api/ai/optimize-resume', ...aiGuards, optimizeResumeHandler);
 app.all('/api/optimize-resume', ...aiGuards, optimizeResumeHandler);
+
+// Endpoint de geração direta de PDF vetorial via Chromium Headless (Playwright)
+app.post('/api/generate-pdf', generatePdfHandler);
 
 // Vite Middleware for development vs Static serving for production
 async function startServer() {

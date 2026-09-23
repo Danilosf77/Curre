@@ -154,15 +154,15 @@ export const ExecutiveClassicTemplate: React.FC<TemplateProps> = ({
               <div key={exp.id || idx} className="space-y-1">
                 {/* Linha Principal com Cargo e Metadados */}
                 <div className="flex flex-row items-baseline justify-between gap-2">
-                  <div>
-                    <span className="text-xs sm:text-sm font-serif font-bold text-slate-950">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs sm:text-sm font-serif font-bold text-slate-950 break-words">
                       {exp.role}
                     </span>
-                    <span className="text-xs font-serif italic text-slate-800 ml-1.5">
+                    <span className="text-xs font-serif italic text-slate-800 ml-1.5 break-words">
                       — {exp.company}
                     </span>
                   </div>
-                  <span className="text-xs font-sans font-semibold text-slate-700 uppercase tracking-wider whitespace-nowrap">
+                  <span className="text-xs font-sans font-semibold text-slate-700 uppercase tracking-wider whitespace-nowrap shrink-0">
                     {exp.period}
                   </span>
                 </div>

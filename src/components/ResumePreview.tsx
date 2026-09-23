@@ -57,12 +57,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   currentUser,
   onOpenLogin,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [template, setTemplate] = useState<
     'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist'
   >(resume.templateStyle || 'liquid-modern');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [showCompatibility, setShowCompatibility] = useState(true);
   const [atsDiagnostic, setAtsDiagnostic] = useState<AtsDiagnosticResult | null>(null);
 
@@ -135,14 +136,20 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     }
   }, [resume, currentUser]);
 
-  // Handle Real PDF Download
+  // Handle Direct Server-side PDF Download with client-side fallback
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
+    setPdfError(null);
     try {
-      await exportResumeToPDF('resume-document', resume.personal?.fullName || 'Curriculo');
-    } catch (err) {
-      console.error('PDF export failed:', err);
-      alert('Infelizmente, ocorreu um erro ao gerar o seu PDF. Por favor, tente novamente.');
+      await exportResumeToPDF({
+        resume,
+        template,
+        language: language || 'pt',
+      });
+    } catch (err: any) {
+      const errorMsg = err?.message || 'Infelizmente, ocorreu um erro ao gerar o seu PDF. Por favor, tente novamente.';
+      console.error('[CURRÊ PDF] Falha na exportação de PDF:', err);
+      setPdfError(errorMsg);
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -181,7 +188,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   {t('prev_ready_badge')}
                 </span>
-                <span className="text-xs text-slate-400">{t('prev_ai_optimized')}</span>
+                <span className="text-xs text-slate-400 dark:text-sky-300 font-medium">{t('prev_ai_optimized')}</span>
               </div>
               <h1 className="text-xl font-extrabold text-slate-900 mt-0.5">
                 {personal.fullName || t('prev_default_title')}
@@ -252,6 +259,35 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               </>
             )}
           </button>
+
+          {/* Notificação visual caso ocorra erro no download do PDF */}
+          {pdfError && (
+            <div className="mt-3.5 w-full max-w-lg p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs shadow-sm flex flex-col gap-2 animate-in fade-in duration-200">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-bold block text-rose-900 mb-0.5">Falha no download do PDF</span>
+                  <p className="text-rose-700 leading-relaxed break-words">{pdfError}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-1 border-t border-rose-200/60">
+                <button
+                  type="button"
+                  onClick={() => setPdfError(null)}
+                  className="px-2.5 py-1 text-[11px] font-semibold text-rose-700 hover:text-rose-900 cursor-pointer"
+                >
+                  Fechar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  className="px-3 py-1 text-[11px] font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg shadow-xs cursor-pointer"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            </div>
+          )}
 
           <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 text-center flex items-center justify-center gap-1.5 font-medium max-w-lg">
             <Sparkles className="w-3.5 h-3.5 text-sky-500 shrink-0" />
@@ -415,21 +451,37 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               id="template-btn-impact"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'impact'
-                  ? 'bg-amber-50/90 border-amber-600 shadow-md ring-2 ring-amber-500/20'
+                  ? 'bg-amber-50/90 dark:bg-amber-950/60 border-amber-600 dark:border-amber-500 shadow-md ring-2 ring-amber-500/20'
                   : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className={`impact-title font-extrabold text-xs flex items-center gap-1.5 ${
+                    template === 'impact'
+                      ? 'text-slate-900 dark:text-amber-100'
+                      : 'text-slate-900'
+                  }`}>
+                    <Zap className={`w-3.5 h-3.5 shrink-0 ${
+                      template === 'impact'
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-amber-600'
+                    }`} />
                     Impact
                   </span>
                 </div>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 inline-block mb-1.5">
+                <span className={`impact-badge text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded inline-block mb-1.5 ${
+                  template === 'impact'
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-200 dark:text-amber-950 dark:font-black'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
                   {t('tmpl_impact_badge')}
                 </span>
-                <p className="text-[11px] text-slate-500 leading-tight">
+                <p className={`text-[11px] leading-tight ${
+                  template === 'impact'
+                    ? 'text-slate-500 dark:text-amber-200/90'
+                    : 'text-slate-500'
+                }`}>
                   {t('tmpl_impact_desc')}
                 </p>
               </div>
@@ -721,6 +773,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               {t('prev_btn_edit')}
             </button>
           </div>
+          {pdfError && (
+            <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-[11px] flex items-center justify-between gap-1.5">
+              <span className="truncate">{pdfError}</span>
+              <button
+                type="button"
+                onClick={() => setPdfError(null)}
+                className="text-rose-900 font-bold px-1.5 py-0.5 text-[10px]"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center leading-tight">
             {t('prev_print_pdf_hint')}
           </p>

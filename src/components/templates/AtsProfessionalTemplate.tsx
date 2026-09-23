@@ -142,15 +142,15 @@ export const AtsProfessionalTemplate: React.FC<TemplateProps> = ({
               <div key={exp.id || idx} className="space-y-1">
                 {/* Linha de Cargo e Empresa */}
                 <div className="flex flex-row items-baseline justify-between gap-2">
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-950 inline">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-950 inline break-words">
                       {exp.role}
                     </h3>
-                    <span className="text-xs font-semibold text-slate-800 ml-1.5">
+                    <span className="text-xs font-semibold text-slate-800 ml-1.5 break-words">
                       · {exp.company}
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                  <span className="text-xs font-semibold text-slate-700 whitespace-nowrap shrink-0">
                     {exp.period}
                   </span>
                 </div>

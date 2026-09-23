@@ -41,11 +41,11 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
 }) => {
   const { t } = useLanguage();
   return (
-    <div className="w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full">
+    <div className="w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full select-text bg-white box-border">
       {/* =========================================================================
           COLUNA LATERAL (34% da largura) — Contato, Competências, Ferramentas, Educação
       ========================================================================= */}
-      <aside className="w-[34%] bg-slate-50/90 border-r border-slate-200/80 p-6 flex flex-col gap-6 shrink-0">
+      <aside className="w-[34%] max-w-[250px] bg-slate-50/90 border-r border-slate-200/80 p-5 sm:p-6 flex flex-col gap-6 shrink-0 box-border">
         {/* Foto centralizada na coluna lateral se existir */}
         {personal.hasPhoto && personal.photoUrl && (
           <div className="flex justify-center mb-1">
@@ -197,7 +197,7 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
       {/* =========================================================================
           COLUNA PRINCIPAL (66% da largura) — Título, Resumo e Experiências
       ========================================================================= */}
-      <main className="w-[66%] p-7 flex flex-col justify-start">
+      <main className="w-[66%] flex-1 min-w-0 p-5 sm:p-7 flex flex-col justify-start box-border">
         {/* Cabeçalho Principal com Nome e Cargo */}
         <header className="pb-4 mb-5 border-b border-slate-200">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-950">
@@ -233,15 +233,15 @@ export const MinimalistAtsTemplate: React.FC<TemplateProps> = ({
               {experiences.map((exp, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex flex-row items-baseline justify-between gap-1">
-                    <div>
-                      <span className="text-sm font-bold text-slate-900">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-bold text-slate-900 break-words">
                         {exp.role}
                       </span>
-                      <span className="text-xs font-semibold text-slate-600 ml-1.5">
+                      <span className="text-xs font-semibold text-slate-600 ml-1.5 break-words">
                         — {exp.company}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+                    <span className="text-xs font-medium text-slate-500 whitespace-nowrap shrink-0">
                       {exp.period}
                     </span>
                   </div>

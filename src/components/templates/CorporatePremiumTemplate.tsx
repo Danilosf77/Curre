@@ -157,15 +157,15 @@ export const CorporatePremiumTemplate: React.FC<TemplateProps> = ({
               <div key={exp.id || idx} className="space-y-1">
                 {/* Linha Estrutural de Metadados */}
                 <div className="flex flex-row items-baseline justify-between gap-2">
-                  <div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-950">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs sm:text-sm font-bold text-slate-950 break-words">
                       {exp.role}
                     </span>
-                    <span className="text-xs font-semibold text-slate-700 ml-1.5">
+                    <span className="text-xs font-semibold text-slate-700 ml-1.5 break-words">
                       | {exp.company}
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap shrink-0">
                     {exp.period}
                   </span>
                 </div>

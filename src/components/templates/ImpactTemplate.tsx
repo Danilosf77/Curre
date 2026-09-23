@@ -45,11 +45,11 @@ export const ImpactTemplate: React.FC<TemplateProps> = ({
 }) => {
   const { t } = useLanguage();
   return (
-    <div className="w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full select-text bg-white">
+    <div className="impact-resume-layout w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full select-text bg-white template-impact">
       {/* =========================================================================
-          COLUNA LATERAL DE IMPACTO (33% da largura) — Alto Contraste & Metadados
+          COLUNA LATERAL DE IMPACTO (32% da largura) — Alto Contraste & Metadados
       ========================================================================= */}
-      <aside className="w-[33%] bg-slate-900 text-slate-100 p-5 flex flex-col gap-5 shrink-0">
+      <aside className="impact-resume-sidebar w-[32%] max-w-[240px] bg-slate-900 text-slate-100 p-4 sm:p-5 flex flex-col gap-4 shrink-0 box-border">
         {/* Foto centralizada de destaque se o usuário enviou */}
         {personal.hasPhoto && personal.photoUrl && (
           <div className="flex justify-center mb-1">
@@ -204,9 +204,9 @@ export const ImpactTemplate: React.FC<TemplateProps> = ({
       </aside>
 
       {/* =========================================================================
-          COLUNA PRINCIPAL (67% da largura) — Narrativa de Carreira & Resultados
+          COLUNA PRINCIPAL (68% da largura) — Narrativa de Carreira & Resultados
       ========================================================================= */}
-      <main className="w-[67%] p-6 flex flex-col gap-5">
+      <main className="impact-resume-content w-[68%] flex-1 min-w-0 p-5 sm:p-6 flex flex-col gap-5 box-border">
         {/* Cabeçalho de Impacto */}
         <header className="border-b border-slate-200 pb-4">
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-slate-950 leading-none">
@@ -226,7 +226,7 @@ export const ImpactTemplate: React.FC<TemplateProps> = ({
             <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-1 mb-2">
               {t('tmpl_profile')}
             </h2>
-            <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed text-justify font-medium">
+            <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed text-justify font-medium break-words">
               {professionalSummary}
             </p>
           </section>
@@ -244,15 +244,15 @@ export const ImpactTemplate: React.FC<TemplateProps> = ({
               {experiences.map((exp, idx) => (
                 <div key={exp.id || idx} className="space-y-1">
                   <div className="flex flex-row items-baseline justify-between gap-2">
-                    <div>
-                      <span className="text-xs sm:text-sm font-bold text-slate-950">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs sm:text-sm font-bold text-slate-950 break-words">
                         {exp.role}
                       </span>
-                      <span className="text-xs font-semibold text-sky-800 ml-1.5">
+                      <span className="text-xs font-semibold text-sky-800 ml-1.5 break-words">
                         · {exp.company}
                       </span>
                     </div>
-                    <span className="text-xs font-semibold text-slate-500 whitespace-nowrap">
+                    <span className="text-xs font-semibold text-slate-500 whitespace-nowrap shrink-0">
                       {exp.period}
                     </span>
                   </div>

@@ -166,19 +166,42 @@ html.dark .liquid-glass-card .bg-white\/90 {
 }
 
 /* Amber Tip / Warning Banners in Dark Mode */
-html.dark [class*="bg-amber-50"] {
+html.dark [class*="bg-amber-50"]:not(#template-btn-impact) {
   background-color: rgba(69, 26, 3, 0.55) !important;
   border-color: rgba(180, 83, 9, 0.6) !important;
   color: #fef3c7 !important;
 }
 
-html.dark [class*="bg-amber-50"] p,
-html.dark [class*="bg-amber-50"] span {
+html.dark [class*="bg-amber-50"]:not(#template-btn-impact) p,
+html.dark [class*="bg-amber-50"]:not(#template-btn-impact) span {
   color: #fde68a !important;
 }
 
-html.dark [class*="bg-amber-50"] svg {
+html.dark [class*="bg-amber-50"]:not(#template-btn-impact) svg {
   color: #fbbf24 !important;
+}
+
+/* Impact Template Selected Card in Dark Mode - High Contrast Legibility */
+html.dark #template-btn-impact[class*="bg-amber-50"] {
+  background-color: rgba(69, 26, 3, 0.65) !important;
+  border-color: rgba(245, 158, 11, 0.7) !important;
+}
+
+html.dark #template-btn-impact[class*="bg-amber-50"] .impact-badge {
+  background-color: #fde68a !important; /* amber-200 */
+  color: #451a03 !important; /* amber-950 high contrast text */
+}
+
+html.dark #template-btn-impact[class*="bg-amber-50"] .impact-title {
+  color: #fef3c7 !important; /* amber-100 */
+}
+
+html.dark #template-btn-impact[class*="bg-amber-50"] p {
+  color: #fde68a !important; /* amber-200 */
+}
+
+html.dark #template-btn-impact[class*="bg-amber-50"] svg {
+  color: #fbbf24 !important; /* amber-400 */
 }
 
 html.dark input:not(#resume-document *)::placeholder,
@@ -317,7 +340,7 @@ body.curre-print-mode #resume-document {
 
   /* 5. Garante que todos os ancestrais de #resume-document não cortem conteúdo nem criem espaços vazios */
   #root,
-  main,
+  main:not(#resume-document main):not(.impact-resume-content),
   .min-h-screen,
   .resume-preview-root,
   .max-w-5xl,
@@ -419,5 +442,85 @@ body.curre-print-mode #resume-document {
     break-after: avoid;
     page-break-after: avoid;
   }
+
+  /* 10. Ajuste estrutural perfeito do template Impact em largura A4 (210mm) */
+  #resume-document {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .impact-resume-layout {
+    display: grid !important;
+    grid-template-columns: 30% 70% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 297mm !important;
+    flex: 1 0 auto !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background-color: #ffffff !important;
+  }
+
+  .impact-resume-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 1.25rem !important;
+    box-sizing: border-box !important;
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
+  }
+
+  .impact-resume-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.25rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 1.5rem !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
+  }
+
+  .impact-resume-content * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
 }
+
+/* Regras globais de layout para renderização */
+.impact-resume-layout {
+  box-sizing: border-box;
+}
+.impact-resume-sidebar {
+  box-sizing: border-box;
+}
+.impact-resume-content {
+  box-sizing: border-box;
+}
+
+
 

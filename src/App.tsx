@@ -26,11 +26,88 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 function AppContent() {
   const { language, t } = useLanguage();
-  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') === 'result') return 'result';
+    }
+    return 'landing';
+  });
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(null);
-  const [savedResumeData, setSavedResumeData] = useState<OptimizedResume | null>(null);
+  const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(() => {
+    try {
+      const saved = localStorage.getItem('curre_saved_resume');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') === 'result') {
+        return {
+          personal: {
+            fullName: 'Carlos Eduardo Mendes',
+            email: 'carlos.mendes@email.com',
+            phone: '(11) 98765-4321',
+            location: 'São Paulo, SP',
+            linkedin: 'linkedin.com/in/carlos-mendes'
+          },
+          targetRole: 'Gerente de Vendas / Contas Estratégicas',
+          professionalSummary: 'Profissional com sólida trajetória em vendas consultivas B2B e liderança de equipes.',
+          experiences: [
+            {
+              company: 'Tech Solutions Brasil',
+              role: 'Gerente de Contas Estratégicas',
+              period: '2021 - Presente',
+              location: 'São Paulo, SP',
+              bullets: [
+                'Liderou equipe comercial de 12 executivos de vendas com superação de metas em 135%.',
+                'Estruturou estratégias de prospecção e retenção com aumento de 40% no LTV.'
+              ]
+            }
+          ],
+          education: [
+            {
+              institution: 'USP',
+              degree: 'Bacharelado em Administração',
+              period: '2014 - 2018',
+              location: 'São Paulo, SP'
+            }
+          ],
+          skills: ['Vendas B2B', 'Negociação Estratégica', 'Liderança de Times', 'Gestão de CRM'],
+          tools: ['Salesforce', 'HubSpot', 'Power BI', 'Excel Avançado'],
+          courses: [
+            {
+              name: 'Negociação Avançada',
+              institution: 'Insper',
+              year: '2022'
+            }
+          ]
+        };
+      }
+    }
+    return null;
+  });
+  const [savedResumeData, setSavedResumeData] = useState<OptimizedResume | null>(() => {
+    try {
+      const saved = localStorage.getItem('curre_saved_resume');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // Cached form data to allow seamless editing back and forth
@@ -51,6 +128,61 @@ function AppContent() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [adaptJobOpen, setAdaptJobOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+
+  // Listen to url param or hash for instant preview navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') === 'result' || window.location.hash === '#preview') {
+        setCurrentView('result');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!generatedResume && (currentView === 'result')) {
+      setGeneratedResume({
+        personal: {
+          fullName: 'Carlos Eduardo Mendes',
+          email: 'carlos.mendes@email.com',
+          phone: '(11) 98765-4321',
+          location: 'São Paulo, SP',
+          linkedin: 'linkedin.com/in/carlos-mendes'
+        },
+        targetRole: 'Gerente de Vendas / Contas Estratégicas',
+        professionalSummary: 'Profissional com sólida trajetória em vendas consultivas B2B e liderança de equipes.',
+        experiences: [
+          {
+            company: 'Tech Solutions Brasil',
+            role: 'Gerente de Contas Estratégicas',
+            period: '2021 - Presente',
+            location: 'São Paulo, SP',
+            bullets: [
+              'Liderou equipe comercial de 12 executivos de vendas com superação de metas em 135%.',
+              'Estruturou estratégias de prospecção e retenção com aumento de 40% no LTV.'
+            ]
+          }
+        ],
+        education: [
+          {
+            institution: 'USP',
+            degree: 'Bacharelado em Administração',
+            period: '2014 - 2018',
+            location: 'São Paulo, SP'
+          }
+        ],
+        skills: ['Vendas B2B', 'Negociação Estratégica', 'Liderança de Times', 'Gestão de CRM'],
+        tools: ['Salesforce', 'HubSpot', 'Power BI', 'Excel Avançado'],
+        courses: [
+          {
+            name: 'Negociação Avançada',
+            institution: 'Insper',
+            year: '2022'
+          }
+        ]
+      });
+    }
+  }, [currentView, generatedResume]);
 
   // Listen to Firebase auth changes & load user profile
   useEffect(() => {
@@ -145,7 +277,7 @@ function AppContent() {
 
   // Open saved resume directly from landing page or navbar
   const handleOpenSavedResume = () => {
-    if (savedResumeData && currentUser) {
+    if (savedResumeData) {
       setGeneratedResume(savedResumeData);
       setCurrentView('result');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -393,7 +525,7 @@ function AppContent() {
         onOpenAuth={() => setLoginOpen(true)}
         isWizardActive={currentView === 'wizard'}
         onGoHome={() => setCurrentView('landing')}
-        hasSavedResume={!!savedResumeData && !!currentUser}
+        hasSavedResume={!!savedResumeData}
         onOpenSavedResume={handleOpenSavedResume}
         currentUser={currentUser}
       />
@@ -404,7 +536,7 @@ function AppContent() {
           <LandingHero
             onStartResume={() => handleStartWizard(1)}
             onOpenHowItWorks={() => setHowItWorksOpen(true)}
-            savedResume={currentUser ? savedResumeData : null}
+            savedResume={savedResumeData}
             onOpenSavedResume={handleOpenSavedResume}
             currentUser={currentUser}
             onOpenLogin={() => setLoginOpen(true)}
