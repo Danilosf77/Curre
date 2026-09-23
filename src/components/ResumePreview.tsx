@@ -163,7 +163,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     resume;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-2 pb-24">
+    <div className="resume-preview-root max-w-5xl mx-auto px-4 sm:px-6 pt-2 pb-24 print:p-0 print:m-0 print:max-w-none print:w-full">
       {/* Top Action Bar (hidden on print) */}
       <div className="no-print mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
@@ -233,7 +233,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         </div>
 
         {/* Fileira Inferior: Botão BAIXAR PDF em Máximo Destaque, Mais Comprido e Centralizado */}
-        <div className="pt-3 pb-1 flex justify-center w-full">
+        <div className="pt-3 pb-1 flex flex-col items-center justify-center w-full">
           <button
             onClick={handleDownloadPDF}
             disabled={isGeneratingPDF}
@@ -252,6 +252,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               </>
             )}
           </button>
+
+          <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 text-center flex items-center justify-center gap-1.5 font-medium max-w-lg">
+            <Sparkles className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+            <span>{t('prev_print_pdf_hint')}</span>
+          </p>
         </div>
 
         {/* Sugestão Opcional de Salvar na Nuvem */}
@@ -578,7 +583,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       ========================================================================= */}
       <div
         ref={containerRef}
-        className="w-full flex justify-center select-none overflow-hidden print:overflow-visible print:h-auto"
+        className="resume-paper-container w-full flex justify-center select-none overflow-hidden print:overflow-visible print:h-auto print:block print:p-0 print:m-0"
         style={{
           height: scale < 1 ? `${resumeHeight * scale}px` : 'auto'
         }}
@@ -591,7 +596,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           onCopy={(e) => e.preventDefault()}
           onCut={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
-          className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none ${
+          className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none print:overflow-visible print:h-auto print:w-full print:max-w-none print:m-0 print:select-text ${
             template === 'impact' || template === 'minimalist'
               ? 'p-0 font-sans'
               : template === 'executive-clean'
@@ -690,30 +695,35 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
       {/* Bottom Floating Bar on Mobile (no-print) */}
       <div className="no-print sm:hidden fixed bottom-3 left-4 right-4 z-30">
-        <div className="liquid-glass rounded-2xl p-3 shadow-xl border border-white flex items-center justify-between gap-2">
-          <button
-            onClick={handleDownloadPDF}
-            disabled={isGeneratingPDF}
-            className="flex-1 liquid-glass-button text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/30 disabled:opacity-75 cursor-pointer"
-          >
-            {isGeneratingPDF ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{t('prev_btn_downloading')}</span>
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                <span>{t('prev_btn_download')}</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700"
-          >
-            {t('prev_btn_edit')}
-          </button>
+        <div className="liquid-glass rounded-2xl p-3 shadow-xl border border-white flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+              className="flex-1 liquid-glass-button text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/30 disabled:opacity-75 cursor-pointer"
+            >
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{t('prev_btn_downloading')}</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>{t('prev_btn_download')}</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={onEdit}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700"
+            >
+              {t('prev_btn_edit')}
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center leading-tight">
+            {t('prev_print_pdf_hint')}
+          </p>
         </div>
       </div>
     </div>

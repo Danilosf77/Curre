@@ -436,7 +436,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_btn_save: 'Salvar',
     prev_btn_saved: 'Salvo!',
     prev_btn_download: 'BAIXAR CURRÍCULO EM PDF',
-    prev_btn_downloading: 'GERANDO PDF PROFISSIONAL...',
+    prev_btn_downloading: 'ABRINDO JANELA DE IMPRESSÃO...',
     prev_cloud_connected: 'Conectado como',
     prev_cloud_prompt_title: 'Deseja acessar este currículo em outro celular ou computador?',
     prev_cloud_prompt_desc: 'Seu currículo já está pronto e salvo no navegador atual. Se preferir deixá-lo guardado na nuvem para não perder, faça login gratuito (com 1 clique).',
@@ -458,7 +458,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_synced_tag: 'Salvo na Nuvem',
     prev_cloud_opt_badge: 'Opcional • Salvar na Nuvem',
     prev_tmpl_style_title: 'Escolha o Estilo do Currículo:',
-    prev_tip_download: 'Dica: Clique em BAIXAR PDF para exportar com fidelidade máxima.',
+    prev_tip_download: 'Dica: Na tela de impressão, selecione "Salvar como PDF" no destino para gerar seu documento vetorial em alta definição.',
+    prev_print_pdf_hint: 'O navegador abrirá a tela de impressão. Basta escolher a opção "Salvar como PDF" para gerar seu arquivo vetorial.',
 
     // Templates Ribbon
     tmpl_modern_badge: 'Tech & Inovação',
@@ -919,7 +920,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_btn_save: 'Save',
     prev_btn_saved: 'Saved!',
     prev_btn_download: 'DOWNLOAD RESUME AS PDF',
-    prev_btn_downloading: 'GENERATING PROFESSIONAL PDF...',
+    prev_btn_downloading: 'OPENING PRINT WINDOW...',
     prev_cloud_connected: 'Connected as',
     prev_cloud_prompt_title: 'Want to access this resume on other devices?',
     prev_cloud_prompt_desc: 'Your resume is ready and saved in this browser. To back it up securely in the cloud, sign in for free with 1 click.',
@@ -941,7 +942,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_synced_tag: 'Saved in Cloud',
     prev_cloud_opt_badge: 'Optional • Save to Cloud',
     prev_tmpl_style_title: 'Choose Resume Style:',
-    prev_tip_download: 'Tip: Click DOWNLOAD PDF for maximum fidelity export.',
+    prev_tip_download: 'Tip: In the print dialog, select "Save as PDF" to generate your high-definition vector document.',
+    prev_print_pdf_hint: 'The browser will open the print window. Simply choose "Save as PDF" to save your vector file.',
 
     // Templates Ribbon
     tmpl_modern_badge: 'Tech & Innovation',
@@ -1402,7 +1404,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_btn_save: 'Guardar',
     prev_btn_saved: '¡Guardado!',
     prev_btn_download: 'DESCARGAR CURRÍCULUM EN PDF',
-    prev_btn_downloading: 'GENERANDO PDF PROFESIONAL...',
+    prev_btn_downloading: 'ABRIENDO VENTANA DE IMPRESIÓN...',
     prev_cloud_connected: 'Conectado como',
     prev_cloud_prompt_title: '¿Deseas acceder a este currículum en otros dispositivos?',
     prev_cloud_prompt_desc: 'Tu currículum ya está guardado en este navegador. Para asegurarlo en la nube y no perderlo, inicia sesión gratis con 1 clic.',
@@ -1424,7 +1426,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_synced_tag: 'Guardado en la Nube',
     prev_cloud_opt_badge: 'Opcional • Guardar en la Nube',
     prev_tmpl_style_title: 'Elige el Estilo del Currículum:',
-    prev_tip_download: 'Consejo: Haz clic en DESCARGAR PDF para exportar con fidelidad total.',
+    prev_tip_download: 'Consejo: En la ventana de impresión, selecciona "Guardar como PDF" para generar tu documento vectorial en alta definición.',
+    prev_print_pdf_hint: 'El navegador abrirá la ventana de impresión. Simplemente elige "Guardar como PDF" para guardar el archivo vectorial.',
 
     // Templates Ribbon
     tmpl_modern_badge: 'Tecnología & Innovación',
@@ -1885,7 +1888,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_btn_save: 'Enregistrer',
     prev_btn_saved: 'Enregistré !',
     prev_btn_download: 'TÉLÉCHARGER LE CV EN PDF',
-    prev_btn_downloading: 'GÉNÉRATION DU PDF PROFESSIONNEL...',
+    prev_btn_downloading: 'OUVERTURE DE L\'IMPRESSION...',
     prev_cloud_connected: 'Connecté en tant que',
     prev_cloud_prompt_title: 'Souhaitez-vous accéder à ce CV sur d\'autres appareils ?',
     prev_cloud_prompt_desc: 'Votre CV est prêt et sauvegardé dans ce navigateur. Pour le conserver en toute sécurité dans le cloud, connectez-vous gratuitement en 1 clic.',
@@ -1907,7 +1910,8 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     prev_cloud_synced_tag: 'Sauvegardé dans le Cloud',
     prev_cloud_opt_badge: 'Optionnel • Sauvegarder dans le Cloud',
     prev_tmpl_style_title: 'Choisissez le Style du CV :',
-    prev_tip_download: 'Conseil : Cliquez sur TÉLÉCHARGER LE CV EN PDF pour une fidélité d\'export maximale.',
+    prev_tip_download: 'Conseil : Dans la fenêtre d\'impression, choisissez "Enregistrer au format PDF" pour générer votre document vectoriel.',
+    prev_print_pdf_hint: 'Le navigateur ouvrira la fenêtre d\'impression. Choisissez simplement "Enregistrer au format PDF" pour sauvegarder le document vectoriel.',
 
     // Templates Ribbon
     tmpl_modern_badge: 'Tech & Innovation',

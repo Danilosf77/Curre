@@ -248,29 +248,123 @@ html.dark select:not(#resume-document *):focus {
   line-height: 1.35 !important;
 }
 
-/* Modo de exportação direta para PDF A4: elimina bordas arredondadas e sombras externas */
-#resume-document.pdf-exporting {
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  border: none !important;
-  outline: none !important;
-  max-width: 820px !important;
+/* Modo transitório de impressão do currículo */
+body.curre-print-mode .no-print {
+  display: none !important;
 }
 
+body.curre-print-mode #resume-document {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* =========================================================================
+   REGRAS DE IMPRESSÃO NATIVA VETORIAL (A4 / window.print)
+   Garante PDF 100% vetorial, texto selecionável, SVGs originais nítidos
+   e suporte fluido para currículos de 1 ou múltiplas páginas.
+========================================================================= */
 @media print {
-  body {
-    background: white !important;
-    color: black !important;
+  /* 1. Preservação estrita de cores, contrastes, gradientes e gráficos de fundo */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
-  .no-print {
+  /* 2. Configuração de página A4 portrait sem margens forçadas no @page para evitar cabeçalhos de URL do navegador */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  /* 3. Reset do documento e do body */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 4. Oculta todos os elementos de UI do aplicativo (barras, menus, botões, modais, etc.) */
+  .no-print,
+  nav,
+  header:not(#resume-document header),
+  footer,
+  #theme-toggle,
+  #btn-download-pdf,
+  #btn-adapt-other-job,
+  #btn-edit-resume,
+  #btn-regenerate,
+  #btn-save-resume,
+  .ats-diagnostic-panel,
+  .liquid-glass,
+  .fixed,
+  .sticky,
+  button,
+  [role="dialog"],
+  [aria-modal="true"] {
     display: none !important;
   }
 
-  .print-only {
+  /* 5. Garante que todos os ancestrais de #resume-document não cortem conteúdo nem criem espaços vazios */
+  #root,
+  main,
+  .min-h-screen,
+  .resume-preview-root,
+  .max-w-5xl,
+  div:has(> #resume-document),
+  div:has(> * > #resume-document),
+  .resume-paper-container {
     display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    transform: none !important;
   }
 
+  /* 6. Formatação do currículo #resume-document para preenchimento natural de A4 */
+  #resume-document,
+  .resume-paper {
+    display: block !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    min-height: 297mm !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    transform: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  /* 7. Seleção e cópia de texto vetorial habilitadas no PDF gerado */
+  #resume-document,
+  #resume-document *,
   .resume-paper,
   .resume-paper * {
     -webkit-user-select: text !important;
@@ -279,18 +373,51 @@ html.dark select:not(#resume-document *):focus {
     user-select: text !important;
   }
 
-  .resume-paper {
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    background: white !important;
+  /* 8. Preservação vetorial cristalina dos SVGs do Lucide e ícones de contato */
+  #resume-document svg,
+  .resume-paper svg {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
-  @page {
-    margin: 1.2cm;
-    size: A4 portrait;
+  .contact-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
+    line-height: 1 !important;
+  }
+
+  .contact-icon svg {
+    display: block !important;
+    width: 14px !important;
+    height: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .contact-text {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    line-height: 1.35 !important;
+  }
+
+  /* 9. Quebra de página inteligente: currículos longos continuam em páginas seguintes sem cortar */
+  article,
+  section,
+  .break-inside-avoid,
+  .experience-card,
+  .contact-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid;
+    page-break-after: avoid;
   }
 }
+
