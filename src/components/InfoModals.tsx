@@ -785,24 +785,24 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-sky-500/30">
                     <Cloud className="w-6 h-6" />
                   </div>
-                  <h2 className="text-xl font-bold text-slate-900">{text.login_title}</h2>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{text.login_title}</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {text.login_subtitle}
                   </p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 mb-5 text-left">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                    <span>{text.login_opt_title}</span>
+                <div className="login-info-box p-3.5 rounded-2xl bg-sky-50/90 dark:bg-slate-800/95 border border-sky-100 dark:border-slate-700 mb-5 text-left transition-colors shadow-xs">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 dark:text-sky-300 mb-1">
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                    <span className="text-sky-900 dark:text-sky-300 font-bold">{text.login_opt_title}</span>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed text-[11px]">
+                  <p className="text-xs text-slate-700 dark:text-slate-100 leading-relaxed text-[11.5px] font-normal">
                     {text.login_opt_desc}
                   </p>
                 </div>
 
                 {errorMessage && (
-                  <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 text-left">
+                  <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-200 text-xs flex items-start gap-2 text-left">
                     <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                     <span className="flex-1 leading-relaxed">{errorMessage}</span>
                   </div>
@@ -814,7 +814,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       onClick={handleGoogleLogin}
                       disabled={loading}
                       id="login-btn-google"
-                      className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-sm font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-70"
+                      className="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-white hover:bg-slate-50 text-slate-800 text-sm font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-70"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path
@@ -838,9 +838,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </button>
 
                     <div className="flex items-center my-3">
-                      <div className="flex-grow border-t border-slate-200"></div>
-                      <span className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{text.login_or_email}</span>
-                      <div className="flex-grow border-t border-slate-200"></div>
+                      <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+                      <span className="px-3 text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">{text.login_or_email}</span>
+                      <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
                     </div>
 
                     <button
@@ -849,16 +849,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         setErrorMessage(null);
                       }}
                       id="login-btn-email-mode"
-                      className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all"
+                      className="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all"
                     >
-                      <Mail className="w-4 h-4 text-slate-500" />
+                      <Mail className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                       <span>{text.login_email_btn}</span>
                     </button>
 
                     <div className="pt-2">
                       <button
                         onClick={onClose}
-                        className="w-full py-2.5 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                        className="w-full py-2.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium cursor-pointer transition-colors"
                       >
                         {text.login_skip}
                       </button>
@@ -866,15 +866,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   </div>
                 ) : (
                   <form onSubmit={handleSendEmailLink} className="space-y-3.5">
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 mb-2">
-                      <div className="text-xs font-semibold text-slate-800 mb-0.5">{text.login_email_header}</div>
-                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 mb-2">
+                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-0.5">{text.login_email_header}</div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
                         {text.login_email_desc}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">{text.login_email_label}</label>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">{text.login_email_label}</label>
                       <input
                         type="email"
                         required
@@ -882,7 +882,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         placeholder={text.login_email_ph}
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-900 dark:text-slate-100"
                       />
                     </div>
 
@@ -901,14 +901,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         setMode('main');
                         setErrorMessage(null);
                       }}
-                      className="w-full py-1 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer text-center"
+                      className="w-full py-1 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium cursor-pointer text-center"
                     >
                       {text.login_back}
                     </button>
                   </form>
                 )}
 
-                <p className="text-center text-[10px] text-slate-400 mt-4 leading-tight">
+                <p className="text-center text-[10px] text-slate-400 dark:text-slate-400 mt-4 leading-tight">
                   {text.login_disclaimer}
                 </p>
               </div>

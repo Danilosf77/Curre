@@ -165,6 +165,24 @@ html.dark .liquid-glass-card .bg-white\/90 {
   color: #e2e8f0 !important;
 }
 
+/* Login Modal Notice Box in Dark Mode */
+html.dark .login-info-box {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+  border-color: rgba(71, 85, 105, 0.8) !important;
+}
+
+html.dark .login-info-box p {
+  color: #f1f5f9 !important;
+}
+
+html.dark .login-info-box span {
+  color: #7dd3fc !important;
+}
+
+html.dark .login-info-box svg {
+  color: #38bdf8 !important;
+}
+
 /* Amber Tip / Warning Banners in Dark Mode */
 html.dark [class*="bg-amber-50"]:not(#template-btn-impact) {
   background-color: rgba(69, 26, 3, 0.55) !important;
