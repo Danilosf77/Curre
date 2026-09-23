@@ -93,6 +93,7 @@ export interface UserProfile {
   avatarUrl?: string;
   provider: 'google' | 'email';
   createdAt: string;
+  isAnonymous?: boolean;
 }
 
 export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;

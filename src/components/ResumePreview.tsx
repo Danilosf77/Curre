@@ -119,16 +119,16 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     return () => clearTimeout(timer);
   }, [template, resume, updateScale]);
 
-  // Auto-salva no navegador e na nuvem Firestore se o usuário estiver autenticado
+  // Auto-salva no navegador e na nuvem Firestore se o usuário estiver autenticado e não anônimo
   React.useEffect(() => {
     if (resume && resume.personal?.fullName) {
-      try {
-        localStorage.setItem('curre_saved_resume', JSON.stringify(resume));
-      } catch (e) {
-        console.error(e);
-      }
+      if (currentUser && !currentUser.isAnonymous) {
+        try {
+          localStorage.setItem('curre_saved_resume', JSON.stringify(resume));
+        } catch (e) {
+          console.error(e);
+        }
 
-      if (currentUser?.id) {
         saveResumeToCloud(currentUser.id, resume).catch((err) => {
           console.warn('Erro ao sincronizar currículo com Firestore:', err);
         });
@@ -157,10 +157,22 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   // Handle Local Save
   const handleSaveLocally = () => {
+    if (!currentUser || currentUser.isAnonymous) {
+      if (onOpenLogin) {
+        onOpenLogin();
+      }
+      return;
+    }
     try {
       localStorage.setItem('curre_saved_resume', JSON.stringify(resume));
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 3000);
+      saveResumeToCloud(currentUser.id, resume)
+        .then(() => {
+          setSavedSuccess(true);
+          setTimeout(() => setSavedSuccess(false), 3000);
+        })
+        .catch((err) => {
+          console.error('Erro ao salvar currículo no Firestore:', err);
+        });
     } catch (e) {
       console.error(e);
     }

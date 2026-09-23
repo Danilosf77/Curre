@@ -26,89 +26,13 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 function AppContent() {
   const { language, t } = useLanguage();
-  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('view') === 'result') return 'result';
-    }
-    return 'landing';
-  });
+  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(() => {
-    try {
-      const saved = localStorage.getItem('curre_saved_resume');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('view') === 'result') {
-        return {
-          personal: {
-            fullName: 'Carlos Eduardo Mendes',
-            email: 'carlos.mendes@email.com',
-            phone: '(11) 98765-4321',
-            location: 'São Paulo, SP',
-            linkedin: 'linkedin.com/in/carlos-mendes'
-          },
-          targetRole: 'Gerente de Vendas / Contas Estratégicas',
-          professionalSummary: 'Profissional com sólida trajetória em vendas consultivas B2B e liderança de equipes.',
-          experiences: [
-            {
-              company: 'Tech Solutions Brasil',
-              role: 'Gerente de Contas Estratégicas',
-              period: '2021 - Presente',
-              location: 'São Paulo, SP',
-              bullets: [
-                'Liderou equipe comercial de 12 executivos de vendas com superação de metas em 135%.',
-                'Estruturou estratégias de prospecção e retenção com aumento de 40% no LTV.'
-              ]
-            }
-          ],
-          education: [
-            {
-              institution: 'USP',
-              degree: 'Bacharelado em Administração',
-              period: '2014 - 2018',
-              location: 'São Paulo, SP'
-            }
-          ],
-          skills: ['Vendas B2B', 'Negociação Estratégica', 'Liderança de Times', 'Gestão de CRM'],
-          tools: ['Salesforce', 'HubSpot', 'Power BI', 'Excel Avançado'],
-          courses: [
-            {
-              name: 'Negociação Avançada',
-              institution: 'Insper',
-              year: '2022'
-            }
-          ]
-        };
-      }
-    }
-    return null;
-  });
-  const [savedResumeData, setSavedResumeData] = useState<OptimizedResume | null>(() => {
-    try {
-      const saved = localStorage.getItem('curre_saved_resume');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return null;
-  });
+  const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(null);
+  const [savedResumeData, setSavedResumeData] = useState<OptimizedResume | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Cached form data to allow seamless editing back and forth
   const [formDataCache, setFormDataCache] = useState<{
@@ -129,74 +53,23 @@ function AppContent() {
   const [adaptJobOpen, setAdaptJobOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
-  // Listen to url param or hash for instant preview navigation
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('view') === 'result' || window.location.hash === '#preview') {
-        setCurrentView('result');
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!generatedResume && (currentView === 'result')) {
-      setGeneratedResume({
-        personal: {
-          fullName: 'Carlos Eduardo Mendes',
-          email: 'carlos.mendes@email.com',
-          phone: '(11) 98765-4321',
-          location: 'São Paulo, SP',
-          linkedin: 'linkedin.com/in/carlos-mendes'
-        },
-        targetRole: 'Gerente de Vendas / Contas Estratégicas',
-        professionalSummary: 'Profissional com sólida trajetória em vendas consultivas B2B e liderança de equipes.',
-        experiences: [
-          {
-            company: 'Tech Solutions Brasil',
-            role: 'Gerente de Contas Estratégicas',
-            period: '2021 - Presente',
-            location: 'São Paulo, SP',
-            bullets: [
-              'Liderou equipe comercial de 12 executivos de vendas com superação de metas em 135%.',
-              'Estruturou estratégias de prospecção e retenção com aumento de 40% no LTV.'
-            ]
-          }
-        ],
-        education: [
-          {
-            institution: 'USP',
-            degree: 'Bacharelado em Administração',
-            period: '2014 - 2018',
-            location: 'São Paulo, SP'
-          }
-        ],
-        skills: ['Vendas B2B', 'Negociação Estratégica', 'Liderança de Times', 'Gestão de CRM'],
-        tools: ['Salesforce', 'HubSpot', 'Power BI', 'Excel Avançado'],
-        courses: [
-          {
-            name: 'Negociação Avançada',
-            institution: 'Insper',
-            year: '2022'
-          }
-        ]
-      });
-    }
-  }, [currentView, generatedResume]);
-
   // Listen to Firebase auth changes & load user profile
   useEffect(() => {
+    // Initial profile display if cached, but we'll override it immediately when auth finishes
     try {
       const storedUser = localStorage.getItem('curre_user_profile');
       if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
+        const parsed = JSON.parse(storedUser);
+        if (parsed && !parsed.isAnonymous) {
+          setCurrentUser(parsed);
+        }
       }
     } catch (e) {
       console.error('Error reading user profile:', e);
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
+      if (fbUser && !fbUser.isAnonymous) {
         const profile: UserProfile = {
           id: fbUser.uid,
           name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Usuário',
@@ -204,6 +77,7 @@ function AppContent() {
           avatarUrl: fbUser.photoURL || undefined,
           provider: fbUser.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'email',
           createdAt: new Date().toISOString(),
+          isAnonymous: false,
         };
         setCurrentUser(profile);
         try {
@@ -218,31 +92,48 @@ function AppContent() {
           if (cloudResume && cloudResume.personal?.fullName) {
             setSavedResumeData(cloudResume);
             localStorage.setItem('curre_saved_resume', JSON.stringify(cloudResume));
+          } else {
+            setSavedResumeData(null);
           }
         } catch (err) {
           console.error('Error loading cloud resume on auth state change:', err);
         }
+      } else {
+        // Visitor (no user, or anonymous)
+        setCurrentUser(null);
+        setSavedResumeData(null);
+        try {
+          localStorage.removeItem('curre_user_profile');
+          localStorage.removeItem('curre_saved_resume');
+        } catch (e) {
+          console.error(e);
+        }
       }
+      setAuthLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   const handleLoginSuccess = async (user: UserProfile) => {
-    setCurrentUser(user);
-    try {
-      localStorage.setItem('curre_user_profile', JSON.stringify(user));
-      // Load saved cloud resume if available
-      const cloudResume = await loadResumeFromCloud(user.id);
-      if (cloudResume && cloudResume.personal?.fullName) {
-        setSavedResumeData(cloudResume);
-        localStorage.setItem('curre_saved_resume', JSON.stringify(cloudResume));
-      } else if (savedResumeData) {
-        // Sync existing local resume to new cloud account
-        await saveResumeToCloud(user.id, savedResumeData);
+    if (user && !user.isAnonymous) {
+      setCurrentUser(user);
+      try {
+        localStorage.setItem('curre_user_profile', JSON.stringify(user));
+        // Load saved cloud resume if available
+        const cloudResume = await loadResumeFromCloud(user.id);
+        if (cloudResume && cloudResume.personal?.fullName) {
+          setSavedResumeData(cloudResume);
+          localStorage.setItem('curre_saved_resume', JSON.stringify(cloudResume));
+        } else if (generatedResume) {
+          // Sync existing local/temporary resume to the new cloud account
+          await saveResumeToCloud(user.id, generatedResume);
+          setSavedResumeData(generatedResume);
+          localStorage.setItem('curre_saved_resume', JSON.stringify(generatedResume));
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -253,31 +144,20 @@ function AppContent() {
       console.warn('Firebase logout warning:', err);
     }
     setCurrentUser(null);
+    setSavedResumeData(null);
+    setGeneratedResume(null);
+    setFormDataCache(null);
     try {
       localStorage.removeItem('curre_user_profile');
+      localStorage.removeItem('curre_saved_resume');
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Check if user has a previously saved resume in localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('curre_saved_resume');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && (parsed.personal?.fullName || parsed.targetRole)) {
-          setSavedResumeData(parsed);
-        }
-      }
-    } catch (e) {
-      console.error('Error reading saved resume from localStorage:', e);
-    }
-  }, [currentView]);
-
   // Open saved resume directly from landing page or navbar
   const handleOpenSavedResume = () => {
-    if (savedResumeData) {
+    if (savedResumeData && currentUser && !currentUser.isAnonymous) {
       setGeneratedResume(savedResumeData);
       setCurrentView('result');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -441,16 +321,16 @@ function AppContent() {
 
       setTimeout(() => {
         setGeneratedResume(resultResume);
-        setSavedResumeData(resultResume);
-        try {
-          localStorage.setItem('curre_saved_resume', JSON.stringify(resultResume));
-          if (currentUser?.id) {
+        if (currentUser && !currentUser.isAnonymous) {
+          setSavedResumeData(resultResume);
+          try {
+            localStorage.setItem('curre_saved_resume', JSON.stringify(resultResume));
             saveResumeToCloud(currentUser.id, resultResume).catch((err) => {
               console.warn('Erro ao salvar currículo gerado no Firestore:', err);
             });
+          } catch (e) {
+            console.error(e);
           }
-        } catch (e) {
-          console.error(e);
         }
         setIsLoading(false);
         setCurrentView('result');
@@ -465,11 +345,16 @@ function AppContent() {
 
       setTimeout(() => {
         setGeneratedResume(fallbackResume);
-        setSavedResumeData(fallbackResume);
-        try {
-          localStorage.setItem('curre_saved_resume', JSON.stringify(fallbackResume));
-        } catch (e) {
-          console.error(e);
+        if (currentUser && !currentUser.isAnonymous) {
+          setSavedResumeData(fallbackResume);
+          try {
+            localStorage.setItem('curre_saved_resume', JSON.stringify(fallbackResume));
+            saveResumeToCloud(currentUser.id, fallbackResume).catch((err) => {
+              console.warn('Erro ao salvar currículo de fallback no Firestore:', err);
+            });
+          } catch (e) {
+            console.error(e);
+          }
         }
         setIsLoading(false);
         setCurrentView('result');
@@ -504,6 +389,10 @@ function AppContent() {
 
   // Navigation helpers
   const handleStartWizard = (step: WizardStep = 1) => {
+    if (!currentUser || currentUser.isAnonymous) {
+      setFormDataCache(null);
+      setGeneratedResume(null);
+    }
     setWizardStep(step);
     setCurrentView('wizard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -525,7 +414,7 @@ function AppContent() {
         onOpenAuth={() => setLoginOpen(true)}
         isWizardActive={currentView === 'wizard'}
         onGoHome={() => setCurrentView('landing')}
-        hasSavedResume={!!savedResumeData}
+        hasSavedResume={!authLoading && !!savedResumeData && !!currentUser && !currentUser.isAnonymous}
         onOpenSavedResume={handleOpenSavedResume}
         currentUser={currentUser}
       />
@@ -536,7 +425,7 @@ function AppContent() {
           <LandingHero
             onStartResume={() => handleStartWizard(1)}
             onOpenHowItWorks={() => setHowItWorksOpen(true)}
-            savedResume={savedResumeData}
+            savedResume={(!authLoading && currentUser && !currentUser.isAnonymous) ? savedResumeData : null}
             onOpenSavedResume={handleOpenSavedResume}
             currentUser={currentUser}
             onOpenLogin={() => setLoginOpen(true)}
