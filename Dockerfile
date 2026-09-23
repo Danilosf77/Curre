@@ -1,49 +1,31 @@
-# Dockerfile otimizado para Render Web Service com Chromium Headless (Playwright)
-FROM node:20-bookworm-slim
-
-# Instala dependências de sistema necessárias para o Chromium headless e fontes
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    fonts-liberation \
-    fonts-noto-color-emoji \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Imagem oficial do Microsoft Playwright com tag exata correspondente a v1.63.0
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
 
 WORKDIR /app
 
-# Copia manifests primeiro para aproveitar cache de camadas
-COPY package*.json ./
+# Copia manifestos e arquivos de lock para cache otimizado de camadas Docker
+COPY package.json package-lock.json* bun.lock* ./
 
-# Instala dependências do projeto
-RUN npm ci
+# Instala todas as dependências (incluindo devDependencies como esbuild, vite e typescript)
+# necessárias para executar a etapa de build da aplicação
+RUN if [ -f package-lock.json ]; then \
+      npm ci --include=dev; \
+    else \
+      npm install --include=dev; \
+    fi
 
-# Instala o navegador Chromium do Playwright
-RUN npx playwright install chromium
-
-# Copia o código fonte
+# Copia o código fonte do projeto (respeitando o .dockerignore revisado)
 COPY . .
 
-# Executa o build da aplicação (Vite + esbuild para dist/server.cjs)
+# Executa o script de build com Vite (frontend) e esbuild (server.ts -> dist/server.cjs)
 RUN npm run build
 
+# Define variáveis de ambiente para tempo de execução após o build ter sido concluído com sucesso
 ENV NODE_ENV=production
 ENV PORT=3000
 
+# Expõe a porta padrão (o Render injeta process.env.PORT dinamicamente em tempo de execução)
 EXPOSE 3000
 
-# Executa o servidor Node Express
+# Inicia o servidor Node Express com o script start existente
 CMD ["npm", "start"]
