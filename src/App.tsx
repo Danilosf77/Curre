@@ -21,7 +21,15 @@ import { formatExperienceBullets } from './utils/textBeautifier';
 import { Sparkles, Heart } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { ThemeProvider } from './theme/ThemeContext';
-import { auth, loadResumeFromCloud, saveResumeToCloud, logoutFirebase } from './lib/firebase';
+import {
+  auth,
+  loadResumeFromCloud,
+  saveResumeToCloud,
+  logoutFirebase,
+  isEmailSignInLink,
+  getStoredEmailForSignIn,
+  completeEmailLinkSignIn,
+} from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 function AppContent() {
@@ -50,24 +58,30 @@ function AppContent() {
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [confirmEmailLinkOpen, setConfirmEmailLinkOpen] = useState(false);
   const [adaptJobOpen, setAdaptJobOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
-  // Listen to Firebase auth changes & load user profile
+  // Listen to Firebase auth changes & handle email link sign-in
   useEffect(() => {
-    // Initial profile display if cached, but we'll override it immediately when auth finishes
-    try {
-      const storedUser = localStorage.getItem('curre_user_profile');
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        if (parsed && !parsed.isAnonymous) {
-          setCurrentUser(parsed);
-        }
+    // 1. If URL has an Email Link sign-in code, complete it
+    if (typeof window !== 'undefined' && isEmailSignInLink(window.location.href)) {
+      const savedEmail = getStoredEmailForSignIn();
+      if (savedEmail) {
+        completeEmailLinkSignIn(savedEmail).catch((err) => {
+          console.error('Error completing email link sign-in with stored email:', err);
+          // If stored email was invalid or mismatched, show the confirm email modal
+          setConfirmEmailLinkOpen(true);
+          setLoginOpen(true);
+        });
+      } else {
+        // Link opened in another browser/device: prompt for email via modal
+        setConfirmEmailLinkOpen(true);
+        setLoginOpen(true);
       }
-    } catch (e) {
-      console.error('Error reading user profile:', e);
     }
 
+    // 2. Firebase onAuthStateChanged is the authoritative source of truth
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser && !fbUser.isAnonymous) {
         const profile: UserProfile = {
@@ -471,10 +485,14 @@ function AppContent() {
 
       <LoginModal
         isOpen={loginOpen}
-        onClose={() => setLoginOpen(false)}
+        onClose={() => {
+          setLoginOpen(false);
+          setConfirmEmailLinkOpen(false);
+        }}
         currentUser={currentUser}
         onLoginSuccess={handleLoginSuccess}
         onLogout={handleLogout}
+        confirmEmailLink={confirmEmailLinkOpen}
       />
 
       {/* Adapt for other job modal */}

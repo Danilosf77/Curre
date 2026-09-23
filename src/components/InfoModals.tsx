@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { X, CheckCircle2, Sparkles, Layers, ShieldCheck, FileCheck, ArrowRight, Zap, Cloud, Mail, LogOut, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CheckCircle2, Sparkles, Layers, ShieldCheck, FileCheck, ArrowRight, Zap, Cloud, Mail, LogOut, Check, AlertCircle, RotateCcw, MailCheck } from 'lucide-react';
 import { UserProfile } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
-import { loginWithGoogle, loginWithEmail, logoutFirebase } from '../lib/firebase';
+import { loginWithGoogle, sendEmailSignInLink, completeEmailLinkSignIn } from '../lib/firebase';
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ export interface LoginModalProps {
   currentUser?: UserProfile | null;
   onLoginSuccess: (user: UserProfile) => void;
   onLogout?: () => void;
+  confirmEmailLink?: boolean;
 }
 
 const MODAL_T = {
@@ -55,14 +56,34 @@ const MODAL_T = {
     login_or_email: 'ou com e-mail',
     login_email_btn: 'Entrar usando meu E-mail',
     login_skip: 'Continuar sem login (Salvar apenas no navegador)',
-    login_name_label: 'Seu Nome (opcional)',
-    login_name_ph: 'ex: João Silva',
+    login_email_header: 'Acesso por Link Seguro',
+    login_email_desc: 'Enviaremos um link de confirmação para o seu e-mail. Basta clicar nele para acessar sua conta com segurança, sem precisar de senha.',
     login_email_label: 'Seu E-mail *',
     login_email_ph: 'ex: seuemail@gmail.com',
-    login_submit_email: 'Acessar Conta e Ativar Nuvem',
-    login_submit_email_loading: 'Sincronizando...',
+    login_submit_email: 'Enviar Link de Acesso',
+    login_submit_email_loading: 'Enviando link...',
+    login_link_sent_title: 'Verifique seu E-mail',
+    login_link_sent_desc: 'Enviamos um link de acesso para',
+    login_link_sent_check_spam: 'Verifique a sua caixa de entrada e a pasta de spam ou lixo eletrônico. Clique no link recebido para confirmar seu acesso.',
+    login_link_resend: 'Reenviar link de acesso',
+    login_link_resending: 'Reenviando...',
+    login_link_resent_success: 'Link reenviado com sucesso!',
+    login_link_change_email: 'Usar outro e-mail',
+    login_confirm_title: 'Confirme seu E-mail',
+    login_confirm_desc: 'Para concluir o login neste dispositivo, informe o mesmo e-mail para o qual o link foi solicitado:',
+    login_confirm_btn: 'Concluir Acesso',
+    login_confirm_loading: 'Validando link...',
+    login_google_cancelled: 'Login com Google cancelado. Tente novamente quando quiser.',
+    login_google_blocked: 'A janela de login com Google foi bloqueada pelo navegador. Permita popups para continuar.',
+    login_error_invalid_email: 'Por favor, informe um endereço de e-mail válido.',
+    login_error_too_many_requests: 'Muitas tentativas em pouco tempo. Por favor, aguarde alguns instantes antes de reenviar.',
+    login_error_operation_not_allowed: 'O login por Link de E-mail (passwordless) não está ativado no Firebase Console para o projeto ativo. É necessário habilitar "Link do e-mail" em Authentication > Sign-in method.',
+    login_error_unauthorized_domain: 'O domínio desta aplicação não está cadastrado em "Domínios autorizados" no Firebase Console. Adicione o domínio nas configurações de Authentication.',
+    login_error_unauthorized_continue_uri: 'Domínio de retorno (continueUrl) não autorizado no Firebase Console. Adicione o domínio às configurações de Authentication.',
+    login_confirm_error_invalid_email: 'E-mail inválido. Digite o mesmo e-mail para o qual o link foi solicitado.',
+    login_confirm_error_expired_code: 'O link de acesso expirou ou já foi utilizado. Solicite um novo link.',
     login_back: 'Voltar para opções',
-    login_disclaimer: 'Acesso instantâneo sem necessidade de senha para o plano gratuito.',
+    login_disclaimer: 'Acesso seguro por e-mail (passwordless) sem necessidade de memorizar senha.',
 
     privacy_title: 'Termos de Uso e Privacidade (LGPD)',
     privacy_subtitle: 'Transparência total com suas informações e histórico profissional',
@@ -113,14 +134,34 @@ const MODAL_T = {
     login_or_email: 'or with email',
     login_email_btn: 'Sign in with Email',
     login_skip: 'Continue without login (Save only in browser)',
-    login_name_label: 'Your Name (optional)',
-    login_name_ph: 'ex: John Doe',
+    login_email_header: 'Secure Link Sign-In',
+    login_email_desc: 'We will send a sign-in link to your email. Just click the link to access your account securely without a password.',
     login_email_label: 'Your Email *',
     login_email_ph: 'ex: youremail@gmail.com',
-    login_submit_email: 'Access Account and Activate Cloud',
-    login_submit_email_loading: 'Syncing...',
+    login_submit_email: 'Send Sign-In Link',
+    login_submit_email_loading: 'Sending link...',
+    login_link_sent_title: 'Check your Email',
+    login_link_sent_desc: 'We sent a sign-in link to',
+    login_link_sent_check_spam: 'Check your inbox and your spam or junk folder. Click the link to complete your sign-in.',
+    login_link_resend: 'Resend sign-in link',
+    login_link_resending: 'Resending...',
+    login_link_resent_success: 'Link resent successfully!',
+    login_link_change_email: 'Use a different email',
+    login_confirm_title: 'Confirm your Email',
+    login_confirm_desc: 'To complete sign-in on this device, enter the email address that requested the link:',
+    login_confirm_btn: 'Complete Sign-In',
+    login_confirm_loading: 'Validating link...',
+    login_google_cancelled: 'Google sign-in was cancelled. Try again whenever you want.',
+    login_google_blocked: 'Google popup was blocked by your browser. Please allow popups to continue.',
+    login_error_invalid_email: 'Please provide a valid email address.',
+    login_error_too_many_requests: 'Too many requests. Please wait a moment before trying again.',
+    login_error_operation_not_allowed: 'Email Link (passwordless) sign-in is not enabled in Firebase Console for the active project. Enable "Email link" in Authentication > Sign-in method.',
+    login_error_unauthorized_domain: 'This application domain is not registered under "Authorized domains" in Firebase Console. Add this domain in Authentication settings.',
+    login_error_unauthorized_continue_uri: 'The return domain (continueUrl) is not authorized in Firebase Console. Add this domain to Authentication settings.',
+    login_confirm_error_invalid_email: 'Invalid email. Please enter the same email address that requested the link.',
+    login_confirm_error_expired_code: 'The sign-in link has expired or has already been used. Please request a new link.',
     login_back: 'Back to options',
-    login_disclaimer: 'Instant passwordless access for the free plan.',
+    login_disclaimer: 'Secure passwordless email sign-in without having to remember passwords.',
 
     privacy_title: 'Terms of Use and Privacy',
     privacy_subtitle: 'Total transparency with your information and professional history',
@@ -171,14 +212,34 @@ const MODAL_T = {
     login_or_email: 'o con correo electrónico',
     login_email_btn: 'Iniciar sesión con Email',
     login_skip: 'Continuar sin iniciar sesión (Guardar solo en navegador)',
-    login_name_label: 'Tu Nombre (opcional)',
-    login_name_ph: 'ej: Juan Pérez',
+    login_email_header: 'Acceso por Enlace Seguro',
+    login_email_desc: 'Te enviaremos un enlace de confirmación a tu correo. Solo haz clic en él para acceder a tu cuenta de forma segura sin contraseña.',
     login_email_label: 'Tu Email *',
     login_email_ph: 'ej: tuemail@gmail.com',
-    login_submit_email: 'Acceder a la Cuenta y Activar Nube',
-    login_submit_email_loading: 'Sincronizando...',
+    login_submit_email: 'Enviar Enlace de Acceso',
+    login_submit_email_loading: 'Enviando enlace...',
+    login_link_sent_title: 'Revisa tu Correo',
+    login_link_sent_desc: 'Hemos enviado un enlace de acceso a',
+    login_link_sent_check_spam: 'Revisa tu bandeja de entrada y la carpeta de spam o correo no deseado. Haz clic en el enlace para confirmar tu acceso.',
+    login_link_resend: 'Reenviar enlace de acceso',
+    login_link_resending: 'Reenviando...',
+    login_link_resent_success: '¡Enlace reenviado con éxito!',
+    login_link_change_email: 'Usar otro correo',
+    login_confirm_title: 'Confirma tu Correo',
+    login_confirm_desc: 'Para completar el acceso en este dispositivo, ingresa el correo para el cual se solicitó el enlace:',
+    login_confirm_btn: 'Completar Acceso',
+    login_confirm_loading: 'Validando enlace...',
+    login_google_cancelled: 'Inicio de sesión con Google cancelado. Inténtalo de nuevo cuando quieras.',
+    login_google_blocked: 'La ventana de Google fue bloqueada por el navegador. Permite ventanas emergentes.',
+    login_error_invalid_email: 'Por favor, introduce una dirección de correo válida.',
+    login_error_too_many_requests: 'Demasiadas solicitudes. Espera un momento antes de volver a intentarlo.',
+    login_error_operation_not_allowed: 'El inicio de sesión por enlace de correo (passwordless) no está habilitado en Firebase Console para el proyecto activo. Habilita "Enlace de correo" en Authentication > Sign-in method.',
+    login_error_unauthorized_domain: 'Este dominio no está registrado en los "Dominios autorizados" de Firebase Console. Agrega este dominio en la configuración de Authentication.',
+    login_error_unauthorized_continue_uri: 'El dominio de retorno (continueUrl) no está autorizado en Firebase Console. Agrega el dominio en Authentication.',
+    login_confirm_error_invalid_email: 'Correo inválido. Ingresa el mismo correo al que se le envió el enlace.',
+    login_confirm_error_expired_code: 'El enlace de acceso ha expirado o ya fue utilizado. Solicita un nuevo enlace.',
     login_back: 'Volver a opciones',
-    login_disclaimer: 'Acceso instantáneo sin contraseña para el plan gratuito.',
+    login_disclaimer: 'Acceso seguro sin contraseña por correo electrónico.',
 
     privacy_title: 'Términos de Uso y Privacidad',
     privacy_subtitle: 'Transparencia total con tu información e historial profesional',
@@ -229,14 +290,34 @@ const MODAL_T = {
     login_or_email: 'ou par e-mail',
     login_email_btn: 'Se connecter par e-mail',
     login_skip: 'Continuer sans connexion (Sauvegarder uniquement dans le navigateur)',
-    login_name_label: 'Votre Nom (optionnel)',
-    login_name_ph: 'ex: Jean Dupont',
+    login_email_header: 'Connexion par Lien Sécurisé',
+    login_email_desc: 'Nous vous enverrons un lien de confirmation par e-mail. Cliquez simplement dessus pour accéder à votre compte sans mot de passe.',
     login_email_label: 'Votre E-mail *',
     login_email_ph: 'ex: votreemail@gmail.com',
-    login_submit_email: 'Accéder au Compte et Activer le Cloud',
-    login_submit_email_loading: 'Synchronisation...',
+    login_submit_email: 'Envoyer le Lien d\'Accès',
+    login_submit_email_loading: 'Envoi du lien...',
+    login_link_sent_title: 'Vérifiez votre E-mail',
+    login_link_sent_desc: 'Nous avons envoyé un lien d\'accès à',
+    login_link_sent_check_spam: 'Vérifiez votre boîte de réception et vos courriers indésirables (spam). Cliquez sur le lien pour confirmer votre accès.',
+    login_link_resend: 'Renvoyer le lien d\'accès',
+    login_link_resending: 'Renvoi en cours...',
+    login_link_resent_success: 'Lien renvoyé avec succès !',
+    login_link_change_email: 'Utiliser un autre e-mail',
+    login_confirm_title: 'Confirmez votre E-mail',
+    login_confirm_desc: 'Pour finaliser la connexion sur cet appareil, indiquez l\'e-mail ayant demandé le lien :',
+    login_confirm_btn: 'Finaliser la Connexion',
+    login_confirm_loading: 'Validation du lien...',
+    login_google_cancelled: 'Connexion Google annulée. Réessayez quand vous le souhaitez.',
+    login_google_blocked: 'La fenêtre contextuelle Google a été bloquée. Veuillez autoriser les popups.',
+    login_error_invalid_email: 'Veuillez saisir une adresse e-mail valide.',
+    login_error_too_many_requests: 'Trop de tentatives. Veuillez patienter un instant avant de réessayer.',
+    login_error_operation_not_allowed: 'La connexion par lien d\'e-mail (passwordless) n\'est pas activée dans Firebase Console pour le projet actif. Activez "Lien d\'e-mail" dans Authentication > Sign-in method.',
+    login_error_unauthorized_domain: 'Ce domaine n\'est pas enregistré dans les "Domaines autorisés" de Firebase Console. Ajoutez ce domaine dans les paramètres d\'Authentication.',
+    login_error_unauthorized_continue_uri: 'Le domaine de redirection (continueUrl) n\'est pas autorisé dans Firebase Console. Ajoutez le domaine dans Authentication.',
+    login_confirm_error_invalid_email: 'E-mail non valide. Saisissez la mesma adresse que celle ayant reçu le lien.',
+    login_confirm_error_expired_code: 'Le lien d\'accès a expiré ou a déjà été utilisé. Veuillez demander un nouveau lien.',
     login_back: 'Retour aux options',
-    login_disclaimer: 'Accès instantané sans mot de passe pour le plan gratuit.',
+    login_disclaimer: 'Accès sécurisé sans mot de passe par e-mail.',
 
     privacy_title: 'Conditions d\'Utilisation et Confidentialité',
     privacy_subtitle: 'Transparence totale avec vos informations et votre historique professionnel',
@@ -413,15 +494,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   currentUser,
   onLoginSuccess,
   onLogout,
+  confirmEmailLink = false,
 }) => {
   const [emailInput, setEmailInput] = useState('');
-  const [nameInput, setNameInput] = useState('');
-  const [mode, setMode] = useState<'main' | 'email'>('main');
+  const [mode, setMode] = useState<'main' | 'email' | 'link_sent' | 'confirm_link'>('main');
   const [loading, setLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { language } = useLanguage();
   const text = MODAL_T[language] || MODAL_T.pt;
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  useEffect(() => {
+    if (confirmEmailLink) {
+      setMode('confirm_link');
+    } else {
+      setMode('main');
+    }
+    setErrorMessage(null);
+    setResendSuccess(false);
+  }, [isOpen, confirmEmailLink]);
 
   if (!isOpen) return null;
 
@@ -433,50 +524,106 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       onLoginSuccess(user);
       onClose();
     } catch (err: any) {
-      console.warn('Google Popup error, fallback to simulated account if cancelled/blocked:', err);
+      console.warn('Google Popup error:', err);
       if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
-        setErrorMessage('Login com Google cancelado.');
+        setErrorMessage(text.login_google_cancelled);
+      } else if (err?.code === 'auth/popup-blocked') {
+        setErrorMessage(text.login_google_blocked);
       } else {
-        // Fallback for sandboxed preview environments
-        const fallbackUser: UserProfile = {
-          id: 'usr_g_' + Date.now(),
-          name: language === 'pt' ? 'Usuário Google' : 'Google User',
-          email: 'usuario.google@gmail.com',
-          avatarUrl: '',
-          provider: 'google',
-          createdAt: new Date().toISOString(),
-        };
-        onLoginSuccess(fallbackUser);
-        onClose();
+        setErrorMessage(err?.message || text.login_google_cancelled);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSendEmailLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput.trim() || !emailInput.includes('@')) return;
+    const cleanEmail = emailInput.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) return;
 
     setLoading(true);
     setErrorMessage(null);
+    setResendSuccess(false);
+
     try {
-      const user = await loginWithEmail(nameInput.trim(), emailInput.trim());
+      await sendEmailSignInLink(cleanEmail);
+      setMode('link_sent');
+    } catch (err: any) {
+      console.error('[Firebase Auth] Error sending sign-in link to email:', err?.code, err);
+      if (err?.code === 'auth/invalid-email') {
+        setErrorMessage(text.login_error_invalid_email);
+      } else if (err?.code === 'auth/too-many-requests') {
+        setErrorMessage(text.login_error_too_many_requests);
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        setErrorMessage(text.login_error_operation_not_allowed);
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setErrorMessage(text.login_error_unauthorized_domain);
+      } else if (err?.code === 'auth/unauthorized-continue-uri') {
+        setErrorMessage(text.login_error_unauthorized_continue_uri);
+      } else {
+        setErrorMessage(err?.message || 'Não foi possível enviar o link de acesso no momento. Tente novamente.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendEmailLink = async () => {
+    const cleanEmail = emailInput.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) return;
+
+    setLoading(true);
+    setErrorMessage(null);
+    setResendSuccess(false);
+
+    try {
+      await sendEmailSignInLink(cleanEmail);
+      setResendSuccess(true);
+      setTimeout(() => setResendSuccess(false), 5000);
+    } catch (err: any) {
+      console.error('[Firebase Auth] Error resending sign-in link:', err?.code, err);
+      if (err?.code === 'auth/too-many-requests') {
+        setErrorMessage(text.login_error_too_many_requests);
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        setErrorMessage(text.login_error_operation_not_allowed);
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setErrorMessage(text.login_error_unauthorized_domain);
+      } else if (err?.code === 'auth/unauthorized-continue-uri') {
+        setErrorMessage(text.login_error_unauthorized_continue_uri);
+      } else {
+        setErrorMessage(err?.message || 'Não foi possível reenviar o link no momento.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmEmailLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanEmail = emailInput.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) return;
+
+    setLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const user = await completeEmailLinkSignIn(cleanEmail);
       onLoginSuccess(user);
       onClose();
     } catch (err: any) {
-      console.warn('Firebase email login, fallback to instant access:', err);
-      const extractedName = nameInput.trim() || emailInput.split('@')[0];
-      const fallbackUser: UserProfile = {
-        id: 'usr_e_' + Date.now(),
-        name: extractedName.charAt(0).toUpperCase() + extractedName.slice(1),
-        email: emailInput.trim(),
-        avatarUrl: '',
-        provider: 'email',
-        createdAt: new Date().toISOString(),
-      };
-      onLoginSuccess(fallbackUser);
-      onClose();
+      console.error('[Firebase Auth] Error completing email link sign in:', err?.code, err);
+      if (err?.code === 'auth/invalid-email') {
+        setErrorMessage(text.login_confirm_error_invalid_email);
+      } else if (err?.code === 'auth/invalid-action-code' || err?.code === 'auth/expired-action-code') {
+        setErrorMessage(text.login_confirm_error_expired_code);
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        setErrorMessage(text.login_error_operation_not_allowed);
+      } else if (err?.code === 'auth/unauthorized-domain') {
+        setErrorMessage(text.login_error_unauthorized_domain);
+      } else {
+        setErrorMessage(err?.message || 'Não foi possível validar o link com o e-mail informado.');
+      }
     } finally {
       setLoading(false);
     }
@@ -534,97 +681,31 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
         ) : (
           <div>
-            <div className="text-center mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-sky-500/30">
-                <Cloud className="w-6 h-6" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-900">{text.login_title}</h2>
-              <p className="text-xs text-slate-500 mt-1">
-                {text.login_subtitle}
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 mb-5 text-left">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                <span>{text.login_opt_title}</span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed text-[11px]">
-                {text.login_opt_desc}
-              </p>
-            </div>
-
-            {mode === 'main' ? (
-              <div className="space-y-3">
-                <button
-                  onClick={handleGoogleLogin}
-                  disabled={loading}
-                  id="login-btn-google"
-                  className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-sm font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-70"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                    />
-                  </svg>
-                  <span>{loading ? text.login_google_loading : text.login_google}</span>
-                </button>
-
-                <div className="flex items-center my-3">
-                  <div className="flex-grow border-t border-slate-200"></div>
-                  <span className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{text.login_or_email}</span>
-                  <div className="flex-grow border-t border-slate-200"></div>
+            {mode === 'confirm_link' ? (
+              <form onSubmit={handleConfirmEmailLink} className="space-y-4">
+                <div className="text-center mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-sky-500/30">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-900">{text.login_confirm_title}</h2>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {text.login_confirm_desc}
+                  </p>
                 </div>
 
-                <button
-                  onClick={() => setMode('email')}
-                  id="login-btn-email-mode"
-                  className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all"
-                >
-                  <Mail className="w-4 h-4 text-slate-500" />
-                  <span>{text.login_email_btn}</span>
-                </button>
-
-                <div className="pt-2">
-                  <button
-                    onClick={onClose}
-                    className="w-full py-2.5 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
-                  >
-                    {text.login_skip}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleEmailLogin} className="space-y-3.5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">{text.login_name_label}</label>
-                  <input
-                    type="text"
-                    placeholder={text.login_name_ph}
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <span className="flex-1 leading-relaxed">{errorMessage}</span>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">{text.login_email_label}</label>
                   <input
                     type="email"
                     required
+                    autoFocus
                     placeholder={text.login_email_ph}
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
@@ -635,25 +716,203 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  id="login-btn-submit-email"
                   className="w-full liquid-glass-button text-white font-bold py-3 rounded-xl text-sm shadow-md shadow-sky-500/25 cursor-pointer disabled:opacity-75"
                 >
-                  {loading ? text.login_submit_email_loading : text.login_submit_email}
+                  {loading ? text.login_confirm_loading : text.login_confirm_btn}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setMode('main')}
+                  onClick={onClose}
                   className="w-full py-1 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer text-center"
                 >
-                  {text.login_back}
+                  {text.close_btn}
                 </button>
               </form>
-            )}
+            ) : mode === 'link_sent' ? (
+              <div className="text-center py-2 space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm">
+                  <MailCheck className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">{text.login_link_sent_title}</h3>
+                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                    {text.login_link_sent_desc} <strong className="text-slate-900">{emailInput}</strong>.
+                  </p>
+                  <div className="mt-3 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 text-xs text-slate-600 leading-relaxed text-left">
+                    <p>{text.login_link_sent_check_spam}</p>
+                  </div>
+                </div>
 
-            <p className="text-center text-[10px] text-slate-400 mt-4 leading-tight">
-              {text.login_disclaimer}
-            </p>
+                {resendSuccess && (
+                  <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+                    {text.login_link_resent_success}
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 text-left">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <span className="flex-1 leading-relaxed">{errorMessage}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResendEmailLink}
+                    disabled={loading}
+                    className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
+                  >
+                    <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    <span>{loading ? text.login_link_resending : text.login_link_resend}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('email');
+                      setErrorMessage(null);
+                    }}
+                    className="w-full py-2 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                  >
+                    {text.login_link_change_email}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-center mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-sky-500/30">
+                    <Cloud className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-900">{text.login_title}</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {text.login_subtitle}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 mb-5 text-left">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-sky-900 mb-1">
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                    <span>{text.login_opt_title}</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed text-[11px]">
+                    {text.login_opt_desc}
+                  </p>
+                </div>
+
+                {errorMessage && (
+                  <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2 text-left">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <span className="flex-1 leading-relaxed">{errorMessage}</span>
+                  </div>
+                )}
+
+                {mode === 'main' ? (
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleGoogleLogin}
+                      disabled={loading}
+                      id="login-btn-google"
+                      className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-sm font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow transition-all cursor-pointer disabled:opacity-70"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                        />
+                      </svg>
+                      <span>{loading ? text.login_google_loading : text.login_google}</span>
+                    </button>
+
+                    <div className="flex items-center my-3">
+                      <div className="flex-grow border-t border-slate-200"></div>
+                      <span className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{text.login_or_email}</span>
+                      <div className="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setMode('email');
+                        setErrorMessage(null);
+                      }}
+                      id="login-btn-email-mode"
+                      className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    >
+                      <Mail className="w-4 h-4 text-slate-500" />
+                      <span>{text.login_email_btn}</span>
+                    </button>
+
+                    <div className="pt-2">
+                      <button
+                        onClick={onClose}
+                        className="w-full py-2.5 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                      >
+                        {text.login_skip}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendEmailLink} className="space-y-3.5">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 mb-2">
+                      <div className="text-xs font-semibold text-slate-800 mb-0.5">{text.login_email_header}</div>
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                        {text.login_email_desc}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">{text.login_email_label}</label>
+                      <input
+                        type="email"
+                        required
+                        autoFocus
+                        placeholder={text.login_email_ph}
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      id="login-btn-submit-email"
+                      className="w-full liquid-glass-button text-white font-bold py-3 rounded-xl text-sm shadow-md shadow-sky-500/25 cursor-pointer disabled:opacity-75"
+                    >
+                      {loading ? text.login_submit_email_loading : text.login_submit_email}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('main');
+                        setErrorMessage(null);
+                      }}
+                      className="w-full py-1 text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer text-center"
+                    >
+                      {text.login_back}
+                    </button>
+                  </form>
+                )}
+
+                <p className="text-center text-[10px] text-slate-400 mt-4 leading-tight">
+                  {text.login_disclaimer}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -3,12 +3,14 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   signOut,
   onAuthStateChanged,
   updateProfile,
   User as FirebaseUser,
+  ActionCodeSettings,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -20,43 +22,53 @@ import {
   deleteDoc,
   getDocFromServer,
 } from 'firebase/firestore';
-import firebaseConfigFile from '../../firebase-applet-config.json';
 import { UserProfile, OptimizedResume } from '../types';
 
-// Initialize Firebase App with support for VITE_ environment variables or config file
+// Web app's Firebase configuration for com-freitas-curre-a5946
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfigFile.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigFile.authDomain,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfigFile.projectId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfigFile.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfigFile.messagingSenderId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfigFile.appId,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || firebaseConfigFile.measurementId || '',
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_DATABASE_ID || firebaseConfigFile.firestoreDatabaseId,
+  apiKey: "AIzaSyDgOHfFR6qkLSvH09_R1Z2QrkZR3ikhrhA",
+  authDomain: "com-freitas-curre-a5946.firebaseapp.com",
+  projectId: "com-freitas-curre-a5946",
+  storageBucket: "com-freitas-curre-a5946.firebasestorage.app",
+  messagingSenderId: "440798568410",
+  appId: "1:440798568410:web:e587c8de74327aec58aae3"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
-// Use specified databaseId if present, else default
-export const db = firebaseConfig.firestoreDatabaseId
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-  : getFirestore(app);
+// Initialize Firestore for standard (default) database
+export const db = getFirestore(app);
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// Test connection on boot (non-blocking)
-export async function testFirestoreConnection() {
+const EMAIL_SIGNIN_STORAGE_KEY = 'curre_email_for_signin';
+
+export function getStoredEmailForSignIn(): string | null {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase Firestore is currently in offline mode.');
-    }
+    return localStorage.getItem(EMAIL_SIGNIN_STORAGE_KEY);
+  } catch (e) {
+    console.error('Error reading stored email for sign-in:', e);
+    return null;
   }
 }
-testFirestoreConnection();
+
+export function setStoredEmailForSignIn(email: string): void {
+  try {
+    localStorage.setItem(EMAIL_SIGNIN_STORAGE_KEY, email.trim().toLowerCase());
+  } catch (e) {
+    console.error('Error storing email for sign-in:', e);
+  }
+}
+
+export function clearStoredEmailForSignIn(): void {
+  try {
+    localStorage.removeItem(EMAIL_SIGNIN_STORAGE_KEY);
+  } catch (e) {
+    console.error('Error clearing stored email for sign-in:', e);
+  }
+}
 
 /**
  * Sign in with Google Popup
@@ -72,6 +84,7 @@ export async function loginWithGoogle(): Promise<UserProfile> {
     avatarUrl: user.photoURL || undefined,
     provider: 'google',
     createdAt: new Date().toISOString(),
+    isAnonymous: false,
   };
 
   // Upsert user profile to Firestore
@@ -86,44 +99,96 @@ export async function loginWithGoogle(): Promise<UserProfile> {
 }
 
 /**
- * Sign in or Sign up with Email
+ * Resolves the continueUrl for Firebase Auth Email Link.
+ * Ensures the preview URL or production domain is used, preventing localhost leakage.
  */
-export async function loginWithEmail(name: string, email: string): Promise<UserProfile> {
-  // Use a predictable password pattern or create account
-  const standardPass = `Curre@${email.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-  let user: FirebaseUser;
-
-  try {
-    // Try sign in first
-    const res = await signInWithEmailAndPassword(auth, email, standardPass);
-    user = res.user;
-  } catch (err: any) {
-    if (err?.code === 'auth/user-not-found' || err?.code === 'auth/invalid-credential') {
-      // Create new user
-      const createRes = await createUserWithEmailAndPassword(auth, email, standardPass);
-      user = createRes.user;
-      if (name) {
-        await updateProfile(user, { displayName: name });
-      }
-    } else {
-      throw err;
+export function getContinueUrl(): string {
+  // If in browser and on a real public hostname (not localhost or 127.0.0.1)
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const origin = window.location.origin;
+    if (!origin.includes('localhost') && !origin.includes('127.0.0.1') && !origin.includes('0.0.0.0')) {
+      return origin + (window.location.pathname || '/');
     }
   }
 
+  // If running inside AI Studio preview or localhost dev, use configured public APP_URL
+  const appUrl = (import.meta.env.VITE_APP_URL || '').trim();
+  if (appUrl && appUrl !== 'MY_APP_URL' && !appUrl.includes('localhost')) {
+    return appUrl.endsWith('/') ? appUrl : `${appUrl}/`;
+  }
+
+  // Fallback to current browser URL or AI Studio default preview URL
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin + (window.location.pathname || '/');
+  }
+  return 'https://ais-dev-zj4r5tjenuio5pwjcmrafg-69905515999.us-east1.run.app/';
+}
+
+/**
+ * Send passwordless Email Sign-In Link (Firebase Email Link)
+ */
+export async function sendEmailSignInLink(email: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Return URL: Keep exact origin and path, without extraneous parameters or personal data
+  const returnUrl = getContinueUrl();
+
+  const actionCodeSettings: ActionCodeSettings = {
+    url: returnUrl,
+    handleCodeInApp: true,
+  };
+
+  await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
+
+  // Store the email locally on this device so completing login is seamless
+  setStoredEmailForSignIn(cleanEmail);
+}
+
+/**
+ * Check if the given URL is an incoming Firebase Email Link
+ */
+export function isEmailSignInLink(link: string = window.location.href): boolean {
+  return isSignInWithEmailLink(auth, link);
+}
+
+/**
+ * Complete passwordless sign in with the incoming email link
+ */
+export async function completeEmailLinkSignIn(
+  email: string,
+  link: string = window.location.href
+): Promise<UserProfile> {
+  const cleanEmail = email.trim().toLowerCase();
+  const res = await signInWithEmailLink(auth, cleanEmail, link);
+  const user = res.user;
+
+  // Build authentic UserProfile from real Firebase User
   const profile: UserProfile = {
     id: user.uid,
-    name: name || user.displayName || email.split('@')[0] || 'Usuário',
-    email: user.email || email,
+    name: user.displayName || cleanEmail.split('@')[0] || 'Usuário',
+    email: user.email || cleanEmail,
     avatarUrl: user.photoURL || undefined,
     provider: 'email',
     createdAt: new Date().toISOString(),
+    isAnonymous: false,
   };
 
+  // Upsert profile in Firestore with merge: true to preserve existing records
   try {
     const userRef = doc(db, 'users', user.uid);
     await setDoc(userRef, profile, { merge: true });
   } catch (err) {
     console.error('Error saving user profile to Firestore:', err);
+  }
+
+  // Clear pending sign-in email from storage
+  clearStoredEmailForSignIn();
+
+  // Clean sign-in link parameters from browser address bar without breaking SPA navigation
+  try {
+    window.history.replaceState(null, '', window.location.pathname);
+  } catch (e) {
+    console.warn('Error cleaning URL parameters after sign-in:', e);
   }
 
   return profile;
@@ -140,7 +205,11 @@ export async function logoutFirebase(): Promise<void> {
  * Save resume to user's Firestore cloud storage
  */
 export async function saveResumeToCloud(userId: string, resume: OptimizedResume): Promise<void> {
-  if (!userId) return;
+  const currentUser = auth.currentUser;
+  if (!currentUser || currentUser.isAnonymous || !userId || currentUser.uid !== userId) {
+    console.warn('Cannot save resume to cloud: User is not authenticated');
+    return;
+  }
   const resumeId = 'current_resume';
   const resumeRef = doc(db, 'users', userId, 'resumes', resumeId);
 
@@ -163,7 +232,10 @@ export async function saveResumeToCloud(userId: string, resume: OptimizedResume)
  * Load latest resume from user's Firestore cloud storage
  */
 export async function loadResumeFromCloud(userId: string): Promise<OptimizedResume | null> {
-  if (!userId) return null;
+  const currentUser = auth.currentUser;
+  if (!currentUser || currentUser.isAnonymous || !userId || currentUser.uid !== userId) {
+    return null;
+  }
   try {
     const resumeId = 'current_resume';
     const resumeRef = doc(db, 'users', userId, 'resumes', resumeId);

@@ -1,12 +1,10 @@
 {
-  "projectId": "gen-lang-client-0962374197",
-  "appId": "1:140099195796:web:8992ec68066111ce4af581",
-  "apiKey": "AIzaSyAYTxtELv-FnR7QLXs9iEd2tcjDa5VeUH8",
-  "authDomain": "gen-lang-client-0962374197.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-currgeradordecur-a6908d1e-6b97-4ad8-b47d-d848ebe0c53a",
-  "storageBucket": "gen-lang-client-0962374197.firebasestorage.app",
-  "messagingSenderId": "140099195796",
+  "projectId": "com-freitas-curre-a5946",
+  "appId": "1:440798568410:web:e587c8de74327aec58aae3",
+  "apiKey": "AIzaSyDgOHfFR6qkLSvH09_R1Z2QrkZR3ikhrhA",
+  "authDomain": "com-freitas-curre-a5946.firebaseapp.com",
+  "storageBucket": "com-freitas-curre-a5946.firebasestorage.app",
+  "messagingSenderId": "440798568410",
   "measurementId": "",
-  "oAuthClientId": "140099195796-46q3r4knl15a0a27ba8bht88mps3ek9k.apps.googleusercontent.com",
   "recaptchaSiteKey": ""
 }
