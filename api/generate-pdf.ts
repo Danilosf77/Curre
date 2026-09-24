@@ -72,6 +72,8 @@ function getStyles(template: string = 'liquid-modern'): string {
       margin: 0 !important;
       padding: 0 !important;
       width: 100% !important;
+      height: auto !important;
+      min-height: 0 !important;
       background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.2mm, #ffffff 67.2mm, #ffffff 210mm)' : '#ffffff'} !important;
       color: #0f172a !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -89,6 +91,8 @@ function getStyles(template: string = 'liquid-modern'): string {
       background: transparent !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
+      height: auto !important;
+      min-height: 0 !important;
     }
     /* Regras do template Impact com sidebar escura contínua e spacers de margem */
     table.impact-print-table {
