@@ -446,86 +446,94 @@ body.curre-print-mode #resume-document {
     line-height: 1.35 !important;
   }
 
-  /* 9. Quebra de página inteligente: currículos longos continuam em páginas seguintes sem cortar */
-  article,
-  section,
+  /* 9. Quebra de página inteligente: currículos continuam em páginas seguintes sem cortar */
+  *,
+  *::before,
+  *::after {
+    overflow-wrap: anywhere !important;
+  }
+
+  p, span, a, h1, h2, h3, h4, li, div {
+    overflow-wrap: anywhere !important;
+  }
+
+  section {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  h1, h2, h3, h4, .section-header {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+  }
+
   .break-inside-avoid,
   .experience-card,
+  .experience-item,
+  .space-y-4 > div,
+  li,
+  ul > li,
   .contact-item {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
-  h1, h2, h3, h4 {
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-
-  /* 10. Ajuste estrutural perfeito do template Impact em largura A4 (210mm) */
+  /* 10. Ajuste estrutural do documento e do template Impact em largura A4 (210mm) */
   #resume-document {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    background-color: transparent !important;
+  }
+
+  /* Regras de tabela de impressão para o template Impact */
+  table.impact-print-table {
     width: 210mm !important;
-    max-width: 210mm !important;
-    min-height: 297mm !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
+    background: transparent !important;
   }
-
-  .impact-resume-layout {
-    display: grid !important;
-    grid-template-columns: 30% 70% !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    min-height: 297mm !important;
-    flex: 1 0 auto !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
+  thead.impact-print-spacer, tfoot.impact-print-spacer {
+    height: 12mm !important;
+  }
+  thead.impact-print-spacer td, tfoot.impact-print-spacer td {
+    height: 12mm !important;
     padding: 0 !important;
-    overflow: visible !important;
-    background-color: #ffffff !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
   }
-
-  .impact-resume-sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    padding: 1.25rem !important;
-    box-sizing: border-box !important;
-    background-color: #0f172a !important;
+  tbody td.impact-sidebar-cell {
+    width: 67.2mm !important;
+    min-width: 67.2mm !important;
+    max-width: 67.2mm !important;
+    padding: 0 5mm 0 12mm !important;
+    vertical-align: top !important;
+    border: none !important;
+    background: transparent !important;
     color: #f1f5f9 !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    overflow: visible !important;
-  }
-
-  .impact-resume-content {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 1.25rem !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    padding: 1.5rem !important;
     box-sizing: border-box !important;
-    background-color: #ffffff !important;
+  }
+  tbody td.impact-main-cell {
+    width: calc(210mm - 67.2mm) !important;
+    min-width: calc(210mm - 67.2mm) !important;
+    max-width: calc(210mm - 67.2mm) !important;
+    padding: 0 12mm 0 8mm !important;
+    vertical-align: top !important;
+    border: none !important;
+    background: transparent !important;
     color: #0f172a !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    overflow: visible !important;
+    box-sizing: border-box !important;
   }
-
-  .impact-resume-content * {
+  tbody td.impact-main-cell * {
     max-width: 100% !important;
     box-sizing: border-box !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
   }
 }
 

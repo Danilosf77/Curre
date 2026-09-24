@@ -159,7 +159,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       contents: systemPrompt,
       config: {
         responseMimeType: 'application/json',
@@ -219,11 +219,18 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
       templateStyle: 'liquid-modern',
       language: currentLang,
       generatedAt: new Date().toISOString(),
+      isAiGenerated: true,
     };
 
+    console.log('[Gemini API optimize-resume SUCCESS]: Currículo otimizado com sucesso usando gemini-3.8-flash');
     return res.json(finalResume);
   } catch (error: any) {
-    console.warn('Gemini optimize-resume API temporary error, using resilient fallback:', error?.message);
-    return res.json(generateFallbackResume(req.body || {}));
+    console.error('[Gemini API optimize-resume ERROR]: Falha na chamada da API Gemini:', error?.status || '', error?.message || error);
+    const fallback = generateFallbackResume(req.body || {});
+    return res.json({
+      ...fallback,
+      isAiGenerated: false,
+      apiError: error?.message || 'Gemini API call failed',
+    });
   }
 }

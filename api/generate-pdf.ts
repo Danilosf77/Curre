@@ -11,10 +11,10 @@ import { CorporatePremiumTemplate } from '../src/components/templates/CorporateP
 import { MinimalistAtsTemplate } from '../src/components/templates/MinimalistAtsTemplate.js';
 import { LanguageProvider } from '../src/i18n/LanguageContext.js';
 
-let cachedStyles: string | null = null;
+let cachedBaseStyles: string | null = null;
 
-function getStyles(): string {
-  if (cachedStyles) return cachedStyles;
+function getBaseStyles(): string {
+  if (cachedBaseStyles) return cachedBaseStyles;
 
   const styleChunks: string[] = [];
 
@@ -43,108 +43,124 @@ function getStyles(): string {
     // Ignora erro de leitura
   }
 
+  cachedBaseStyles = styleChunks.join('\n');
+  return cachedBaseStyles;
+}
+
+function getStyles(template: string = 'liquid-modern'): string {
+  const baseCss = getBaseStyles();
+  const isImpact = template === 'impact';
+
   // 3. Regras canônicas para garantir renderização perfeita em A4 vetorial
   const a4PrintFixes = `
     @page {
       size: A4 portrait;
-      margin: 0;
+      margin: ${isImpact ? '0' : '12mm'};
     }
     *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
       box-sizing: border-box !important;
+      overflow-wrap: anywhere !important;
+      word-break: normal;
+    }
+    p, span, a, h1, h2, h3, h4, li, div {
+      overflow-wrap: anywhere !important;
     }
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      width: 210mm !important;
-      min-height: 297mm !important;
-      background: #ffffff !important;
+      width: 100% !important;
+      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.2mm, #ffffff 67.2mm, #ffffff 210mm)' : '#ffffff'} !important;
       color: #0f172a !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
     #resume-document, .resume-paper {
-      width: 210mm !important;
-      max-width: 210mm !important;
-      min-height: 297mm !important;
-      margin: 0 auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
       border: none !important;
       box-shadow: none !important;
       border-radius: 0 !important;
       transform: none !important;
       overflow: visible !important;
-      background: #ffffff !important;
+      background: transparent !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
-      display: flex !important;
-      flex-direction: column !important;
-      page-break-after: auto !important;
-      break-after: auto !important;
     }
-    .impact-resume-layout {
-      display: grid !important;
-      grid-template-columns: 30% 70% !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      min-height: 297mm !important;
-      flex: 1 0 auto !important;
-      box-sizing: border-box !important;
+    /* Regras do template Impact com sidebar escura contínua e spacers de margem */
+    table.impact-print-table {
+      width: 210mm !important;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
       margin: 0 !important;
       padding: 0 !important;
-      overflow: visible !important;
-      background-color: #ffffff !important;
+      background: transparent !important;
     }
-    .impact-resume-sidebar {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 1rem !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      padding: 1.25rem !important;
-      box-sizing: border-box !important;
-      background-color: #0f172a !important;
+    thead.impact-print-spacer, tfoot.impact-print-spacer {
+      height: 12mm !important;
+    }
+    thead.impact-print-spacer td, tfoot.impact-print-spacer td {
+      height: 12mm !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      background: transparent !important;
+    }
+    tbody td.impact-sidebar-cell {
+      width: 67.2mm !important;
+      min-width: 67.2mm !important;
+      max-width: 67.2mm !important;
+      padding: 0 5mm 0 12mm !important;
+      vertical-align: top !important;
+      border: none !important;
+      background: transparent !important;
       color: #f1f5f9 !important;
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-      overflow: visible !important;
-    }
-    .impact-resume-content {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 1.25rem !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      padding: 1.5rem !important;
       box-sizing: border-box !important;
-      background-color: #ffffff !important;
+    }
+    tbody td.impact-main-cell {
+      width: calc(210mm - 67.2mm) !important;
+      min-width: calc(210mm - 67.2mm) !important;
+      max-width: calc(210mm - 67.2mm) !important;
+      padding: 0 12mm 0 8mm !important;
+      vertical-align: top !important;
+      border: none !important;
+      background: transparent !important;
       color: #0f172a !important;
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-      overflow: visible !important;
+      box-sizing: border-box !important;
     }
-    .impact-resume-content * {
+    tbody td.impact-main-cell * {
       max-width: 100% !important;
       box-sizing: border-box !important;
-      overflow-wrap: break-word !important;
-      word-break: break-word !important;
     }
-    article, section, .break-inside-avoid, .experience-card, .contact-item {
+    section {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+    }
+    h1, h2, h3, h4, .section-header {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
+      break-inside: avoid !important;
+    }
+    .space-y-4 > div,
+    .experience-item,
+    .experience-card,
+    .break-inside-avoid {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      margin-bottom: 0.85rem !important;
+    }
+    li,
+    ul > li,
+    .contact-item {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
-    h1, h2, h3, h4 {
-      break-after: avoid !important;
-      page-break-after: avoid !important;
-    }
   `;
-  styleChunks.push(a4PrintFixes);
 
-  cachedStyles = styleChunks.join('\n');
-  return cachedStyles;
+  return `${baseCss}\n${a4PrintFixes}`;
 }
 
 function sanitizeFilename(fullName?: string): string {
@@ -178,16 +194,16 @@ export default async function generatePdfHandler(req: any, res: any) {
 
   // Seleciona o componente React baseado no template selecionado
   let TemplateComponent: React.ComponentType<any> = LiquidModernTemplate;
-  let templateClass = 'p-6 sm:p-10 font-sans';
+  let templateClass = 'p-0 font-sans';
 
   switch (template) {
     case 'executive-clean':
       TemplateComponent = ExecutiveClassicTemplate;
-      templateClass = 'p-6 sm:p-10 font-serif';
+      templateClass = 'p-0 font-serif';
       break;
     case 'ats-professional':
       TemplateComponent = AtsProfessionalTemplate;
-      templateClass = 'p-6 sm:p-10 font-sans';
+      templateClass = 'p-0 font-sans';
       break;
     case 'impact':
       TemplateComponent = ImpactTemplate;
@@ -195,7 +211,7 @@ export default async function generatePdfHandler(req: any, res: any) {
       break;
     case 'corporate-premium':
       TemplateComponent = CorporatePremiumTemplate;
-      templateClass = 'p-6 sm:p-10 font-sans';
+      templateClass = 'p-0 font-sans';
       break;
     case 'minimalist':
       TemplateComponent = MinimalistAtsTemplate;
@@ -204,7 +220,7 @@ export default async function generatePdfHandler(req: any, res: any) {
     case 'liquid-modern':
     default:
       TemplateComponent = LiquidModernTemplate;
-      templateClass = 'p-6 sm:p-10 font-sans';
+      templateClass = 'p-0 font-sans';
       break;
   }
 
@@ -243,7 +259,7 @@ export default async function generatePdfHandler(req: any, res: any) {
   }
 
   // 2. Constrói o documento HTML completo com estilos e fontes incorporados
-  const css = getStyles();
+  const css = getStyles(template);
   const fullHtml = `<!DOCTYPE html>
 <html lang="${selectedLang}">
 <head>
@@ -337,17 +353,63 @@ export default async function generatePdfHandler(req: any, res: any) {
       );
     });
 
-    // Gera o PDF vetorial em A4 preservando cores de fundo e gráficos
+    // Formatação de impressão de duas colunas para o template Impact
+    if (template === 'impact') {
+      await page.evaluate(() => {
+        const layout = document.querySelector('.impact-resume-layout') as HTMLElement;
+        const sidebar = document.querySelector('.impact-resume-sidebar') as HTMLElement;
+        const content = document.querySelector('.impact-resume-content') as HTMLElement;
+        if (!layout || !sidebar || !content) return;
+
+        const table = document.createElement('table');
+        table.className = 'impact-print-table';
+        table.innerHTML = `
+          <thead class="impact-print-spacer">
+            <tr><td colspan="2"></td></tr>
+          </thead>
+          <tfoot class="impact-print-spacer">
+            <tr><td colspan="2"></td></tr>
+          </tfoot>
+          <tbody>
+            <tr>
+              <td class="impact-sidebar-cell"></td>
+              <td class="impact-main-cell"></td>
+            </tr>
+          </tbody>
+        `;
+        const sidebarCell = table.querySelector('.impact-sidebar-cell')!;
+        const mainCell = table.querySelector('.impact-main-cell')!;
+
+        while (sidebar.firstChild) {
+          sidebarCell.appendChild(sidebar.firstChild);
+        }
+        while (content.firstChild) {
+          mainCell.appendChild(content.firstChild);
+        }
+
+        layout.parentNode?.replaceChild(table, layout);
+      });
+    }
+
+    // Gera o PDF vetorial em A4 com margem de 12mm (ou margens via padding/table no Impact)
+    const isImpact = template === 'impact';
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
-      margin: {
-        top: '0mm',
-        bottom: '0mm',
-        left: '0mm',
-        right: '0mm',
-      },
+      margin: isImpact
+        ? {
+            top: '0mm',
+            bottom: '0mm',
+            left: '0mm',
+            right: '0mm',
+          }
+        : {
+            top: '12mm',
+            bottom: '12mm',
+            left: '12mm',
+            right: '12mm',
+          },
     });
 
     const duration = Date.now() - startTime;

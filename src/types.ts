@@ -84,6 +84,8 @@ export interface OptimizedResume {
   templateStyle: 'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist';
   language?: string;
   generatedAt: string;
+  isAiGenerated?: boolean;
+  apiError?: string;
 }
 
 export interface UserProfile {
