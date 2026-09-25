@@ -1985,31 +1985,122 @@ interface LanguageContextProps {
   t: (key: string) => string;
 }
 
+export const MANUAL_LANG_STORAGE_KEY = 'curre_language';
+
+/**
+ * Mapeia uma tag de locale BCP 47 (ex: 'pt-BR', 'es-MX', 'fr-CA', 'en-US')
+ * para um dos quatro idiomas suportados pelo CURRÊ ('pt', 'es', 'fr', 'en').
+ * Retorna null para idiomas não suportados.
+ */
+export function matchSupportedLanguage(localeTag: unknown): Language | null {
+  if (!localeTag || typeof localeTag !== 'string') return null;
+  const normalized = localeTag.trim().toLowerCase();
+  const primary = normalized.split(/[-_]/)[0];
+  if (primary === 'pt') return 'pt';
+  if (primary === 'es') return 'es';
+  if (primary === 'fr') return 'fr';
+  if (primary === 'en') return 'en';
+  return null;
+}
+
+/**
+ * Detecta o idioma preferido a partir das preferências do navegador (navigator.languages e navigator.language).
+ * Percorre na ordem de preferência do usuário e retorna o primeiro suportado.
+ * Se nenhum idioma suportado for encontrado, retorna 'en' como padrão universal.
+ */
+export function detectBrowserLanguage(): Language {
+  if (typeof navigator === 'undefined') return 'en';
+
+  const candidates: string[] = [];
+  if (Array.isArray(navigator.languages) && navigator.languages.length > 0) {
+    for (const lang of navigator.languages) {
+      if (typeof lang === 'string' && lang.trim()) {
+        candidates.push(lang.trim());
+      }
+    }
+  }
+
+  if (typeof navigator.language === 'string' && navigator.language.trim()) {
+    candidates.push(navigator.language.trim());
+  }
+
+  for (const candidate of candidates) {
+    const matched = matchSupportedLanguage(candidate);
+    if (matched) {
+      return matched;
+    }
+  }
+
+  return 'en';
+}
+
+/**
+ * Recupera o idioma inicial de forma determinística antes da primeira renderização:
+ * 1. defaultLanguage explícito (se passado via props, por exemplo em SSR de PDF)
+ * 2. Escolha manual prévia do usuário no seletor (salva no localStorage)
+ * 3. Detecção automática baseada na lista de preferências do navegador (sem gravar no localStorage)
+ */
+export function getInitialLanguage(defaultLanguage?: Language): Language {
+  let selected: Language = 'en';
+
+  if (defaultLanguage && (defaultLanguage === 'pt' || defaultLanguage === 'en' || defaultLanguage === 'es' || defaultLanguage === 'fr')) {
+    selected = defaultLanguage;
+  } else {
+    let manualChoice: Language | null = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const saved = localStorage.getItem(MANUAL_LANG_STORAGE_KEY);
+        if (saved === 'pt' || saved === 'en' || saved === 'es' || saved === 'fr') {
+          manualChoice = saved;
+        }
+      }
+    } catch {
+      // Ignora erro de acesso ao localStorage
+    }
+
+    if (manualChoice) {
+      selected = manualChoice;
+    } else {
+      selected = detectBrowserLanguage();
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = selected === 'pt' ? 'pt-BR' : selected;
+  }
+
+  return selected;
+}
+
 const LanguageContext = createContext<LanguageContextProps>({
   language: 'pt',
   setLanguage: () => {},
   t: (key: string) => key,
 });
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('curre_language');
-      if (saved === 'pt' || saved === 'en' || saved === 'es' || saved === 'fr') {
-        return saved;
-      }
-    } catch {
-      // fallback
+export const LanguageProvider: React.FC<{ children: React.ReactNode; defaultLanguage?: Language }> = ({
+  children,
+  defaultLanguage,
+}) => {
+  // Inicializado de forma síncrona antes do primeiro render para evitar flash de tela em outro idioma
+  const [language, setLanguageState] = useState<Language>(() => getInitialLanguage(defaultLanguage));
+
+  // Mantém o atributo lang da tag html sempre sincronizado
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language === 'pt' ? 'pt-BR' : language;
     }
-    return 'pt';
-  });
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     try {
-      localStorage.setItem('curre_language', lang);
+      if (typeof localStorage !== 'undefined') {
+        // Grava apenas a escolha manual do usuário
+        localStorage.setItem(MANUAL_LANG_STORAGE_KEY, lang);
+      }
     } catch {
-      // ignore
+      // Ignora erro de gravação no localStorage
     }
   };
 
