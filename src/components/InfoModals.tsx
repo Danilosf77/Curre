@@ -16,6 +16,7 @@ export interface LoginModalProps {
   onLoginSuccess: (user: UserProfile) => void;
   onLogout?: () => void;
   confirmEmailLink?: boolean;
+  initialMode?: 'main' | 'email' | 'link_sent' | 'confirm_link';
 }
 
 const MODAL_T = {
@@ -495,9 +496,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLoginSuccess,
   onLogout,
   confirmEmailLink = false,
+  initialMode,
 }) => {
   const [emailInput, setEmailInput] = useState('');
-  const [mode, setMode] = useState<'main' | 'email' | 'link_sent' | 'confirm_link'>('main');
+  const [mode, setMode] = useState<'main' | 'email' | 'link_sent' | 'confirm_link'>(
+    initialMode || (confirmEmailLink ? 'confirm_link' : 'main')
+  );
   const [loading, setLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -505,14 +509,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const text = MODAL_T[language] || MODAL_T.pt;
 
   useEffect(() => {
-    if (confirmEmailLink) {
+    if (initialMode) {
+      setMode(initialMode);
+    } else if (confirmEmailLink) {
       setMode('confirm_link');
     } else {
       setMode('main');
     }
     setErrorMessage(null);
     setResendSuccess(false);
-  }, [isOpen, confirmEmailLink]);
+  }, [isOpen, confirmEmailLink, initialMode]);
 
   if (!isOpen) return null;
 
@@ -739,7 +745,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                     {text.login_link_sent_desc} <strong className="text-slate-900">{emailInput}</strong>.
                   </p>
-                  <div className="mt-3 p-3.5 rounded-2xl bg-sky-50/80 border border-sky-100 text-xs text-slate-600 leading-relaxed text-left">
+                  <div className="login-info-box mt-3 p-3.5 rounded-2xl bg-sky-50/80 dark:bg-slate-800/95 border border-sky-100 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-200 leading-relaxed text-left">
                     <p>{text.login_link_sent_check_spam}</p>
                   </div>
                 </div>
