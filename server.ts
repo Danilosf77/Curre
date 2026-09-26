@@ -109,6 +109,10 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      // Do not let the catch-all return index.html for sitemap.xml or robots.txt
+      if (req.path === '/sitemap.xml' || req.path === '/robots.txt') {
+        return res.status(404).type('text/plain').send('Not Found');
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
