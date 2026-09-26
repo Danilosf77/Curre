@@ -97,6 +97,12 @@ app.all('/api/optimize-resume', ...aiGuards, optimizeResumeHandler);
 // Endpoint de geração direta de PDF vetorial via Chromium Headless (Playwright)
 app.post('/api/generate-pdf', generatePdfHandler);
 
+// 301 redirect for language paths missing trailing slash (e.g. /pt -> /pt/)
+app.get(/^\/(pt|en|es|fr)$/, (req, res) => {
+  const search = req.url.slice(req.path.length);
+  res.redirect(301, `${req.path}/${search}`);
+});
+
 // Vite Middleware for development vs Static serving for production
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

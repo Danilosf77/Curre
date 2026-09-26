@@ -1987,6 +1987,40 @@ interface LanguageContextProps {
 
 export const MANUAL_LANG_STORAGE_KEY = 'curre_language';
 
+export interface LanguageMeta {
+  htmlLang: string;
+  title: string;
+  description: string;
+  canonicalUrl: string;
+}
+
+export const LANGUAGE_METADATA: Record<Language, LanguageMeta> = {
+  pt: {
+    htmlLang: 'pt-BR',
+    title: 'CURRÊ - Gerador de Currículo com IA',
+    description: 'Corra atrás da vaga certa. Crie currículos profissionais modernos adaptados para vagas de emprego utilizando inteligência artificial.',
+    canonicalUrl: 'https://www.curreai.com/pt/',
+  },
+  en: {
+    htmlLang: 'en',
+    title: 'CURRÊ - AI Resume Builder',
+    description: 'Run after the right job. Create modern, professional resumes tailored to job postings using artificial intelligence.',
+    canonicalUrl: 'https://www.curreai.com/en/',
+  },
+  es: {
+    htmlLang: 'es',
+    title: 'CURRÊ - Creador de Currículum con IA',
+    description: 'Ve tras el empleo adecuado. Crea currículums profesionales modernos adaptados a ofertas laborales con inteligencia artificial.',
+    canonicalUrl: 'https://www.curreai.com/es/',
+  },
+  fr: {
+    htmlLang: 'fr',
+    title: 'CURRÊ - Créateur de CV avec IA',
+    description: 'Décrochez le bon poste. Créez des CV professionnels modernes adaptés aux offres d\'emploi grâce à l\'intelligence artificielle.',
+    canonicalUrl: 'https://www.curreai.com/fr/',
+  },
+};
+
 /**
  * Mapeia uma tag de locale BCP 47 (ex: 'pt-BR', 'es-MX', 'fr-CA', 'en-US')
  * para um dos quatro idiomas suportados pelo CURRÊ ('pt', 'es', 'fr', 'en').
@@ -2001,6 +2035,83 @@ export function matchSupportedLanguage(localeTag: unknown): Language | null {
   if (primary === 'fr') return 'fr';
   if (primary === 'en') return 'en';
   return null;
+}
+
+/**
+ * Extrai o idioma a partir do pathname da URL (/pt/, /en/, /es/, /fr/ ou /pt, /en...).
+ * Retorna null se não houver prefixo de idioma suportado.
+ */
+export function getLanguageFromPath(pathname?: string): Language | null {
+  if (typeof window === 'undefined' && pathname === undefined) return null;
+  const path = pathname !== undefined ? pathname : (typeof window !== 'undefined' ? window.location.pathname : '');
+  const match = path.match(/^\/(pt|en|es|fr)(?:\/|$)/i);
+  if (match && match[1]) {
+    return match[1].toLowerCase() as Language;
+  }
+  return null;
+}
+
+/**
+ * Aplica os metadados do documento no <head> e na tag <html>:
+ * - <html lang="...">
+ * - <title> e tags OpenGraph/Twitter correspondentes
+ * - <meta name="description"> e og:description
+ * - <link rel="canonical" href="..."> autorreferencial
+ * - Links <link rel="alternate" hreflang="..." href="..."> recíprocos (pt, en, es, fr, x-default)
+ */
+export function applyDocumentMetadata(lang: Language) {
+  if (typeof document === 'undefined') return;
+
+  const meta = LANGUAGE_METADATA[lang] || LANGUAGE_METADATA.pt;
+
+  // 1. <html lang="...">
+  document.documentElement.lang = meta.htmlLang;
+
+  // 2. <title> e og:title
+  document.title = meta.title;
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.setAttribute('content', meta.title);
+
+  // 3. <meta name="description"> e og:description
+  let metaDesc = document.querySelector('meta[name="description"]');
+  if (!metaDesc) {
+    metaDesc = document.createElement('meta');
+    metaDesc.setAttribute('name', 'description');
+    document.head.appendChild(metaDesc);
+  }
+  metaDesc.setAttribute('content', meta.description);
+
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.setAttribute('content', meta.description);
+
+  // 4. Link canônico autorreferencial
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', meta.canonicalUrl);
+
+  // 5. Links hreflang recíprocos para todos os quatro idiomas e x-default
+  const hreflangConfigs = [
+    { lang: 'pt', url: 'https://www.curreai.com/pt/' },
+    { lang: 'en', url: 'https://www.curreai.com/en/' },
+    { lang: 'es', url: 'https://www.curreai.com/es/' },
+    { lang: 'fr', url: 'https://www.curreai.com/fr/' },
+    { lang: 'x-default', url: 'https://www.curreai.com/en/' },
+  ];
+
+  for (const config of hreflangConfigs) {
+    let link = document.querySelector(`link[rel="alternate"][hreflang="${config.lang}"]`);
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'alternate');
+      link.setAttribute('hreflang', config.lang);
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', config.url);
+  }
 }
 
 /**
@@ -2036,40 +2147,53 @@ export function detectBrowserLanguage(): Language {
 
 /**
  * Recupera o idioma inicial de forma determinística antes da primeira renderização:
- * 1. defaultLanguage explícito (se passado via props, por exemplo em SSR de PDF)
- * 2. Escolha manual prévia do usuário no seletor (salva no localStorage)
- * 3. Detecção automática baseada na lista de preferências do navegador (sem gravar no localStorage)
+ * 1. defaultLanguage explícito (se passado via props, por exemplo em renderização de PDF no servidor)
+ * 2. Idioma definido na URL (/pt/, /en/, /es/, /fr/), que tem prioridade sobre o localStorage
+ * 3. Em '/', verifica se há escolha manual salva válida no localStorage
+ * 4. Caso contrário em '/', detecta a preferência do navegador (navigator.languages / navigator.language)
+ *    sem gravar no localStorage; se nenhum bater, usa 'en'.
  */
 export function getInitialLanguage(defaultLanguage?: Language): Language {
-  let selected: Language = 'en';
-
+  // 1. defaultLanguage explícito
   if (defaultLanguage && (defaultLanguage === 'pt' || defaultLanguage === 'en' || defaultLanguage === 'es' || defaultLanguage === 'fr')) {
-    selected = defaultLanguage;
-  } else {
-    let manualChoice: Language | null = null;
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const saved = localStorage.getItem(MANUAL_LANG_STORAGE_KEY);
-        if (saved === 'pt' || saved === 'en' || saved === 'es' || saved === 'fr') {
-          manualChoice = saved;
-        }
+    return defaultLanguage;
+  }
+
+  // 2. Idioma definido na URL (tem prioridade sobre o localStorage)
+  const urlLang = getLanguageFromPath();
+  if (urlLang) {
+    if (typeof document !== 'undefined') {
+      applyDocumentMetadata(urlLang);
+    }
+    return urlLang;
+  }
+
+  // 3. Em '/', escolha manual prévia do usuário no seletor (salva no localStorage)
+  let manualChoice: Language | null = null;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem(MANUAL_LANG_STORAGE_KEY);
+      if (saved === 'pt' || saved === 'en' || saved === 'es' || saved === 'fr') {
+        manualChoice = saved;
       }
-    } catch {
-      // Ignora erro de acesso ao localStorage
     }
-
-    if (manualChoice) {
-      selected = manualChoice;
-    } else {
-      selected = detectBrowserLanguage();
-    }
+  } catch {
+    // Ignora erro de acesso ao localStorage
   }
 
+  if (manualChoice) {
+    if (typeof document !== 'undefined') {
+      applyDocumentMetadata(manualChoice);
+    }
+    return manualChoice;
+  }
+
+  // 4. Detecção automática baseada no navegador (sem gravar no localStorage)
+  const detected = detectBrowserLanguage();
   if (typeof document !== 'undefined') {
-    document.documentElement.lang = selected === 'pt' ? 'pt-BR' : selected;
+    applyDocumentMetadata(detected);
   }
-
-  return selected;
+  return detected;
 }
 
 const LanguageContext = createContext<LanguageContextProps>({
@@ -2085,22 +2209,65 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode; defaultLang
   // Inicializado de forma síncrona antes do primeiro render para evitar flash de tela em outro idioma
   const [language, setLanguageState] = useState<Language>(() => getInitialLanguage(defaultLanguage));
 
-  // Mantém o atributo lang da tag html sempre sincronizado
+  // Normalização do caminho (ex: /pt -> /pt/) e sincronização inicial de metadados
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = language === 'pt' ? 'pt-BR' : language;
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (/^\/(pt|en|es|fr)$/i.test(path)) {
+        window.history.replaceState(null, '', `${path}/${window.location.search}${window.location.hash}`);
+      }
     }
+    applyDocumentMetadata(language);
   }, [language]);
+
+  // Escuta navegação por popstate (botões Voltar/Avançar do navegador)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handlePopState = () => {
+      const langFromUrl = getLanguageFromPath();
+      if (langFromUrl) {
+        setLanguageState(langFromUrl);
+        applyDocumentMetadata(langFromUrl);
+      } else if (window.location.pathname === '/' || window.location.pathname === '') {
+        let manualChoice: Language | null = null;
+        try {
+          const saved = localStorage.getItem(MANUAL_LANG_STORAGE_KEY);
+          if (saved === 'pt' || saved === 'en' || saved === 'es' || saved === 'fr') {
+            manualChoice = saved;
+          }
+        } catch {}
+        const targetLang = manualChoice || detectBrowserLanguage();
+        setLanguageState(targetLang);
+        applyDocumentMetadata(targetLang);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
+
+    // 1. Grava a escolha manual no localStorage
     try {
       if (typeof localStorage !== 'undefined') {
-        // Grava apenas a escolha manual do usuário
         localStorage.setItem(MANUAL_LANG_STORAGE_KEY, lang);
       }
     } catch {
-      // Ignora erro de gravação no localStorage
+      // Ignora erro de gravação
+    }
+
+    // 2. Atualiza a URL mantendo o estado da aplicação e histórico do navegador
+    if (typeof window !== 'undefined') {
+      // Atualiza os metadados do documento (título, descrição, canonical) antes do pushState
+      applyDocumentMetadata(lang);
+
+      const targetUrl = `/${lang}/${window.location.search}${window.location.hash}`;
+      if (window.location.pathname !== `/${lang}/`) {
+        window.history.pushState(null, '', targetUrl);
+      }
     }
   };
 
