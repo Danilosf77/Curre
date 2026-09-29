@@ -25,8 +25,13 @@ import {
   ShieldCheck,
   Zap,
   Building2,
+  Award,
+  Shapes,
+  Feather,
+  GitCommitHorizontal,
+  Earth,
 } from 'lucide-react';
-import { OptimizedResume, UserProfile } from '../types';
+import { OptimizedResume, TemplateStyle, UserProfile } from '../types';
 import { exportResumeToPDF } from '../utils/pdfExport';
 import { LiquidModernTemplate } from './templates/LiquidModernTemplate';
 import { ExecutiveClassicTemplate } from './templates/ExecutiveClassicTemplate';
@@ -34,6 +39,10 @@ import { MinimalistAtsTemplate } from './templates/MinimalistAtsTemplate';
 import { AtsProfessionalTemplate } from './templates/AtsProfessionalTemplate';
 import { ImpactTemplate } from './templates/ImpactTemplate';
 import { CorporatePremiumTemplate } from './templates/CorporatePremiumTemplate';
+import { CreativeColorTemplate } from './templates/CreativeColorTemplate';
+import { ElegantSerifTemplate } from './templates/ElegantSerifTemplate';
+import { TimelineTechTemplate } from './templates/TimelineTechTemplate';
+import { InternationalTemplate } from './templates/InternationalTemplate';
 import { runAtsDiagnostic, AtsDiagnosticResult } from '../utils/atsDiagnostic';
 import { useLanguage } from '../i18n/LanguageContext';
 import { saveResumeToCloud } from '../lib/firebase';
@@ -46,6 +55,7 @@ interface ResumePreviewProps {
   onBackToHome: () => void;
   currentUser?: UserProfile | null;
   onOpenLogin?: () => void;
+  onResumeChange?: (updater: (prev: OptimizedResume) => OptimizedResume) => void;
 }
 
 export const ResumePreview: React.FC<ResumePreviewProps> = ({
@@ -56,11 +66,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   onBackToHome,
   currentUser,
   onOpenLogin,
+  onResumeChange,
 }) => {
   const { t, language } = useLanguage();
-  const [template, setTemplate] = useState<
-    'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist'
-  >(resume.templateStyle || 'liquid-modern');
+  const [template, setTemplate] = useState<TemplateStyle>(resume.templateStyle || 'liquid-modern');
+
+  // Wrapper: mantém o estado local do seletor e propaga a escolha para o App
+  // (persistência em localStorage/Firestore junto com o currículo salvo)
+  const handleTemplateChange = (newTemplate: TemplateStyle) => {
+    setTemplate(newTemplate);
+    if (onResumeChange) {
+      onResumeChange((prev) => ({ ...prev, templateStyle: newTemplate }));
+    }
+  };
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -378,10 +396,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 mt-3">
             {/* Template 1: Moderno Clean */}
             <button
-              onClick={() => setTemplate('liquid-modern')}
+              onClick={() => handleTemplateChange('liquid-modern')}
               id="template-btn-modern"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'liquid-modern'
@@ -407,7 +425,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Template 2: Executivo */}
             <button
-              onClick={() => setTemplate('executive-clean')}
+              onClick={() => handleTemplateChange('executive-clean')}
               id="template-btn-executive"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'executive-clean'
@@ -433,7 +451,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Template 3: ATS Professional */}
             <button
-              onClick={() => setTemplate('ats-professional')}
+              onClick={() => handleTemplateChange('ats-professional')}
               id="template-btn-ats"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'ats-professional'
@@ -459,7 +477,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Template 4: Impact */}
             <button
-              onClick={() => setTemplate('impact')}
+              onClick={() => handleTemplateChange('impact')}
               id="template-btn-impact"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'impact'
@@ -501,7 +519,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             {/* Template 5: Corporate Premium */}
             <button
-              onClick={() => setTemplate('corporate-premium')}
+              onClick={() => handleTemplateChange('corporate-premium')}
               id="template-btn-corporate"
               className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
                 template === 'corporate-premium'
@@ -521,6 +539,136 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </span>
                 <p className="text-[11px] text-slate-500 leading-tight">
                   {t('tmpl_corporate_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 6: Soft Sidebar (Minimalist ATS) */}
+            <button
+              onClick={() => handleTemplateChange('minimalist')}
+              id="template-btn-minimalist"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'minimalist'
+                  ? 'bg-violet-50/90 border-violet-600 shadow-md ring-2 ring-violet-500/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Shapes className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                    Soft Sidebar
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-violet-100 text-violet-800 inline-block mb-1.5">
+                  {t('tmpl_minimalist_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_minimalist_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 7: Creative Pop */}
+            <button
+              onClick={() => handleTemplateChange('creative-color')}
+              id="template-btn-creative"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'creative-color'
+                  ? 'bg-fuchsia-50/90 border-fuchsia-600 shadow-md ring-2 ring-fuchsia-500/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Feather className="w-3.5 h-3.5 text-fuchsia-600 shrink-0" />
+                    Creative Pop
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-800 inline-block mb-1.5">
+                  {t('tmpl_creative_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_creative_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 8: Elegant Serif */}
+            <button
+              onClick={() => handleTemplateChange('elegant-serif')}
+              id="template-btn-elegant"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'elegant-serif'
+                  ? 'bg-yellow-50/90 border-yellow-700 shadow-md ring-2 ring-yellow-600/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Award className="w-3.5 h-3.5 text-yellow-700 shrink-0" />
+                    Elegant Serif
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-800 inline-block mb-1.5">
+                  {t('tmpl_elegant_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_elegant_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 9: Timeline Tech */}
+            <button
+              onClick={() => handleTemplateChange('timeline-tech')}
+              id="template-btn-timeline"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'timeline-tech'
+                  ? 'bg-teal-50/90 border-teal-600 shadow-md ring-2 ring-teal-500/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <GitCommitHorizontal className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                    Timeline Tech
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 inline-block mb-1.5">
+                  {t('tmpl_tech_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_tech_desc')}
+                </p>
+              </div>
+            </button>
+
+            {/* Template 10: International */}
+            <button
+              onClick={() => handleTemplateChange('international')}
+              id="template-btn-international"
+              className={`p-3 rounded-xl text-left border transition-all cursor-pointer relative flex flex-col justify-between ${
+                template === 'international'
+                  ? 'bg-indigo-50/90 border-indigo-700 shadow-md ring-2 ring-indigo-600/20'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                    <Earth className="w-3.5 h-3.5 text-indigo-700 shrink-0" />
+                    International
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 inline-block mb-1.5">
+                  {t('tmpl_intl_badge')}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  {t('tmpl_intl_desc')}
                 </p>
               </div>
             </button>
@@ -624,19 +772,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
             <div>
               <span className="font-extrabold text-slate-900 mr-2">
-                {t('ats_audit_title')}:
+                {t('ats_audit_title')}
               </span>
               <span className="text-slate-600">
-                {atsDiagnostic.sectionsFound} {t('ats_audit_sections')} • {t('ats_audit_order')} • {t('ats_audit_indexable')}
+                {atsDiagnostic.sectionsFound} {t('ats_audit_sections')}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200/80 text-[11px]">
-              {t('ats_audit_score')}: {atsDiagnostic.score}/100
+              {t('ats_score_label')} {atsDiagnostic.score}/100
             </span>
             <span className="text-[10px] text-slate-400">
-              ({t('ats_audit_verification')})
+              ({t('ats_verification_note')})
             </span>
           </div>
         </div>
@@ -661,9 +809,9 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           onCut={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
           className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none print:overflow-visible print:h-auto print:w-full print:max-w-none print:m-0 print:select-text ${
-            template === 'impact' || template === 'minimalist'
+            template === 'impact' || template === 'minimalist' || template === 'creative-color' || template === 'timeline-tech'
               ? 'p-0 font-sans'
-              : template === 'executive-clean'
+              : template === 'executive-clean' || template === 'elegant-serif'
               ? 'p-6 sm:p-10 font-serif'
               : 'p-6 sm:p-10 font-sans'
           }`}
@@ -743,7 +891,59 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           )}
 
           {template === 'minimalist' && (
-            <ImpactTemplate
+            <MinimalistAtsTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'creative-color' && (
+            <CreativeColorTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'elegant-serif' && (
+            <ElegantSerifTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'timeline-tech' && (
+            <TimelineTechTemplate
+              personal={personal}
+              targetRole={targetRole}
+              professionalSummary={professionalSummary}
+              experiences={experiences}
+              education={education}
+              skills={skills}
+              tools={tools}
+              courses={courses}
+            />
+          )}
+
+          {template === 'international' && (
+            <InternationalTemplate
               personal={personal}
               targetRole={targetRole}
               professionalSummary={professionalSummary}
