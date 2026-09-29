@@ -45,11 +45,11 @@ export const ImpactTemplate: React.FC<TemplateProps> = ({
 }) => {
   const { t } = useLanguage();
   return (
-    <div className="impact-resume-layout w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full select-text bg-white template-impact">
+    <div className="impact-resume-layout w-full text-slate-800 font-sans leading-normal flex flex-row min-h-full select-text bg-transparent template-impact">
       {/* =========================================================================
           COLUNA LATERAL DE IMPACTO (32% da largura) — Alto Contraste & Metadados
       ========================================================================= */}
-      <aside className="impact-resume-sidebar w-[32%] max-w-[240px] bg-slate-900 text-slate-100 p-4 sm:p-5 flex flex-col gap-4 shrink-0 box-border">
+      <aside className="impact-resume-sidebar w-[32%] bg-slate-900 text-slate-100 p-4 sm:p-5 flex flex-col gap-4 shrink-0 box-border">
         {/* Foto centralizada de destaque se o usuário enviou */}
         {personal.hasPhoto && personal.photoUrl && (
           <div className="flex justify-center mb-1">

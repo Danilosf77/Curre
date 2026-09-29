@@ -490,25 +490,64 @@ body.curre-print-mode #resume-document {
     background-color: transparent !important;
   }
 
-  /* Regras de tabela de impressão para o template Impact */
+  /* Regras canônicas para a tabela de impressão do template Impact */
   table.impact-print-table {
     width: 210mm !important;
+    max-width: 210mm !important;
+    table-layout: fixed !important;
     border-collapse: collapse !important;
     border-spacing: 0 !important;
+    border: none !important;
     margin: 0 !important;
     padding: 0 !important;
     background: transparent !important;
   }
-  thead.impact-print-spacer, tfoot.impact-print-spacer {
-    height: 12mm !important;
+
+  colgroup col.impact-col-sidebar {
+    width: 67.2mm !important;
   }
-  thead.impact-print-spacer td, tfoot.impact-print-spacer td {
+  colgroup col.impact-col-main {
+    width: 142.8mm !important;
+  }
+
+  /* Spacers de margem de 12mm no topo (thead) e base (tfoot) de cada página */
+  thead.impact-print-spacer,
+  tfoot.impact-print-spacer {
+    height: 12mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  thead.impact-print-spacer th,
+  tfoot.impact-print-spacer td {
     height: 12mm !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
-    background: transparent !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
   }
+
+  thead.impact-print-spacer th.impact-sidebar-spacer,
+  tfoot.impact-print-spacer td.impact-sidebar-spacer {
+    width: 67.2mm !important;
+    min-width: 67.2mm !important;
+    max-width: 67.2mm !important;
+    background-color: #0f172a !important;
+    border: none !important;
+  }
+
+  thead.impact-print-spacer th.impact-main-spacer,
+  tfoot.impact-print-spacer td.impact-main-spacer {
+    width: 142.8mm !important;
+    min-width: 142.8mm !important;
+    max-width: 142.8mm !important;
+    background-color: #ffffff !important;
+    border: none !important;
+  }
+
+  /* Células do conteúdo no tbody */
   tbody td.impact-sidebar-cell {
     width: 67.2mm !important;
     min-width: 67.2mm !important;
@@ -516,21 +555,23 @@ body.curre-print-mode #resume-document {
     padding: 0 5mm 0 12mm !important;
     vertical-align: top !important;
     border: none !important;
-    background: transparent !important;
+    background-color: #0f172a !important;
     color: #f1f5f9 !important;
     box-sizing: border-box !important;
   }
+
   tbody td.impact-main-cell {
-    width: calc(210mm - 67.2mm) !important;
-    min-width: calc(210mm - 67.2mm) !important;
-    max-width: calc(210mm - 67.2mm) !important;
+    width: 142.8mm !important;
+    min-width: 142.8mm !important;
+    max-width: 142.8mm !important;
     padding: 0 12mm 0 8mm !important;
     vertical-align: top !important;
     border: none !important;
-    background: transparent !important;
+    background-color: #ffffff !important;
     color: #0f172a !important;
     box-sizing: border-box !important;
   }
+
   tbody td.impact-main-cell * {
     max-width: 100% !important;
     box-sizing: border-box !important;

@@ -72,9 +72,9 @@ function getStyles(template: string = 'liquid-modern'): string {
       margin: 0 !important;
       padding: 0 !important;
       width: 100% !important;
-      height: auto !important;
-      min-height: 0 !important;
-      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.2mm, #ffffff 67.2mm, #ffffff 210mm)' : '#ffffff'} !important;
+      height: 100% !important;
+      min-height: 100% !important;
+      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.4mm, #ffffff 67.4mm, #ffffff 210mm)' : '#ffffff'} !important;
       color: #0f172a !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
@@ -88,31 +88,70 @@ function getStyles(template: string = 'liquid-modern'): string {
       border-radius: 0 !important;
       transform: none !important;
       overflow: visible !important;
-      background: transparent !important;
+      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.4mm, #ffffff 67.4mm, #ffffff 210mm)' : 'transparent'} !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
       height: auto !important;
-      min-height: 0 !important;
+      min-height: 100% !important;
     }
-    /* Regras do template Impact com sidebar escura contínua e spacers de margem */
+    /* Regras canônicas para a tabela de impressão do template Impact */
     table.impact-print-table {
       width: 210mm !important;
+      max-width: 210mm !important;
+      table-layout: fixed !important;
       border-collapse: collapse !important;
       border-spacing: 0 !important;
+      border: none !important;
       margin: 0 !important;
       padding: 0 !important;
       background: transparent !important;
     }
-    thead.impact-print-spacer, tfoot.impact-print-spacer {
-      height: 12mm !important;
+
+    colgroup col.impact-col-sidebar {
+      width: 67.2mm !important;
     }
-    thead.impact-print-spacer td, tfoot.impact-print-spacer td {
+    colgroup col.impact-col-main {
+      width: 142.8mm !important;
+    }
+
+    /* Spacers de margem de 12mm no topo (thead) e base (tfoot) de cada página */
+    thead.impact-print-spacer,
+    tfoot.impact-print-spacer {
+      height: 12mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+
+    thead.impact-print-spacer th,
+    tfoot.impact-print-spacer td {
       height: 12mm !important;
       padding: 0 !important;
       margin: 0 !important;
       border: none !important;
-      background: transparent !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
     }
+
+    thead.impact-print-spacer th.impact-sidebar-spacer,
+    tfoot.impact-print-spacer td.impact-sidebar-spacer {
+      width: 67.2mm !important;
+      min-width: 67.2mm !important;
+      max-width: 67.2mm !important;
+      background-color: #0f172a !important;
+      border: none !important;
+    }
+
+    thead.impact-print-spacer th.impact-main-spacer,
+    tfoot.impact-print-spacer td.impact-main-spacer {
+      width: 142.8mm !important;
+      min-width: 142.8mm !important;
+      max-width: 142.8mm !important;
+      background-color: #ffffff !important;
+      border: none !important;
+    }
+
+    /* Células do conteúdo no tbody */
     tbody td.impact-sidebar-cell {
       width: 67.2mm !important;
       min-width: 67.2mm !important;
@@ -120,21 +159,23 @@ function getStyles(template: string = 'liquid-modern'): string {
       padding: 0 5mm 0 12mm !important;
       vertical-align: top !important;
       border: none !important;
-      background: transparent !important;
+      background-color: #0f172a !important;
       color: #f1f5f9 !important;
       box-sizing: border-box !important;
     }
+
     tbody td.impact-main-cell {
-      width: calc(210mm - 67.2mm) !important;
-      min-width: calc(210mm - 67.2mm) !important;
-      max-width: calc(210mm - 67.2mm) !important;
+      width: 142.8mm !important;
+      min-width: 142.8mm !important;
+      max-width: 142.8mm !important;
       padding: 0 12mm 0 8mm !important;
       vertical-align: top !important;
       border: none !important;
-      background: transparent !important;
+      background-color: #ffffff !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
     }
+
     tbody td.impact-main-cell * {
       max-width: 100% !important;
       box-sizing: border-box !important;
@@ -368,11 +409,21 @@ export default async function generatePdfHandler(req: any, res: any) {
         const table = document.createElement('table');
         table.className = 'impact-print-table';
         table.innerHTML = `
+          <colgroup>
+            <col class="impact-col-sidebar" />
+            <col class="impact-col-main" />
+          </colgroup>
           <thead class="impact-print-spacer">
-            <tr><td colspan="2"></td></tr>
+            <tr>
+              <th class="impact-sidebar-spacer"></th>
+              <th class="impact-main-spacer"></th>
+            </tr>
           </thead>
           <tfoot class="impact-print-spacer">
-            <tr><td colspan="2"></td></tr>
+            <tr>
+              <td class="impact-sidebar-spacer"></td>
+              <td class="impact-main-spacer"></td>
+            </tr>
           </tfoot>
           <tbody>
             <tr>
