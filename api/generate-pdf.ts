@@ -9,6 +9,10 @@ import { AtsProfessionalTemplate } from '../src/components/templates/AtsProfessi
 import { ImpactTemplate } from '../src/components/templates/ImpactTemplate.js';
 import { CorporatePremiumTemplate } from '../src/components/templates/CorporatePremiumTemplate.js';
 import { MinimalistAtsTemplate } from '../src/components/templates/MinimalistAtsTemplate.js';
+import { CreativeColorTemplate } from '../src/components/templates/CreativeColorTemplate.js';
+import { ElegantSerifTemplate } from '../src/components/templates/ElegantSerifTemplate.js';
+import { TimelineTechTemplate } from '../src/components/templates/TimelineTechTemplate.js';
+import { InternationalTemplate } from '../src/components/templates/InternationalTemplate.js';
 import { LanguageProvider } from '../src/i18n/LanguageContext.js';
 
 let cachedBaseStyles: string | null = null;
@@ -260,6 +264,22 @@ export default async function generatePdfHandler(req: any, res: any) {
       break;
     case 'minimalist':
       TemplateComponent = MinimalistAtsTemplate;
+      templateClass = 'p-0 font-sans';
+      break;
+    case 'creative-color':
+      TemplateComponent = CreativeColorTemplate;
+      templateClass = 'p-0 font-sans';
+      break;
+    case 'elegant-serif':
+      TemplateComponent = ElegantSerifTemplate;
+      templateClass = 'p-0 font-serif';
+      break;
+    case 'timeline-tech':
+      TemplateComponent = TimelineTechTemplate;
+      templateClass = 'p-0 font-sans';
+      break;
+    case 'international':
+      TemplateComponent = InternationalTemplate;
       templateClass = 'p-0 font-sans';
       break;
     case 'liquid-modern':

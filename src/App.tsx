@@ -464,6 +464,7 @@ function AppContent() {
             onBackToHome={() => setCurrentView('landing')}
             currentUser={currentUser}
             onOpenLogin={() => setLoginOpen(true)}
+            onResumeChange={(updater) => setGeneratedResume((prev) => (prev ? updater(prev) : prev))}
           />
         )}
       </main>

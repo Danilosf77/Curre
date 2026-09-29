@@ -64,6 +64,18 @@ export interface JobAnalysisResult {
   improvements: string[];
 }
 
+export type TemplateStyle =
+  | 'liquid-modern'
+  | 'executive-clean'
+  | 'ats-professional'
+  | 'impact'
+  | 'corporate-premium'
+  | 'minimalist'
+  | 'creative-color'
+  | 'elegant-serif'
+  | 'timeline-tech'
+  | 'international';
+
 export interface OptimizedResume {
   personal: PersonalData;
   targetRole: string;
@@ -81,7 +93,7 @@ export interface OptimizedResume {
   tools: string[];
   courses: CourseItem[];
   jobAnalysis?: JobAnalysisResult;
-  templateStyle: 'liquid-modern' | 'executive-clean' | 'ats-professional' | 'impact' | 'corporate-premium' | 'minimalist';
+  templateStyle: TemplateStyle;
   language?: string;
   generatedAt: string;
   isAiGenerated?: boolean;
