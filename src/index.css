@@ -534,7 +534,7 @@ body.curre-print-mode #resume-document {
     width: 67.2mm !important;
     min-width: 67.2mm !important;
     max-width: 67.2mm !important;
-    background-color: #0f172a !important;
+    background: transparent !important;
     border: none !important;
   }
 
@@ -543,7 +543,7 @@ body.curre-print-mode #resume-document {
     width: 142.8mm !important;
     min-width: 142.8mm !important;
     max-width: 142.8mm !important;
-    background-color: #ffffff !important;
+    background: transparent !important;
     border: none !important;
   }
 
@@ -555,7 +555,7 @@ body.curre-print-mode #resume-document {
     padding: 0 5mm 0 12mm !important;
     vertical-align: top !important;
     border: none !important;
-    background-color: #0f172a !important;
+    background: transparent !important;
     color: #f1f5f9 !important;
     box-sizing: border-box !important;
   }
@@ -567,7 +567,7 @@ body.curre-print-mode #resume-document {
     padding: 0 12mm 0 8mm !important;
     vertical-align: top !important;
     border: none !important;
-    background-color: #ffffff !important;
+    background: transparent !important;
     color: #0f172a !important;
     box-sizing: border-box !important;
   }

@@ -72,13 +72,13 @@ function getStyles(template: string = 'liquid-modern'): string {
       margin: 0 !important;
       padding: 0 !important;
       width: 100% !important;
-      height: 100% !important;
-      min-height: 100% !important;
-      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.4mm, #ffffff 67.4mm, #ffffff 210mm)' : '#ffffff'} !important;
+      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.2mm, #ffffff 67.2mm, #ffffff 210mm) !important' : '#ffffff !important'};
       color: #0f172a !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
     #resume-document, .resume-paper {
+      position: relative !important;
+      z-index: 1 !important;
       width: 100% !important;
       max-width: 100% !important;
       margin: 0 !important;
@@ -88,11 +88,11 @@ function getStyles(template: string = 'liquid-modern'): string {
       border-radius: 0 !important;
       transform: none !important;
       overflow: visible !important;
-      background: ${isImpact ? 'linear-gradient(to right, #0f172a 0mm, #0f172a 67.4mm, #ffffff 67.4mm, #ffffff 210mm)' : 'transparent'} !important;
+      background: transparent !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
       height: auto !important;
-      min-height: 100% !important;
+      min-height: 0 !important;
     }
     /* Regras canônicas para a tabela de impressão do template Impact */
     table.impact-print-table {
@@ -138,7 +138,7 @@ function getStyles(template: string = 'liquid-modern'): string {
       width: 67.2mm !important;
       min-width: 67.2mm !important;
       max-width: 67.2mm !important;
-      background-color: #0f172a !important;
+      background: transparent !important;
       border: none !important;
     }
 
@@ -147,7 +147,7 @@ function getStyles(template: string = 'liquid-modern'): string {
       width: 142.8mm !important;
       min-width: 142.8mm !important;
       max-width: 142.8mm !important;
-      background-color: #ffffff !important;
+      background: transparent !important;
       border: none !important;
     }
 
@@ -159,7 +159,7 @@ function getStyles(template: string = 'liquid-modern'): string {
       padding: 0 5mm 0 12mm !important;
       vertical-align: top !important;
       border: none !important;
-      background-color: #0f172a !important;
+      background: transparent !important;
       color: #f1f5f9 !important;
       box-sizing: border-box !important;
     }
@@ -171,7 +171,7 @@ function getStyles(template: string = 'liquid-modern'): string {
       padding: 0 12mm 0 8mm !important;
       vertical-align: top !important;
       border: none !important;
-      background-color: #ffffff !important;
+      background: transparent !important;
       color: #0f172a !important;
       box-sizing: border-box !important;
     }
@@ -444,6 +444,15 @@ export default async function generatePdfHandler(req: any, res: any) {
 
         layout.parentNode?.replaceChild(table, layout);
       });
+
+      // Força o navegador a completar pelo menos dois ciclos de repintura
+      // após a reestruturação do DOM (flexbox → tabela) do template Impact,
+      // antes de capturar o PDF. Sem isso, ocasionalmente o Chromium gera
+      // o PDF um instante cedo demais, deixando um pequeno artefato visual
+      // na fronteira entre a barra lateral e o conteúdo principal.
+      await page.evaluate(() => new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }));
     }
 
     // Gera o PDF vetorial em A4 com margem de 12mm (ou margens via padding/table no Impact)
