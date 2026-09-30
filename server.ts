@@ -114,6 +114,8 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const publicPath = path.join(process.cwd(), 'public');
+    app.use(express.static(publicPath));
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       // Do not let the catch-all return index.html for static assets, sitemap, robots or favicons
