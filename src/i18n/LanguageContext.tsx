@@ -664,7 +664,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_linkedin_ph: "e.g. linkedin.com/in/yourprofile",
     field_portfolio_ph: "e.g. mysite.com / portfolio",
     // Slogan & Brand
-    brand_slogan: 'Run after the right job.',
+    brand_slogan: 'Land the right job.',
     footer_developed_by: 'Site developed by',
     footer_tagline: 'Intelligent resume platform with AI optimized for recruiters and ATS systems.',
     footer_terms: 'Terms & Privacy',
@@ -1167,7 +1167,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_linkedin_ph: "ej: linkedin.com/in/tuperfil",
     field_portfolio_ph: "ej: miweb.es / portafolio",
     // Slogan & Brand
-    brand_slogan: 'Consigue el empleo ideal.',
+    brand_slogan: 'Corre tras la vacante ideal.',
     footer_developed_by: 'Sitio desarrollado por',
     footer_tagline: 'Plataforma inteligente de currículums con IA optimizada para reclutadores y sistemas ATS.',
     footer_terms: 'Términos y Privacidad',
@@ -1670,7 +1670,7 @@ export const TRANSLATIONS: Record<Language, Record<string, string>> = {
     field_linkedin_ph: "ex: linkedin.com/in/votreprofil",
     field_portfolio_ph: "ex: monsite.fr / portfolio",
     // Slogan & Brand
-    brand_slogan: 'Décrochez le bon poste.',
+    brand_slogan: 'Décroche le bon poste.',
     footer_developed_by: 'Site développé par',
     footer_tagline: 'Plateforme intelligente de CV avec IA optimisée pour les recruteurs et les systèmes ATS.',
     footer_terms: 'Conditions et Confidentialité',
@@ -2069,32 +2069,37 @@ export interface LanguageMeta {
   title: string;
   description: string;
   canonicalUrl: string;
+  slogan: string;
 }
 
 export const LANGUAGE_METADATA: Record<Language, LanguageMeta> = {
   pt: {
     htmlLang: 'pt-BR',
-    title: 'CURRÊ - Gerador de Currículo com IA',
-    description: 'Corra atrás da vaga certa. Crie currículos profissionais modernos adaptados para vagas de emprego utilizando inteligência artificial.',
+    title: 'Gerador de Currículo com IA | CURRÊ',
+    description: 'Analise a vaga e otimize seu currículo com IA. O CURRÊ adapta seu CV aos requisitos do emprego, vence filtros ATS e gera PDF profissional. Faça grátis!',
     canonicalUrl: 'https://www.curreai.com/pt/',
+    slogan: 'Corra atrás da vaga certa.',
   },
   en: {
     htmlLang: 'en',
-    title: 'CURRÊ - AI Resume Builder',
-    description: 'Run after the right job. Create modern, professional resumes tailored to job postings using artificial intelligence.',
+    title: 'AI Resume Builder & Job Match | CURRÊ',
+    description: 'Analyze any job posting and optimize your resume with AI. CURRÊ tailors your CV to beat ATS filters and generates a professional PDF. Try it free!',
     canonicalUrl: 'https://www.curreai.com/en/',
+    slogan: 'Land the right job.',
   },
   es: {
     htmlLang: 'es',
-    title: 'CURRÊ - Creador de Currículum con IA',
-    description: 'Ve tras el empleo adecuado. Crea currículums profesionales modernos adaptados a ofertas laborales con inteligencia artificial.',
+    title: 'Generador de Currículum con IA | CURRÊ',
+    description: 'Analiza la vacante y optimiza tu currículum con IA. CURRÊ adapta tu CV a los requisitos del empleo, supera los filtros ATS y genera un PDF profesional. ¡Gratis!',
     canonicalUrl: 'https://www.curreai.com/es/',
+    slogan: 'Corre tras la vacante ideal.',
   },
   fr: {
     htmlLang: 'fr',
-    title: 'CURRÊ - Créateur de CV avec IA',
-    description: 'Décrochez le bon poste. Créez des CV professionnels modernes adaptés aux offres d\'emploi grâce à l\'intelligence artificielle.',
+    title: 'Générateur de CV avec IA | CURRÊ',
+    description: 'Analysez l\'offre et optimisez votre CV avec l\'IA. CURRÊ adapte votre CV aux exigences du poste, passe les filtres ATS et génère un PDF professionnel. Gratuit !',
     canonicalUrl: 'https://www.curreai.com/fr/',
+    slogan: 'Décroche le bon poste.',
   },
 };
 
@@ -2144,12 +2149,14 @@ export function applyDocumentMetadata(lang: Language) {
   // 1. <html lang="...">
   document.documentElement.lang = meta.htmlLang;
 
-  // 2. <title> e og:title
+  // 2. <title> e og:title / twitter:title
   document.title = meta.title;
   const ogTitle = document.querySelector('meta[property="og:title"]');
   if (ogTitle) ogTitle.setAttribute('content', meta.title);
+  const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+  if (twitterTitle) twitterTitle.setAttribute('content', meta.title);
 
-  // 3. <meta name="description"> e og:description
+  // 3. <meta name="description"> e og:description / twitter:description
   let metaDesc = document.querySelector('meta[name="description"]');
   if (!metaDesc) {
     metaDesc = document.createElement('meta');
@@ -2160,6 +2167,8 @@ export function applyDocumentMetadata(lang: Language) {
 
   const ogDesc = document.querySelector('meta[property="og:description"]');
   if (ogDesc) ogDesc.setAttribute('content', meta.description);
+  const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+  if (twitterDesc) twitterDesc.setAttribute('content', meta.description);
 
   // 4. Link canônico autorreferencial
   let canonical = document.querySelector('link[rel="canonical"]');
@@ -2176,7 +2185,7 @@ export function applyDocumentMetadata(lang: Language) {
     { lang: 'en', url: 'https://www.curreai.com/en/' },
     { lang: 'es', url: 'https://www.curreai.com/es/' },
     { lang: 'fr', url: 'https://www.curreai.com/fr/' },
-    { lang: 'x-default', url: 'https://www.curreai.com/en/' },
+    { lang: 'x-default', url: 'https://www.curreai.com/' },
   ];
 
   for (const config of hreflangConfigs) {
@@ -2188,6 +2197,27 @@ export function applyDocumentMetadata(lang: Language) {
       document.head.appendChild(link);
     }
     link.setAttribute('href', config.url);
+  }
+
+  // 6. Atualiza o slogan no script JSON-LD (Organization)
+  try {
+    const jsonLdScript = document.querySelector('script[type="application/ld+json"]');
+    if (jsonLdScript && jsonLdScript.textContent) {
+      const data = JSON.parse(jsonLdScript.textContent);
+      if (Array.isArray(data['@graph'])) {
+        const org = data['@graph'].find((item: any) => item['@type'] === 'Organization');
+        if (org) {
+          org.slogan = meta.slogan;
+        }
+        const site = data['@graph'].find((item: any) => item['@type'] === 'WebSite');
+        if (site && meta.htmlLang) {
+          site.inLanguage = meta.htmlLang;
+        }
+        jsonLdScript.textContent = JSON.stringify(data, null, 2);
+      }
+    }
+  } catch {
+    // Ignora erro de atualização do JSON-LD
   }
 }
 
@@ -2219,7 +2249,7 @@ export function detectBrowserLanguage(): Language {
     }
   }
 
-  return 'en';
+  return 'pt';
 }
 
 /**
@@ -2265,12 +2295,11 @@ export function getInitialLanguage(defaultLanguage?: Language): Language {
     return manualChoice;
   }
 
-  // 4. Detecção automática baseada no navegador (sem gravar no localStorage)
-  const detected = detectBrowserLanguage();
+  // 4. Default no carregamento inicial é 'pt'
   if (typeof document !== 'undefined') {
-    applyDocumentMetadata(detected);
+    applyDocumentMetadata('pt');
   }
-  return detected;
+  return 'pt';
 }
 
 const LanguageContext = createContext<LanguageContextProps>({
@@ -2314,7 +2343,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode; defaultLang
             manualChoice = saved;
           }
         } catch {}
-        const targetLang = manualChoice || detectBrowserLanguage();
+        const targetLang = manualChoice || 'pt';
         setLanguageState(targetLang);
         applyDocumentMetadata(targetLang);
       }
