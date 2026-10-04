@@ -1,4 +1,5 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, type GenerateContentParameters } from '@google/genai';
+import { aiFailure } from './aiFailure.js';
 
 let cachedClient: GoogleGenAI | null = null;
 
@@ -20,7 +21,7 @@ export function getGeminiClient(): GoogleGenAI | null {
       httpOptions: {
         timeout: 18000,
         retryOptions: {
-          attempts: 2,
+          attempts: 1,
           initialDelay: 1,
           maxDelay: 2,
           httpStatusCodes: [408, 500, 502, 503, 504],
@@ -33,4 +34,15 @@ export function getGeminiClient(): GoogleGenAI | null {
   }
 
   return cachedClient;
+}
+
+export async function generateGeminiContent(client: GoogleGenAI, params: GenerateContentParameters) {
+  try {
+    return await client.models.generateContent(params);
+  } catch (error) {
+    const failure = aiFailure(error);
+    if (!['provider_busy', 'provider_internal', 'provider_network', 'provider_timeout'].includes(failure.category)) throw error;
+    console.warn('[Gemini model fallback]', {from: params.model, to: 'gemini-3.5-flash', category: failure.category});
+    return client.models.generateContent({...params, model: 'gemini-3.5-flash'});
+  }
 }

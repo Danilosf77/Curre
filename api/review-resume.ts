@@ -1,4 +1,4 @@
-import { getGeminiClient } from './geminiClient.js';
+import { getGeminiClient, generateGeminiContent } from './geminiClient.js';
 import { aiFailure } from './aiFailure.js';
 
 export function validReview(body: any): boolean {
@@ -15,7 +15,7 @@ export default async function reviewResume(req: any, res: any) {
   const client = getGeminiClient();
   if (!client) return res.status(503).json({error:'A revisão por IA está indisponível. A leitura técnica continua disponível.'});
   try {
-    const response = await client.models.generateContent({
+    const response = await generateGeminiContent(client, {
       model: 'gemini-3.8-flash',
       contents: JSON.stringify({resumeText:req.body.text, jobDescription:req.body.jobDescription}),
       config: {

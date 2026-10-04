@@ -1,4 +1,4 @@
-import { getGeminiClient } from './geminiClient.js';
+import { getGeminiClient, generateGeminiContent } from './geminiClient.js';
 import { validatePayload, validateAiAnalysis } from './validation.js';
 import { containsKeyword, keywordOverlap } from './jobMatching.js';
 
@@ -208,7 +208,7 @@ Return ONLY a valid JSON object with this exact structure (ALL text values in ${
   "improvements": ["1 to 3 actionable tips for the candidate in ${langName}"]
 }`;
 
-    const response = await ai.models.generateContent({
+    const response = await generateGeminiContent(ai, {
       model: 'gemini-3.8-flash',
       contents: prompt,
       config: {

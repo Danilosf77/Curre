@@ -1,5 +1,6 @@
 import test from 'node:test';
 import { aiFailure } from '../api/aiFailure.ts';
+import { generateGeminiContent } from '../api/geminiClient.ts';
 import assert from 'node:assert/strict';
 import { validatePayload, isSafePhoto, validateAiAnalysis, validateAiResume, payloadGuard } from '../api/validation.ts';
 import { createRateLimiter, createConcurrencyLimit } from '../api/resourceLimits.ts';
@@ -21,6 +22,20 @@ test('AI failure diagnostics distinguish quota, timeout and malformed output wit
   assert.equal(aiFailure(new Error('Request timed out')).category,'provider_timeout');
   assert.equal(aiFailure(new SyntaxError('private output')).category,'invalid_json');
   assert.equal(aiFailure({status:403}).category,'provider_auth');
+});
+
+test('Gemini uses the alternative model for overload but does not retry exhausted quota', async () => {
+  const models: string[] = [];
+  const client = {models:{generateContent:async (params:any) => {
+    models.push(params.model);
+    if (models.length === 1) throw {status:503};
+    return {text:'ok'};
+  }}};
+  assert.equal((await generateGeminiContent(client as any,{model:'gemini-3.8-flash',contents:'test'})).text,'ok');
+  assert.deepEqual(models,['gemini-3.8-flash','gemini-3.5-flash']);
+  let calls=0;
+  await assert.rejects(generateGeminiContent({models:{generateContent:async () => {calls++;throw {status:429};}}} as any,{model:'gemini-3.8-flash',contents:'test'}));
+  assert.equal(calls,1);
 });
 
 test('analytics excludes local hosts and personal or arbitrary event data', () => {

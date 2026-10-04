@@ -1,4 +1,4 @@
-import { getGeminiClient } from './geminiClient.js';
+import { getGeminiClient, generateGeminiContent } from './geminiClient.js';
 import { aiFailure } from './aiFailure.js';
 import { validatePayload, validateAiResume } from './validation.js';
 import { formatExperienceBullets } from '../src/utils/textBeautifier.js';
@@ -162,7 +162,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
   "tools": ["lista organizada das ferramentas/sistemas"]
 }`;
 
-    const response = await ai.models.generateContent({
+    const response = await generateGeminiContent(ai, {
       model: 'gemini-3.8-flash',
       contents: systemPrompt,
       config: {
@@ -227,7 +227,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
       isAiGenerated: true,
     };
 
-    console.log('[Gemini API optimize-resume SUCCESS]: Currículo otimizado com sucesso usando gemini-3.8-flash');
+    console.log('[Gemini API optimize-resume SUCCESS]: Currículo otimizado com sucesso usando Gemini');
     return res.json(finalResume);
   } catch (error: any) {
     const failure = aiFailure(error);
