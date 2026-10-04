@@ -1,4 +1,5 @@
 import { getGeminiClient } from './geminiClient.js';
+import { aiFailure } from './aiFailure.js';
 import { validatePayload, validateAiResume } from './validation.js';
 import { formatExperienceBullets } from '../src/utils/textBeautifier.js';
 
@@ -229,12 +230,14 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
     console.log('[Gemini API optimize-resume SUCCESS]: Currículo otimizado com sucesso usando gemini-3.8-flash');
     return res.json(finalResume);
   } catch (error: any) {
-    console.error('[Gemini API optimize-resume ERROR]: Falha na chamada da API Gemini:', error?.status || '', error?.message || error);
+    const failure = aiFailure(error);
+    console.error('[Gemini API optimize-resume ERROR]', { status: failure.providerStatus, category: failure.category });
     const fallback = generateFallbackResume(req.body || {});
     return res.json({
       ...fallback,
       isAiGenerated: false,
-      apiError: 'A otimização por IA está indisponível no momento.',
+      apiError: failure.message,
+      aiFailureCode: failure.category,
     });
   }
 }

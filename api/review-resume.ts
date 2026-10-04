@@ -1,4 +1,5 @@
 import { getGeminiClient } from './geminiClient.js';
+import { aiFailure } from './aiFailure.js';
 
 export function validReview(body: any): boolean {
   return !!body && typeof body.text === 'string' && body.text.length >= 40 && body.text.length <= 60000 &&
@@ -29,7 +30,8 @@ export default async function reviewResume(req: any, res: any) {
     if (!short(result.summary) || !list(result.strengths) || !list(result.limitations) || !Array.isArray(result.suggestions) || result.suggestions.length > 6 || !result.suggestions.every((s:any) => short(s.evidence) && short(s.action))) throw new Error('Invalid response');
     res.json(result);
   } catch (error: any) {
-    console.error('[Gemini review-resume ERROR]', { status: typeof error?.status === 'number' ? error.status : null, category: error?.message === 'Invalid response' ? 'invalid_structure' : error instanceof SyntaxError ? 'invalid_json' : 'provider_failure' });
-    res.status(502).json({error:'Não foi possível concluir a revisão por IA. Tente novamente.'});
+    const failure = aiFailure(error);
+    console.error('[Gemini review-resume ERROR]', { status: failure.providerStatus, category: failure.category });
+    res.status(502).json({error: failure.message, code: failure.category});
   }
 }
