@@ -28,7 +28,8 @@ export default async function reviewResume(req: any, res: any) {
     const list = (s: any) => Array.isArray(s) && s.length <= 6 && s.every(short);
     if (!short(result.summary) || !list(result.strengths) || !list(result.limitations) || !Array.isArray(result.suggestions) || result.suggestions.length > 6 || !result.suggestions.every((s:any) => short(s.evidence) && short(s.action))) throw new Error('Invalid response');
     res.json(result);
-  } catch {
+  } catch (error: any) {
+    console.error('[Gemini review-resume ERROR]', { status: typeof error?.status === 'number' ? error.status : null, category: error?.message === 'Invalid response' ? 'invalid_structure' : error instanceof SyntaxError ? 'invalid_json' : 'provider_failure' });
     res.status(502).json({error:'Não foi possível concluir a revisão por IA. Tente novamente.'});
   }
 }

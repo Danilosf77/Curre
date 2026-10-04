@@ -45,6 +45,11 @@ export function ResumeReview({resume, template, language}: {resume:OptimizedResu
       }
       if (ai) {
         const response = await fetch('/api/review-resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:result.text,jobDescription:job,language}),signal:controller.signal});
+        if (response.status === 429) {
+          const seconds = Number(response.headers.get('Retry-After'));
+          const minutes = Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds / 60) : null;
+          throw new Error(minutes ? 'Limite temporário de solicitações atingido. Tente novamente em ' + minutes + ' minuto(s). Seu currículo continua disponível para baixar.' : 'Limite temporário de solicitações atingido. Aguarde antes de tentar novamente. Seu currículo continua disponível para baixar.');
+        }
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Revisão indisponível.');
         if (!controller.signal.aborted) setReview(data);
