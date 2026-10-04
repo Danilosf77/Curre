@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { aiFailure } from '../api/aiFailure.ts';
 import assert from 'node:assert/strict';
 import { validatePayload, isSafePhoto, validateAiAnalysis, validateAiResume, payloadGuard } from '../api/validation.ts';
 import { createRateLimiter, createConcurrencyLimit } from '../api/resourceLimits.ts';
@@ -11,6 +12,16 @@ import { validReview, reviewGuard } from '../api/review-resume.ts';
 import { safeAnalyticsParams, trackEvent, isAnalyticsHost, generationErrorCategory } from '../src/utils/analytics.ts';
 
 const response = () => ({ code: 200, body: undefined as any, headers: {} as Record<string,string>, status(code: number) { this.code = code; return this; }, json(body: any) { this.body = body; return this; }, setHeader(k: string, v: string) { this.headers[k] = v; } });
+
+test('AI failure diagnostics distinguish quota, timeout and malformed output without leaking provider data', () => {
+  const failure = aiFailure({status:429,message:'RESOURCE_EXHAUSTED secret-key private-resume'});
+  assert.equal(failure.category,'provider_quota');
+  assert.equal(JSON.stringify(failure).includes('secret-key'),false);
+  assert.equal(JSON.stringify(failure).includes('private-resume'),false);
+  assert.equal(aiFailure(new Error('Request timed out')).category,'provider_timeout');
+  assert.equal(aiFailure(new SyntaxError('private output')).category,'invalid_json');
+  assert.equal(aiFailure({status:403}).category,'provider_auth');
+});
 
 test('analytics excludes local hosts and personal or arbitrary event data', () => {
   assert.equal(isAnalyticsHost('localhost'),false);

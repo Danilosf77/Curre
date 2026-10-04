@@ -32,6 +32,6 @@ export default async function reviewResume(req: any, res: any) {
   } catch (error: any) {
     const failure = aiFailure(error);
     console.error('[Gemini review-resume ERROR]', { status: failure.providerStatus, category: failure.category });
-    res.status(502).json({error: failure.message, code: failure.category});
+    res.status(502).json({error: failure.message, code: failure.category, providerStatus: failure.providerStatus});
   }
 }

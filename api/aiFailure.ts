@@ -1,10 +1,12 @@
 /** Public diagnostics contain no provider message, credentials or resume text. */
 export function aiFailure(error: any) {
-  const status = Number(error?.status ?? error?.code);
   const message = typeof error?.message === 'string' ? error.message : '';
+  let embeddedStatus: unknown;
+  try { embeddedStatus = JSON.parse(message)?.error?.code; } catch { /* Non-JSON errors are expected. */ }
+  const status = Number(error?.status ?? embeddedStatus ?? error?.code);
   const quota = status === 429 || /RESOURCE_EXHAUSTED|quota exceeded/i.test(message);
   const timeout = /timeout|timed out|abort/i.test(message);
-  const category = quota ? 'provider_quota' : timeout ? 'provider_timeout' : status === 404 ? 'model_unavailable' : status === 401 || status === 403 ? 'provider_auth' : error instanceof SyntaxError ? 'invalid_json' : message === 'Invalid response' || message === 'Invalid AI resume structure' ? 'invalid_structure' : 'provider_failure';
+  const category = quota ? 'provider_quota' : timeout ? 'provider_timeout' : /fetch failed|ECONNRESET|ENOTFOUND|EAI_AGAIN/i.test(message) ? 'provider_network' : status === 503 ? 'provider_busy' : status === 500 ? 'provider_internal' : status === 404 ? 'model_unavailable' : status === 401 || status === 403 ? 'provider_auth' : error instanceof SyntaxError ? 'invalid_json' : message === 'Invalid response' || message === 'Invalid AI resume structure' ? 'invalid_structure' : 'provider_failure';
   return {
     category,
     providerStatus: Number.isFinite(status) ? status : null,
