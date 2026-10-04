@@ -51,6 +51,7 @@ export interface CourseItem {
 }
 
 export interface JobAnalysisResult {
+  analysisSource?: 'ai' | 'keyword-overlap';
   roleIdentified: string;
   mainRequirements: string[];
   desiredSkills: string[];
@@ -77,6 +78,7 @@ export type TemplateStyle =
   | 'international';
 
 export interface OptimizedResume {
+  sourceForm?: ResumeFormData;
   personal: PersonalData;
   targetRole: string;
   professionalSummary: string;
@@ -98,6 +100,17 @@ export interface OptimizedResume {
   generatedAt: string;
   isAiGenerated?: boolean;
   apiError?: string;
+}
+
+export interface ResumeFormData {
+  personal: PersonalData;
+  targetJob: TargetJob;
+  experiences: ExperienceItem[];
+  education: EducationItem[];
+  skills: string[];
+  tools: string[];
+  courses: CourseItem[];
+  jobAnalysis?: JobAnalysisResult;
 }
 
 export interface UserProfile {

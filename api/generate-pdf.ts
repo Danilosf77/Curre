@@ -3,6 +3,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import fs from 'fs';
 import path from 'path';
+import { validatePayload } from './validation.js';
+import { createConcurrencyLimit, createRateLimiter } from './resourceLimits.js';
+import { restrictPdfNetwork } from './pdfNetwork.js';
+
+const pdfSlots = createConcurrencyLimit(2);
+const pdfRateLimit = createRateLimiter(12, 15 * 60 * 1000);
 import { LiquidModernTemplate } from '../src/components/templates/LiquidModernTemplate.js';
 import { ExecutiveClassicTemplate } from '../src/components/templates/ExecutiveClassicTemplate.js';
 import { AtsProfessionalTemplate } from '../src/components/templates/AtsProfessionalTemplate.js';
@@ -232,11 +238,15 @@ export default async function generatePdfHandler(req: any, res: any) {
   const startTime = Date.now();
   const { resume, template = 'liquid-modern', language = 'pt' } = req.body || {};
 
-  if (!resume || typeof resume !== 'object') {
+  if (!validatePayload('pdf', req.body)) {
     return res.status(400).json({
       error: 'Dados do currículo inválidos ou não fornecidos.',
     });
   }
+
+  let allowed = false;
+  pdfRateLimit(req, res, () => { allowed = true; });
+  if (!allowed) return;
 
   const safeFilename = sanitizeFilename(resume.personal?.fullName);
   const selectedLang = ['pt', 'en', 'es', 'fr'].includes(language) ? language : 'pt';
@@ -319,7 +329,6 @@ export default async function generatePdfHandler(req: any, res: any) {
     console.error('[PDF Generation] Erro na renderização do template React:', renderErr?.message);
     return res.status(500).json({
       error: 'Erro interno ao renderizar a estrutura do currículo.',
-      details: renderErr?.message,
     });
   }
 
@@ -344,14 +353,24 @@ export default async function generatePdfHandler(req: any, res: any) {
 </html>`;
 
   // 3. Executa o Chromium headless via Playwright para gerar o PDF vetorial
+  const release = pdfSlots.acquire();
+  if (!release) {
+    res.setHeader('Retry-After', '5');
+    return res.status(503).json({ error: 'Geração de PDF ocupada. Tente novamente em instantes.' });
+  }
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
   let page: Page | null = null;
+  let timedOut = false;
+  const deadline = setTimeout(() => {
+    timedOut = true;
+    void browser?.close().catch(() => {});
+  }, 30000);
 
   try {
-    try {
       browser = await chromium.launch({
         headless: true,
+        timeout: 10000,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -360,35 +379,15 @@ export default async function generatePdfHandler(req: any, res: any) {
           '--font-render-hinting=none',
         ],
       });
-    } catch (launchErr: any) {
-      if (launchErr?.message?.includes("Executable doesn't exist")) {
-        console.warn('[PDF Generation] Chromium não encontrado. Tentando instalar automaticamente via Playwright...');
-        try {
-          const { execSync } = await import('child_process');
-          execSync('npx playwright install chromium', { stdio: 'inherit' });
-          browser = await chromium.launch({
-            headless: true,
-            args: [
-              '--no-sandbox',
-              '--disable-setuid-sandbox',
-              '--disable-dev-shm-usage',
-              '--disable-gpu',
-              '--font-render-hinting=none',
-            ],
-          });
-        } catch (installErr: any) {
-          console.error('[PDF Generation] Falha ao instalar Chromium sob demanda:', installErr?.message);
-          throw launchErr;
-        }
-      } else {
-        throw launchErr;
-      }
-    }
-
     context = await browser.newContext({
+      serviceWorkers: 'block',
       viewport: { width: 794, height: 1123 }, // 96 DPI A4 (794x1123 px)
       deviceScaleFactor: 2,
     });
+
+    // Only trusted font hosts may use the network. Photos are validated data URLs.
+    await restrictPdfNetwork(context);
+    context.setDefaultTimeout(15000);
 
     page = await context.newPage();
 
@@ -511,17 +510,18 @@ export default async function generatePdfHandler(req: any, res: any) {
       playwrightErr?.message?.includes('error while loading shared libraries') ||
       playwrightErr?.message?.includes('Executable doesn\'t exist');
 
-    return res.status(500).json({
-      error: 'Falha na inicialização do Chromium headless no servidor.',
-      details: playwrightErr?.message,
+    return res.status(timedOut ? 504 : 500).json({
+      error: timedOut ? 'A geração do PDF demorou demais. Tente novamente.' : 'Não foi possível gerar o PDF no servidor.',
       environmentHelp: isMissingDeps
         ? 'O Chromium não foi encontrado ou está sem dependências. Execute "npx playwright install chromium" para baixar o navegador no ambiente.'
         : undefined,
     });
   } finally {
+    clearTimeout(deadline);
     // Garante fechamento imediato de recursos para não vazar memória no servidor
     if (page) await page.close().catch(() => {});
     if (context) await context.close().catch(() => {});
     if (browser) await browser.close().catch(() => {});
+    release();
   }
 }

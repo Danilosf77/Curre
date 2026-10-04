@@ -1,4 +1,6 @@
+import { trackEvent } from '../utils/analytics';
 import React, { useState } from 'react';
+import { keywordOverlapLabel } from '../utils/resultLabels';
 import {
   User,
   Briefcase,
@@ -667,6 +669,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     }
     setShowErrors(false);
     if (currentStep < 8) {
+      trackEvent('etapa_concluida', { etapa: currentStep, idioma: language });
       setCurrentStep((prev) => (prev + 1) as WizardStep);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -678,6 +681,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
       return;
     }
     setShowErrors(false);
+    trackEvent('etapa_concluida', { etapa: currentStep, idioma: language });
     setCurrentStep(8);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -712,6 +716,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     const validEducation = education.filter(isEduItemValid);
     const validCourses = courses.filter(isCourseItemValid);
 
+    trackEvent('etapa_concluida', { etapa: 8, idioma: language });
     onGenerateResume({
       personal: finalPersonal,
       targetJob: finalTargetJob,
@@ -1908,7 +1913,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                     </h4>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-slate-500 block">{t('step_7_estimated_match')}</span>
+                    <span className="text-xs text-slate-500 block">{jobAnalysis.analysisSource === 'keyword-overlap' ? keywordOverlapLabel(language) : t('step_7_estimated_match')}</span>
                     <span className="text-xl font-extrabold text-sky-700">
                       {jobAnalysis.matchPercentage}%
                     </span>

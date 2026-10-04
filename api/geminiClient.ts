@@ -18,6 +18,7 @@ export function getGeminiClient(): GoogleGenAI | null {
     cachedClient = new GoogleGenAI({
       apiKey,
       httpOptions: {
+        timeout: 25000,
         headers: {
           'User-Agent': 'aistudio-build',
         },

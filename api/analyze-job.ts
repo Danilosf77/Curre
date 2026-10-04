@@ -1,4 +1,6 @@
 import { getGeminiClient } from './geminiClient.js';
+import { validatePayload, validateAiAnalysis } from './validation.js';
+import { containsKeyword, keywordOverlap } from './jobMatching.js';
 
 export interface JobAnalysisPayload {
   jobDescription?: string;
@@ -24,83 +26,11 @@ export function generateFallbackJobAnalysis(
   candidateExperiences?: any[],
   language: string = 'pt'
 ) {
-  const words = (jobDescription || '').toLowerCase();
-  const lang = (language || 'pt').toLowerCase();
-
-  let detectedRole = candidateRole || '';
-  let extractedKeywords: string[] = [];
-  let mainRequirements: string[] = [];
-  let desiredSkills: string[] = [];
-  let toolsAndTech: string[] = [];
-  let experienceRequired = '';
-  let compatibleEducation: string[] = [];
-  let improvements: string[] = [];
-
-  if (lang === 'en') {
-    detectedRole = candidateRole || 'Role aligned with opportunity';
-    extractedKeywords = ['communication', 'organization', 'proactivity', 'results-oriented', 'teamwork'];
-    mainRequirements = [
-      'Prior experience with routines and processes of the area',
-      'Ability to organize and meet deadlines',
-      'Good interpersonal communication and collaboration',
-    ];
-    desiredSkills = candidateSkills?.length ? candidateSkills.slice(0, 4) : ['Communication', 'Organization', 'Teamwork'];
-    toolsAndTech = candidateTools?.length ? candidateTools.slice(0, 3) : ['Office Suite / Excel', 'Management Systems'];
-    experienceRequired = 'Demonstrated experience in related roles';
-    compatibleEducation = ['Education and training relevant to the desired role'];
-    improvements = [
-      'Highlight the practical results obtained in your real experiences on your resume.',
-      'Emphasize your daily proficiency with the tools and systems used.',
-    ];
-  } else if (lang === 'es') {
-    detectedRole = candidateRole || 'Puesto alineado con la oportunidad';
-    extractedKeywords = ['comunicación', 'organización', 'proactividad', 'enfoque en resultados', 'trabajo en equipo'];
-    mainRequirements = [
-      'Experiencia previa con rutinas y procesos del área',
-      'Capacidad de organización y cumplimiento de plazos',
-      'Buena comunicación interpersonal y colaboración',
-    ];
-    desiredSkills = candidateSkills?.length ? candidateSkills.slice(0, 4) : ['Comunicación', 'Organización', 'Trabajo en equipo'];
-    toolsAndTech = candidateTools?.length ? candidateTools.slice(0, 3) : ['Paquete Office / Excel', 'Sistemas de Gestión'];
-    experienceRequired = 'Experiencia demostrada en funciones relacionadas';
-    compatibleEducation = ['Educación y formación pertinentes para el puesto deseado'];
-    improvements = [
-      'Destaque en su currículum los resultados prácticos obtenidos en sus experiencias reales.',
-      'Enfatice su dominio diario de las herramientas y sistemas utilizados.',
-    ];
-  } else if (lang === 'fr') {
-    detectedRole = candidateRole || 'Poste aligné avec l\'opportunité';
-    extractedKeywords = ['communication', 'organisation', 'proactivité', 'orientation résultats', 'travail d\'équipe'];
-    mainRequirements = [
-      'Expérience préalable avec les routines et processus du domaine',
-      'Capacité d\'organisation et respect des délais',
-      'Bonne communication interpersonnelle et collaboration',
-    ];
-    desiredSkills = candidateSkills?.length ? candidateSkills.slice(0, 4) : ['Communication', 'Organisation', 'Travail d\'équipe'];
-    toolsAndTech = candidateTools?.length ? candidateTools.slice(0, 3) : ['Bureautique / Excel', 'Systèmes de Gestion'];
-    experienceRequired = 'Expérience démontrée dans des rôles connexes';
-    compatibleEducation = ['Formation et perfectionnement pertinents pour le poste souhaité'];
-    improvements = [
-      'Mettez en valeur sur votre CV les résultats pratiques obtenus dans vos expériences réelles.',
-      'Mettez l\'accent sur votre maîtrise quotidienne des outils et systèmes utilisés.',
-    ];
-  } else {
-    detectedRole = candidateRole || 'Cargo alinhado à oportunidade';
-    extractedKeywords = ['comunicação', 'organização', 'proatividade', 'foco em resultados', 'trabalho em equipe'];
-    mainRequirements = [
-      'Experiência prévia com rotinas e processos da área',
-      'Capacidade de organização e cumprimento de prazos',
-      'Boa comunicação interpessoal e colaboração',
-    ];
-    desiredSkills = candidateSkills?.length ? candidateSkills.slice(0, 4) : ['Comunicação', 'Organização', 'Trabalho em equipe'];
-    toolsAndTech = candidateTools?.length ? candidateTools.slice(0, 3) : ['Pacote Office / Excel', 'Sistemas de Gestão'];
-    experienceRequired = 'Experiência demonstrada em funções correlatas';
-    compatibleEducation = ['Formação e capacitações pertinentes ao cargo pretendido'];
-    improvements = [
-      'Destaque no currículo os resultados práticos obtidos em suas experiências reais.',
-      'Enfatize seu domínio cotidiano das ferramentas e sistemas utilizados.',
-    ];
-  }
+  const lang = (language || "pt").toLowerCase();
+  const labels: Record<string, string> = { pt: "Cargo alinhado à oportunidade", en: "Role aligned with opportunity", es: "Puesto alineado con la oportunidad", fr: "Poste adapté à la candidature" };
+  const detectedRole = candidateRole || labels[lang] || labels.pt;
+  const tips: Record<string, string[]> = { pt: ["Destaque resultados reais e as ferramentas utilizadas nas suas experiências."], en: ["Highlight real results and the tools used in your experience."], es: ["Destaque resultados reales y las herramientas utilizadas en su experiencia."], fr: ["Mettez en valeur les résultats réels et les outils utilisés dans vos expériences."] };
+  const improvements = tips[lang] || tips.pt;
 
   const skillTranslationMap: Record<string, Record<string, string>> = {
     en: {
@@ -162,20 +92,24 @@ export function generateFallbackJobAnalysis(
     return skillTranslationMap[lang]?.[lower] || skill;
   };
 
-  const rawFound = (candidateSkills || []).filter((s: string) => words.includes(s.toLowerCase()));
-  const foundSkills = (rawFound.length > 0 ? rawFound : (candidateSkills || []).slice(0, 3)).map(translateSkill);
-  const matchScore = Math.min(92, Math.max(72, 68 + rawFound.length * 6));
+  const rawFound = (candidateSkills || []).filter((s: string) => containsKeyword(jobDescription, s));
+  const foundSkills = rawFound.map(translateSkill);
+  // This fallback measures literal keyword overlap, not hiring probability.
+  const profile = [...(candidateSkills || []), ...(candidateTools || []), candidateRole || '', ...(candidateExperiences || []).map(e => `${e.role || ''} ${e.activitiesRaw || ''} ${e.resultsRaw || ''}`)].join(' ').toLowerCase();
+  const { keywords, percentage: matchScore } = keywordOverlap(jobDescription, profile);
 
   return {
     roleIdentified: detectedRole,
-    mainRequirements,
-    desiredSkills: desiredSkills.map(translateSkill),
-    toolsAndTech,
-    experienceRequired,
-    keywords: extractedKeywords,
+    mainRequirements: jobDescription.split(/[\n.!?]+/).map(line => line.trim()).filter(Boolean).slice(0, 5),
+    desiredSkills: foundSkills,
+    toolsAndTech: (candidateTools || []).filter(tool => containsKeyword(jobDescription, tool)),
+    experienceRequired: '',
+    keywords: keywords.slice(0, 12),
     matchPercentage: matchScore,
-    foundSkills: foundSkills.length > 0 ? foundSkills : (lang === 'en' ? ['Communication', 'Organization', 'Teamwork'] : lang === 'es' ? ['Comunicación', 'Organización', 'Trabajo en equipo'] : lang === 'fr' ? ['Communication', 'Organisation', 'Travail d\'équipe'] : ['Comunicação', 'Organização', 'Trabalho em equipe']),
+    foundSkills,
+    analysisSource: 'keyword-overlap',
     relevantExperiences: (candidateExperiences || [])
+      .filter((e: any) => keywords.some(word => containsKeyword(`${e.role || ''} ${e.activitiesRaw || ''} ${e.resultsRaw || ''}`, word)))
       .map((e: any) => {
         if (lang === 'en') return `${e.role || 'Role'} at ${e.company || 'previous company'}`;
         if (lang === 'es') return `${e.role || 'Cargo'} en ${e.company || 'empresa anterior'}`;
@@ -184,7 +118,7 @@ export function generateFallbackJobAnalysis(
       })
       .filter((s: string) => s.length > 0)
       .slice(0, 2),
-    compatibleEducation,
+    compatibleEducation: [],
     improvements,
   };
 }
@@ -198,7 +132,8 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Método não permitido. Utilize POST.' });
   }
 
-  const { jobDescription, candidateRole, candidateSkills, candidateTools, candidateExperiences, language = 'pt' } = req.body || {};
+  if (!validatePayload('analysis', req.body)) return res.status(400).json({ error: 'Dados da vaga ou do candidato inválidos.' });
+  const { jobDescription, candidateRole, candidateSkills, candidateTools, candidateExperiences, language = 'pt' } = req.body;
   const currentLang = (language || 'pt').toLowerCase();
   const langName = LANGUAGE_LABELS[currentLang] || LANGUAGE_LABELS.pt;
 
@@ -245,7 +180,7 @@ GUIDELINES:
 - NEVER invent information, jobs, or skills that the candidate does not have.
 - Be realistic, constructive, and encouraging.
 - Identify the target role, key job requirements, desired skills, tools, and keywords from the job description.
-- Compare with the candidate's actual profile and compute a realistic matchPercentage (between 65% and 92%).
+- Compare with the candidate's actual profile and compute a realistic matchPercentage between 0 and 100. Missing qualifications must lower the score; never impose a minimum score.
 
 JOB DESCRIPTION:
 """
@@ -284,7 +219,8 @@ Return ONLY a valid JSON object with this exact structure (ALL text values in ${
 
     const responseText = response.text || '{}';
     const parsed = JSON.parse(responseText);
-    return res.json(parsed);
+    if (!validateAiAnalysis(parsed)) throw new Error('Invalid AI analysis structure');
+    return res.json({ ...parsed, analysisSource: 'ai' });
   } catch (error: any) {
     console.warn('Gemini analyze-job API temporary error, using resilient fallback:', error?.message);
     return res.json(

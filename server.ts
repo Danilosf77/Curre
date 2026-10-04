@@ -4,11 +4,16 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import optimizeResumeHandler from './api/optimize-resume.js';
 import analyzeJobHandler from './api/analyze-job.js';
+import reviewResumeHandler, { reviewGuard } from './api/review-resume.js';
 import generatePdfHandler from './api/generate-pdf.js';
+import { payloadGuard } from './api/validation.js';
+import { createRateLimiter } from './api/resourceLimits.js';
 
-dotenv.config();
+dotenv.config({ path: ['.env.local', '.env'] });
 
 const app = express();
+// Set trusted proxy IPs/subnets explicitly for the hosting environment.
+if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY.split(',').map(value => value.trim()));
 const PORT = process.env.NODE_ENV === 'production' ? (Number(process.env.PORT) || 3000) : 3000;
 
 app.use(express.json({ limit: '10mb' }));
@@ -30,37 +35,7 @@ app.get('/api/health', (req, res) => {
 
 // --- 1. Rate limit por IP: no máx. 8 chamadas de IA a cada 15 min ---
 const RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
-const RATE_MAX_PER_IP = 8;
-const ipHits = new Map<string, { count: number; resetAt: number }>();
-
-function rateLimitByIp(req: any, res: any, next: any) {
-  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
-  const now = Date.now();
-  const entry = ipHits.get(ip);
-
-  if (!entry || now > entry.resetAt) {
-    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return next();
-  }
-
-  if (entry.count >= RATE_MAX_PER_IP) {
-    const waitMin = Math.ceil((entry.resetAt - now) / 60000);
-    return res.status(429).json({
-      error: `Muitas requisições. Tente novamente em ${waitMin} minuto(s).`,
-    });
-  }
-
-  entry.count++;
-  next();
-}
-
-// Limpa entradas antigas do Map de tempos em tempos, pra não vazar memória
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of ipHits.entries()) {
-    if (now > entry.resetAt) ipHits.delete(ip);
-  }
-}, RATE_WINDOW_MS);
+const rateLimitByIp = createRateLimiter(8, RATE_WINDOW_MS);
 
 // --- 2. Teto diário global: protege contra ataques distribuídos (vários IPs) ---
 const DAILY_BUDGET = 500; // limite diário de cota/orçamento
@@ -89,11 +64,13 @@ const aiGuards = [rateLimitByIp, dailyBudgetGuard];
 
 // Funções Serverless montadas nas rotas de API
 // Suporta tanto /api/ai/* quanto /api/* para compatibilidade total
-app.all('/api/ai/analyze-job', ...aiGuards, analyzeJobHandler);
-app.all('/api/analyze-job', ...aiGuards, analyzeJobHandler);
+app.all('/api/ai/analyze-job', payloadGuard('analysis'), ...aiGuards, analyzeJobHandler);
+app.all('/api/analyze-job', payloadGuard('analysis'), ...aiGuards, analyzeJobHandler);
 
-app.all('/api/ai/optimize-resume', ...aiGuards, optimizeResumeHandler);
-app.all('/api/optimize-resume', ...aiGuards, optimizeResumeHandler);
+app.all('/api/ai/optimize-resume', payloadGuard('optimization'), ...aiGuards, optimizeResumeHandler);
+app.all('/api/optimize-resume', payloadGuard('optimization'), ...aiGuards, optimizeResumeHandler);
+
+app.post('/api/review-resume', reviewGuard, ...aiGuards, reviewResumeHandler);
 
 // Endpoint de geração direta de PDF vetorial via Chromium Headless (Playwright)
 app.post('/api/generate-pdf', generatePdfHandler);

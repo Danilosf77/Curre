@@ -1,3 +1,4 @@
+import { trackEvent, generationErrorCategory } from './utils/analytics';
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { LandingHero } from './components/LandingHero';
@@ -31,6 +32,7 @@ import {
   completeEmailLinkSignIn,
 } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { restoreResumeForm, retainResumeForm } from './utils/resumeForm';
 
 function AppContent() {
   const { language, t } = useLanguage();
@@ -173,6 +175,7 @@ function AppContent() {
   const handleOpenSavedResume = () => {
     if (savedResumeData && currentUser && !currentUser.isAnonymous) {
       setGeneratedResume(savedResumeData);
+      setFormDataCache(restoreResumeForm(savedResumeData));
       setCurrentView('result');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -267,6 +270,9 @@ function AppContent() {
       jobAnalysis,
       templateStyle: 'liquid-modern',
       generatedAt: new Date().toISOString(),
+      language,
+      isAiGenerated: false,
+      sourceForm: retainResumeForm(data),
     };
   };
 
@@ -281,6 +287,8 @@ function AppContent() {
     courses: CourseItem[];
     jobAnalysis?: JobAnalysisResult;
   }) => {
+    if (isLoading) return;
+    trackEvent('geracao_iniciada', { idioma: language, origem: currentView === 'wizard' ? 'novo' : 'nova_tentativa' });
     setFormDataCache(data);
     setIsLoading(true);
     const startTime = Date.now();
@@ -297,43 +305,42 @@ function AppContent() {
       };
 
       // 2. Fetch main resume optimization
-      const fetchPromise = fetch('/api/ai/optimize-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizedData),
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      let response: Response;
+      let receivedResume: OptimizedResume;
+      try {
+        response = await fetch('/api/ai/optimize-resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(sanitizedData),
+          signal: controller.signal,
+        });
+        // Include JSON body consumption in the same deadline.
+        if (!response.ok) throw new Error(`API status ${response.status}`);
+        receivedResume = await response.json();
+      } finally { clearTimeout(timeout); }
 
-      // 3. Timeout safeguard: if server takes > 8 seconds, fallback locally
-      const response = await Promise.race([
-        fetchPromise,
-        new Promise<Response>((_, reject) =>
-          setTimeout(() => reject(new Error('Server timeout')), 8000)
-        ),
-      ]);
-
-      let resultResume: OptimizedResume;
-
-      if (response.ok) {
-        resultResume = await response.json();
-        // Restore actual photoUrl for client-side display
-        if (data.personal.photoUrl) {
-          resultResume.personal.photoUrl = data.personal.photoUrl;
-          resultResume.personal.hasPhoto = true;
-        }
-      } else {
-        resultResume = buildClientFallbackResume(data);
+      const resultResume = receivedResume;
+      if (resultResume.isAiGenerated === false) trackEvent('geracao_falhou', { idioma: language, categoria_erro: 'ia_indisponivel' });
+      // Restore actual photoUrl for client-side display.
+      if (data.personal.photoUrl) {
+        resultResume.personal.photoUrl = data.personal.photoUrl;
+        resultResume.personal.hasPhoto = true;
       }
 
       // Attach any existing jobAnalysis
       if (data.jobAnalysis) {
         resultResume.jobAnalysis = data.jobAnalysis;
       }
+      resultResume.sourceForm = retainResumeForm(data);
 
       // Ensure user experiences the 4-phase liquid loading transition (minimum 1.8s)
       const elapsed = Date.now() - startTime;
       const waitTime = Math.max(0, 1800 - elapsed);
 
       setTimeout(() => {
+        trackEvent('geracao_concluida', { idioma: language, metodo: resultResume.isAiGenerated === false ? 'basico' : 'ia', duracao_ms: Date.now() - startTime });
         setGeneratedResume(resultResume);
         if (currentUser && !currentUser.isAnonymous) {
           setSavedResumeData(resultResume);
@@ -351,6 +358,7 @@ function AppContent() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, waitTime);
     } catch (error) {
+      trackEvent('geracao_falhou', { idioma: language, categoria_erro: generationErrorCategory(error) });
       console.warn('Backend API unavailable or slow, generating with local smart heuristics:', error);
       const fallbackResume = buildClientFallbackResume(data);
 
@@ -358,6 +366,7 @@ function AppContent() {
       const waitTime = Math.max(0, 1800 - elapsed);
 
       setTimeout(() => {
+        trackEvent('geracao_concluida', { idioma: language, metodo: 'basico', duracao_ms: Date.now() - startTime });
         setGeneratedResume(fallbackResume);
         if (currentUser && !currentUser.isAnonymous) {
           setSavedResumeData(fallbackResume);
@@ -403,6 +412,7 @@ function AppContent() {
 
   // Navigation helpers
   const handleStartWizard = (step: WizardStep = 1) => {
+    trackEvent('inicio_curriculo', { idioma: language });
     if (!currentUser || currentUser.isAnonymous) {
       setFormDataCache(null);
       setGeneratedResume(null);
@@ -583,4 +593,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-

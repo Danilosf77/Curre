@@ -1,4 +1,5 @@
 import { getGeminiClient } from './geminiClient.js';
+import { validatePayload, validateAiResume } from './validation.js';
 import { formatExperienceBullets } from '../src/utils/textBeautifier.js';
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -68,6 +69,7 @@ export function generateFallbackResume(data: any) {
     templateStyle: 'liquid-modern',
     language: lang,
     generatedAt: new Date().toISOString(),
+    isAiGenerated: false,
   };
 }
 
@@ -81,7 +83,8 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Método não permitido. Utilize POST.' });
   }
 
-  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis, language = 'pt' } = req.body || {};
+  if (!validatePayload('optimization', req.body)) return res.status(400).json({ error: 'Dados do currículo inválidos.' });
+  const { personal, targetJob, experiences, education, skills, tools, courses, jobAnalysis, language = 'pt' } = req.body;
   const currentLang = (language || 'pt').toLowerCase();
   const langName = LANGUAGE_LABELS[currentLang] || LANGUAGE_LABELS.pt;
 
@@ -169,6 +172,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
 
     const rawText = response.text || '{}';
     const aiResult = JSON.parse(rawText);
+    if (!validateAiResume(aiResult)) throw new Error('Invalid AI resume structure');
 
     // Sanitiza e garante variedade absoluta nos bullets retornados e preserva datas exatas do usuário
     const sanitizedExperiences = (aiResult.experiences || []).map((exp: any) => {
@@ -230,7 +234,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
     return res.json({
       ...fallback,
       isAiGenerated: false,
-      apiError: error?.message || 'Gemini API call failed',
+      apiError: 'A otimização por IA está indisponível no momento.',
     });
   }
 }
