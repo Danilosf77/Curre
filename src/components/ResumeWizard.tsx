@@ -1,4 +1,5 @@
 import { trackEvent } from '../utils/analytics';
+import { requestAi } from '../utils/aiRequests';
 import React, { useState } from 'react';
 import { keywordOverlapLabel } from '../utils/resultLabels';
 import {
@@ -478,24 +479,14 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     setJobAnalysisError(null);
 
     try {
-      const response = await fetch('/api/ai/analyze-job', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const result = await requestAi<JobAnalysisResult>('/api/ai/analyze-job', {
           jobDescription: targetJob.jobDescription,
           candidateRole: targetJob.roleTitle,
           candidateSkills: selectedSkills,
           candidateTools: selectedTools,
           candidateExperiences: experiences,
           language: language,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Falha na resposta do servidor.');
-      }
-
-      const result: JobAnalysisResult = await response.json();
+      }, undefined, data => data.analysisSource !== 'keyword-overlap');
       setJobAnalysis(result);
     } catch (err: any) {
       console.error(err);
@@ -717,6 +708,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     const validCourses = courses.filter(isCourseItemValid);
 
     trackEvent('etapa_concluida', { etapa: 8, idioma: language });
+    trackEvent('formulario_concluido', { idioma: language });
     onGenerateResume({
       personal: finalPersonal,
       targetJob: finalTargetJob,

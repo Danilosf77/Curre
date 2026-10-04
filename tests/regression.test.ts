@@ -1,6 +1,9 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { aiFailure } from '../api/aiFailure.ts';
 import { generateGeminiContent } from '../api/geminiClient.ts';
+import { createAiRequestCache } from '../src/utils/aiRequests.ts';
 import assert from 'node:assert/strict';
 import { validatePayload, isSafePhoto, validateAiAnalysis, validateAiResume, payloadGuard } from '../api/validation.ts';
 import { createRateLimiter, createConcurrencyLimit } from '../api/resourceLimits.ts';
@@ -38,6 +41,23 @@ test('Gemini uses the alternative model for overload but does not retry exhauste
   assert.equal(calls,1);
 });
 
+test('AI cache reuses only successful unchanged requests, expires and isolates returned data', async () => {
+  let calls=0;
+  let time=0;
+  const request=createAiRequestCache((async () => {calls++;return new Response(JSON.stringify({isAiGenerated:true,personal:{fullName:'Test'}}));}) as typeof fetch,()=>time);
+  const first=await request<any>('/api/test',{language:'pt'});
+  first.personal.fullName='changed';
+  assert.equal((await request<any>('/api/test',{language:'pt'})).personal.fullName,'Test');
+  assert.equal(calls,1);
+  await request('/api/test',{language:'en'});assert.equal(calls,2);
+  time=15*60*1000;await request('/api/test',{language:'pt'});assert.equal(calls,3);
+  let failures=0;
+  const unavailable=createAiRequestCache((async () => {failures++;return new Response(JSON.stringify({isAiGenerated:false}));}) as typeof fetch);
+  await unavailable<any>('/api/test',{},undefined,data=>data.isAiGenerated);
+  await unavailable<any>('/api/test',{},undefined,data=>data.isAiGenerated);
+  assert.equal(failures,2);
+});
+
 test('analytics excludes local hosts and personal or arbitrary event data', () => {
   assert.equal(isAnalyticsHost('localhost'),false);
   assert.equal(isAnalyticsHost('127.0.0.1'),false);
@@ -48,7 +68,9 @@ test('analytics excludes local hosts and personal or arbitrary event data', () =
   const events:any[] = [];
   try {
     (globalThis as any).window = {location:{hostname:'localhost'},gtag:(...args:any[]) => events.push(args)};
-    trackEvent('etapa_concluida',{etapa:2}); assert.equal(events.length,0);
+    trackEvent('etapa_concluida',{etapa:2});
+    trackEvent('download_curriculo',{metodo_geracao:'servidor_playwright'});
+    trackEvent('formulario_concluido'); assert.equal(events.length,0);
     (globalThis as any).window.location.hostname = 'www.curreai.com';
     trackEvent('etapa_concluida',{etapa:2,idioma:'pt'});
     trackEvent('private name' as any,{etapa:2});
@@ -58,6 +80,19 @@ test('analytics excludes local hosts and personal or arbitrary event data', () =
   } finally { if (previous === undefined) delete (globalThis as any).window; else (globalThis as any).window = previous; }
   assert.equal(generationErrorCategory(new Error('API status 429')),'limite');
   assert.equal(generationErrorCategory(new Error('Secret provider response')),'rede_ou_resposta');
+});
+
+test('Google tag bootstrap never loads on localhost, including explicit debug URLs', () => {
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const bootstrap=html.split('<!-- Google tag (gtag.js) -->')[1].split('</script>')[0].split('<script>')[1];
+  for (const hostname of ['localhost','127.0.0.1','www.curreai.com']) {
+    const scripts:any[]=[];
+    const window:any={location:{hostname,search:'?analytics_debug=1'}};
+    runInNewContext(bootstrap,{window,URLSearchParams,document:{createElement:()=>({}),head:{appendChild:(script:any)=>scripts.push(script)}}});
+    assert.equal(scripts.length,hostname === 'www.curreai.com' ? 1 : 0);
+    if (hostname === 'www.curreai.com') assert.equal(window.dataLayer[1][2].debug_mode,true);
+    else assert.equal(window.gtag,undefined);
+  }
 });
 
 test('review rejects oversized and malformed inputs before consuming AI quota', () => {

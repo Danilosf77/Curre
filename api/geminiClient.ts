@@ -2,6 +2,7 @@ import { GoogleGenAI, type GenerateContentParameters } from '@google/genai';
 import { aiFailure } from './aiFailure.js';
 
 let cachedClient: GoogleGenAI | null = null;
+export const getGeminiModel = () => process.env.GEMINI_MODEL?.trim() || 'gemini-3.5-flash-lite';
 
 /**
  * Retorna o cliente autenticado do Gemini de forma segura e encapsulada no lado do servidor.
@@ -41,8 +42,9 @@ export async function generateGeminiContent(client: GoogleGenAI, params: Generat
     return await client.models.generateContent(params);
   } catch (error) {
     const failure = aiFailure(error);
-    if (!['provider_busy', 'provider_internal', 'provider_network', 'provider_timeout'].includes(failure.category)) throw error;
-    console.warn('[Gemini model fallback]', {from: params.model, to: 'gemini-3.5-flash', category: failure.category});
-    return client.models.generateContent({...params, model: 'gemini-3.5-flash'});
+    const fallbackModel = process.env.GEMINI_FALLBACK_MODEL?.trim() || 'gemini-3.5-flash';
+    if (fallbackModel === params.model || !['provider_busy', 'provider_internal', 'provider_network', 'provider_timeout', 'model_unavailable'].includes(failure.category)) throw error;
+    console.warn('[Gemini model fallback]', {from: params.model, to: fallbackModel, category: failure.category});
+    return client.models.generateContent({...params, model: fallbackModel});
   }
 }

@@ -1,4 +1,5 @@
 import { OptimizedResume } from '../types';
+import { trackEvent } from './analytics';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas-pro';
 
@@ -78,15 +79,7 @@ export async function exportResumeClientSide(resume: OptimizedResume): Promise<v
     pdf.save(filename);
     console.log(`[CURRÊ PDF] Exportação client-side (fallback jsPDF) concluída com sucesso: ${filename}`);
 
-    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-      (window as any).gtag('event', 'download_curriculo', {
-        event_category: 'engajamento',
-        event_label: 'Curriculo_Baixado',
-        template: 'desconhecido',
-        language: 'desconhecido',
-        metodo_geracao: 'fallback_navegador',
-      });
-    }
+    trackEvent('download_curriculo', {modelo:resume.templateStyle,idioma:resume.language,metodo:resume.isAiGenerated === false ? 'basico' : 'ia',metodo_geracao:'fallback_navegador'});
   } finally {
     // Restaura escala original do container de preview
     element.style.transform = originalTransform;
@@ -144,15 +137,7 @@ export async function exportResumeToPDF(options: PDFExportOptions): Promise<void
 
         console.log(`[CURRÊ PDF] Download direto (servidor Playwright) concluído: ${filename} (${blob.size} bytes)`);
 
-        if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-          (window as any).gtag('event', 'download_curriculo', {
-            event_category: 'engajamento',
-            event_label: 'Curriculo_Baixado',
-            template,
-            language,
-            metodo_geracao: 'servidor_playwright',
-          });
-        }
+        trackEvent('download_curriculo', {modelo:template,idioma:language,metodo:resume.isAiGenerated === false ? 'basico' : 'ia',metodo_geracao:'servidor_playwright'});
 
         return;
       }
@@ -186,4 +171,3 @@ export async function exportResumeToPDF(options: PDFExportOptions): Promise<void
     throw new Error(finalError);
   }
 }
-

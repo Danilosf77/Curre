@@ -1,4 +1,4 @@
-import { getGeminiClient, generateGeminiContent } from './geminiClient.js';
+import { getGeminiClient, generateGeminiContent, getGeminiModel } from './geminiClient.js';
 import { aiFailure } from './aiFailure.js';
 import { validatePayload, validateAiResume } from './validation.js';
 import { formatExperienceBullets } from '../src/utils/textBeautifier.js';
@@ -163,7 +163,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
 }`;
 
     const response = await generateGeminiContent(ai, {
-      model: 'gemini-3.8-flash',
+      model: getGeminiModel(),
       contents: systemPrompt,
       config: {
         responseMimeType: 'application/json',
@@ -236,7 +236,7 @@ Retorne ESTRITAMENTE um objeto JSON válido com a seguinte estrutura (todos os v
     return res.json({
       ...fallback,
       isAiGenerated: false,
-      apiError: failure.message,
+      apiError: 'Você pode tentar aprimorá-lo com IA novamente.',
       aiFailureCode: failure.category,
     });
   }

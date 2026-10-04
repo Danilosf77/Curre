@@ -1,4 +1,5 @@
 import { trackEvent, generationErrorCategory } from './utils/analytics';
+import { requestAi } from './utils/aiRequests';
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { LandingHero } from './components/LandingHero';
@@ -307,18 +308,9 @@ function AppContent() {
       // 2. Fetch main resume optimization
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 45000);
-      let response: Response;
       let receivedResume: OptimizedResume;
       try {
-        response = await fetch('/api/ai/optimize-resume', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(sanitizedData),
-          signal: controller.signal,
-        });
-        // Include JSON body consumption in the same deadline.
-        if (!response.ok) throw new Error(`API status ${response.status}`);
-        receivedResume = await response.json();
+        receivedResume = await requestAi<OptimizedResume>('/api/ai/optimize-resume', sanitizedData, controller.signal, data => data.isAiGenerated === true);
       } finally { clearTimeout(timeout); }
 
       const resultResume = receivedResume;

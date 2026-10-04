@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { OptimizedResume, TemplateStyle } from '../types';
 import { checkPdfText } from '../utils/pdfReading';
+import { requestAi } from '../utils/aiRequests';
 
 export function ResumeReview({resume, template, language}: {resume:OptimizedResume; template:TemplateStyle; language:string}) {
   const [busy,setBusy] = useState(false);
@@ -44,18 +45,11 @@ export function ResumeReview({resume, template, language}: {resume:OptimizedResu
         setReading(result);
       }
       if (ai) {
-        const response = await fetch('/api/review-resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:result.text,jobDescription:job,language}),signal:controller.signal});
-        if (response.status === 429) {
-          const seconds = Number(response.headers.get('Retry-After'));
-          const minutes = Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds / 60) : null;
-          throw new Error(minutes ? 'Limite temporário de solicitações atingido. Tente novamente em ' + minutes + ' minuto(s). Seu currículo continua disponível para baixar.' : 'Limite temporário de solicitações atingido. Aguarde antes de tentar novamente. Seu currículo continua disponível para baixar.');
-        }
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Revisão indisponível.');
+        const data = await requestAi('/api/review-resume',{text:result.text,jobDescription:job,language},controller.signal);
         if (!controller.signal.aborted) setReview(data);
       }
     } catch (e:any) {
-      if (!controller.signal.aborted) setError(e.message || 'Não foi possível verificar o currículo.');
+      if (!controller.signal.aborted) setError(ai ? 'Não conseguimos concluir a revisão agora. Tente novamente mais tarde. Seu currículo continua disponível.' : e.message || 'Não foi possível verificar o currículo.');
       else if (request.current === controller) setError('A verificação foi interrompida. Tente novamente.');
     } finally {
       clearTimeout(timeout); await loadingTask?.destroy();

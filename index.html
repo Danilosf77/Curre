@@ -40,7 +40,9 @@
         window.dataLayer = window.dataLayer || [];
         window.gtag = function () { window.dataLayer.push(arguments); };
         window.gtag('js', new Date());
-        window.gtag('config', 'G-2ZLS5E954V');
+        // Explicit production QA only; localhost never loads this tag.
+        const analyticsDebug = new URLSearchParams(window.location.search).get('analytics_debug') === '1';
+        window.gtag('config', 'G-2ZLS5E954V', analyticsDebug ? { debug_mode: true } : {});
         const tag = document.createElement('script');
         tag.async = true;
         tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-2ZLS5E954V';
@@ -77,4 +79,3 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
