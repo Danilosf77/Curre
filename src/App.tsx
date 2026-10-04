@@ -306,7 +306,7 @@ function AppContent() {
 
       // 2. Fetch main resume optimization
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
+      const timeout = setTimeout(() => controller.abort(), 45000);
       let response: Response;
       let receivedResume: OptimizedResume;
       try {

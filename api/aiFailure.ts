@@ -10,6 +10,6 @@ export function aiFailure(error: any) {
   return {
     category,
     providerStatus: Number.isFinite(status) ? status : null,
-    message: quota ? 'O serviço de IA atingiu a cota disponível. A geração e a revisão dependem da liberação dessa cota no Google AI Studio.' : timeout ? 'O serviço de IA demorou além do limite. Tente novamente em instantes.' : category === 'provider_auth' ? 'O serviço de IA recusou a autenticação. Verifique a configuração da chave no servidor.' : category === 'model_unavailable' ? 'O modelo de IA está indisponível para esta conta.' : 'O serviço de IA não concluiu a solicitação. Tente novamente em instantes.',
+    message: category === 'provider_busy' ? 'O serviço de IA está temporariamente sobrecarregado. Tente novamente em alguns instantes.' : quota ? 'O serviço de IA atingiu a cota disponível. A geração e a revisão dependem da liberação dessa cota no Google AI Studio.' : timeout ? 'O serviço de IA demorou além do limite. Tente novamente em instantes.' : category === 'provider_auth' ? 'O serviço de IA recusou a autenticação. Verifique a configuração da chave no servidor.' : category === 'model_unavailable' ? 'O modelo de IA está indisponível para esta conta.' : 'O serviço de IA não concluiu a solicitação. Tente novamente em instantes.',
   };
 }
