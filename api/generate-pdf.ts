@@ -18,6 +18,7 @@ import { MinimalistAtsTemplate } from '../src/components/templates/MinimalistAts
 import { CreativeColorTemplate } from '../src/components/templates/CreativeColorTemplate.js';
 import { ElegantSerifTemplate } from '../src/components/templates/ElegantSerifTemplate.js';
 import { TimelineTechTemplate } from '../src/components/templates/TimelineTechTemplate.js';
+import { GlobalClassicTemplate, ExecutiveSignatureTemplate, NordicTemplate, EditorialTemplate } from '../src/components/templates/SignatureTemplates.js';
 import { InternationalTemplate } from '../src/components/templates/InternationalTemplate.js';
 import { LanguageProvider } from '../src/i18n/LanguageContext.js';
 
@@ -287,6 +288,18 @@ export default async function generatePdfHandler(req: any, res: any) {
     case 'timeline-tech':
       TemplateComponent = TimelineTechTemplate;
       templateClass = 'p-0 font-sans';
+      break;
+    case 'global-classic':
+      TemplateComponent = GlobalClassicTemplate;
+      break;
+    case 'executive-signature':
+      TemplateComponent = ExecutiveSignatureTemplate;
+      break;
+    case 'nordic':
+      TemplateComponent = NordicTemplate;
+      break;
+    case 'editorial':
+      TemplateComponent = EditorialTemplate;
       break;
     case 'international':
       TemplateComponent = InternationalTemplate;

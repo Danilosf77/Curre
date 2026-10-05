@@ -11,7 +11,7 @@ export function safeAnalyticsParams(params: Params): Record<string, string | num
   if (['ia','basico'].includes(params.metodo || '')) safe.metodo = params.metodo!;
   if (['servidor_playwright','fallback_navegador'].includes(params.metodo_geracao || '')) safe.metodo_geracao = params.metodo_geracao!;
   if (['timeout','limite','servidor','rede_ou_resposta','ia_indisponivel'].includes(params.categoria_erro || '')) safe.categoria_erro = params.categoria_erro!;
-  if (['liquid-modern','executive-clean','ats-professional','impact','corporate-premium','minimalist','creative-color','elegant-serif','timeline-tech','international'].includes(params.modelo || '')) safe.modelo = params.modelo!;
+  if (['liquid-modern','executive-clean','ats-professional','impact','corporate-premium','minimalist','creative-color','elegant-serif','timeline-tech','international','global-classic','executive-signature','nordic','editorial'].includes(params.modelo || '')) safe.modelo = params.modelo!;
   if (typeof params.duracao_ms === 'number' && Number.isFinite(params.duracao_ms)) safe.duracao_ms = Math.max(0, Math.min(300000, Math.round(params.duracao_ms)));
   return safe;
 }

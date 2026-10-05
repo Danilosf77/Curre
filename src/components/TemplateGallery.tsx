@@ -15,10 +15,10 @@ export function TemplateGallery({ current, onApply, onClose }: Props) {
   const { t, language } = useLanguage();
   const copy = galleryLabels(language);
   const pending = current;
-  const [category, setCategory] = useState<'all' | TemplateCategory>('all');
+  const [category, setCategory] = useState<'all' | 'signature' | TemplateCategory>('all');
   const dialog = useRef<HTMLDialogElement>(null);
 
-  const visible = RESUME_TEMPLATES.filter(item => category === 'all' || item.category === category);
+  const visible = RESUME_TEMPLATES.filter(item => category === 'all' || (category === 'signature' ? item.collection === 'signature' : item.category === category));
 
   useEffect(() => {
     const element = dialog.current!;
@@ -57,7 +57,7 @@ export function TemplateGallery({ current, onApply, onClose }: Props) {
           </button>
         </div>
         <div aria-label={copy.title} style={{ scrollbarWidth: 'none' }} className="mt-4 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
-          {(['all', 'modern', 'classic', 'ats', 'creative'] as const).map(value => (
+          {(['all', 'signature', 'modern', 'classic', 'ats', 'creative'] as const).map(value => (
             <button key={value} type="button" aria-pressed={category === value} onClick={() => setCategory(value)} className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-sky-500 ${category === value ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}>
               {copy[value]}
             </button>
@@ -83,8 +83,10 @@ export function TemplateGallery({ current, onApply, onClose }: Props) {
               </div>
               {pending === item.id && <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-sky-600 text-white" aria-hidden="true"><Check className="h-4 w-4" /></span>}
               <div className="flex-1 p-3">
+                {item.collection === 'signature' && <span className="mb-1.5 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">SIGNATURE</span>}
                 <span className="block text-xs font-extrabold sm:text-sm">{item.name}</span>
-                <span className="mt-1 block text-[9px] font-bold uppercase tracking-wide text-sky-700 dark:text-sky-300">{t(`tmpl_${item.key}_badge`)}</span>
+                <span className="mt-1 block text-[9px] font-bold uppercase tracking-wide text-sky-700 dark:text-sky-300">{item.badge?.[language] || t(`tmpl_${item.key}_badge`)}</span>
+                {item.description && <span className="mt-1.5 block text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">{item.description[language] || item.description.pt}</span>}
               </div>
             </button>
           ))}

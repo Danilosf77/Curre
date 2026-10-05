@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import generatePdf from '../api/generate-pdf.ts';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { RESUME_TEMPLATES } from '../src/data/resumeTemplates.ts';
+import { SIGNATURE_IDS } from '../src/components/templates/SignatureTemplates.tsx';
 import { checkPdfText } from '../src/utils/pdfReading.ts';
 
 const resume = {
@@ -12,8 +14,8 @@ const resume = {
 };
 const response = () => ({ code: 200, body: undefined as any, headers: {} as Record<string,any>, status(code: number) { this.code = code; return this; }, json(body: any) { this.body = body; return this; }, send(body: any) { this.body = body; return this; }, setHeader(k: string, v: any) { this.headers[k] = v; } });
 
-test('Chromium generates all ten templates with uploaded photos', { timeout: 120000 }, async () => {
-  for (const template of ['liquid-modern','executive-clean','ats-professional','impact','corporate-premium','minimalist','creative-color','elegant-serif','timeline-tech','international']) {
+test('Chromium generates every registered template with uploaded photos', { timeout: 120000 }, async () => {
+  for (const template of RESUME_TEMPLATES.map(item => item.id)) {
     const res = response();
     await generatePdf({ method: 'POST', ip: template, body: { resume, template, language: 'pt' } }, res);
     assert.equal(res.code, 200, `${template}: ${JSON.stringify(res.body)}`);
@@ -45,6 +47,41 @@ test('concurrent PDF requests are bounded and capacity recovers', { timeout: 600
   const res = response();
   await generatePdf({ method: 'POST', ip: 'recovered', body: { resume } }, res);
   assert.equal(res.code, 200);
+});
+
+test('Signature PDFs preserve long content and reading order across pages and languages', { timeout: 120000 }, async () => {
+  const extended = {
+    ...resume,
+    personal: { ...resume.personal, fullName: 'Ana Maria Teste de Conteúdo Internacional', email: 'nome.sobrenome.contato.profissional@example.com', hasPhoto: false, portfolio: 'https://example.com/portfolio/projetos-internacionais' },
+    experiences: Array.from({ length: 7 }, (_, i) => ({ id: `long-${i}`, role: `Cargo ${i}`, company: `Empresa ${i}`, period: '2015 — 2024', isCurrent: false, bullets: Array.from({ length: 5 }, (_, j) => `Evidência ${i}.${j}: Desenvolveu processos de trabalho em colaboração com equipes multidisciplinares, documentando decisões e acompanhando atividades de melhoria contínua.`) })),
+    education: [{ id: 'edu', course: 'Administração', institution: 'Universidade Teste', startYear: '2010', endYear: '2014', status: 'Concluído' }],
+    courses: [{ id: 'course', name: 'Gestão de Projetos Internacionais', institution: 'Escola Teste', year: '2024', hours: '40h' }],
+  };
+  for (const template of SIGNATURE_IDS) for (const language of ['pt', 'en', 'es', 'fr']) {
+    const res = response();
+    await generatePdf({ method: 'POST', ip: `${template}-${language}`, body: { resume: extended, template, language } }, res);
+    assert.equal(res.code, 200, `${template}/${language}: ${JSON.stringify(res.body)}`);
+    const task = getDocument({ data: new Uint8Array(res.body) });
+    const pdf = await task.promise;
+    try {
+      assert.ok(pdf.numPages > 1, `${template}/${language}: long content must paginate`);
+      const texts: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        texts.push(content.items.map((item: any) => item.str || '').join(' '));
+      }
+      const text = texts.join(' ').replace(/\s+/g, ' ');
+      for (const value of [extended.personal.email, extended.personal.portfolio, extended.courses[0].name]) assert.ok(text.replace(/\s/g, '').includes(value.replace(/\s/g, '')), `${template}/${language}: missing ${value}`);
+      let previous = -1;
+      for (const exp of extended.experiences) for (const bullet of exp.bullets) {
+        const position = text.indexOf(bullet.split(':')[0]);
+        assert.ok(position > previous, `${template}/${language}: missing or reordered ${bullet}`);
+        previous = position;
+      }
+      assert.equal(checkPdfText(text, extended as any).filter(check => check.status === 'missing').length, 0);
+    } finally { await task.destroy(); }
+  }
 });
 
 test('internal URLs are rejected before launching Chromium', async () => {

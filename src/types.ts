@@ -75,7 +75,11 @@ export type TemplateStyle =
   | 'creative-color'
   | 'elegant-serif'
   | 'timeline-tech'
-  | 'international';
+  | 'international'
+  | 'global-classic'
+  | 'executive-signature'
+  | 'nordic'
+  | 'editorial';
 
 export interface OptimizedResume {
   sourceForm?: ResumeFormData;

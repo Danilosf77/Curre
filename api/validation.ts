@@ -17,7 +17,7 @@ export function validatePayload(kind: 'analysis' | 'optimization' | 'pdf', body:
   if (!object(body)) return false;
   if (kind === 'analysis') return typeof body.jobDescription === 'string' && !!body.jobDescription.trim() && shape({ jobDescription: text, candidateRole: text, candidateSkills: strings, candidateTools: strings, candidateExperiences: list(experience), language })(body);
   if (kind === 'optimization') return shape({ personal, targetJob: shape({ roleTitle: text, briefGoal: text, jobDescription: text }), experiences: list(experience), education, skills: strings, tools: strings, courses, jobAnalysis, language })(body);
-  return object(body.resume) && resume(body.resume) && shape({ language, template: v => typeof v === 'string' && ['liquid-modern', 'executive-clean', 'ats-professional', 'impact', 'corporate-premium', 'minimalist', 'creative-color', 'elegant-serif', 'timeline-tech', 'international'].includes(v) })(body) && (!body.resume.personal?.photoUrl || isSafePhoto(body.resume.personal.photoUrl));
+  return object(body.resume) && resume(body.resume) && shape({ language, template: v => typeof v === 'string' && ['liquid-modern', 'executive-clean', 'ats-professional', 'impact', 'corporate-premium', 'minimalist', 'creative-color', 'elegant-serif', 'timeline-tech', 'international', 'global-classic', 'executive-signature', 'nordic', 'editorial'].includes(v) })(body) && (!body.resume.personal?.photoUrl || isSafePhoto(body.resume.personal.photoUrl));
 }
 
 export function isSafePhoto(value: unknown): boolean {

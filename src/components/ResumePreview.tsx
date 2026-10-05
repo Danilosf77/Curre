@@ -43,6 +43,7 @@ import { CorporatePremiumTemplate } from './templates/CorporatePremiumTemplate';
 import { CreativeColorTemplate } from './templates/CreativeColorTemplate';
 import { ElegantSerifTemplate } from './templates/ElegantSerifTemplate';
 import { TimelineTechTemplate } from './templates/TimelineTechTemplate';
+import { SIGNATURE_COMPONENTS, type SignatureStyle } from './templates/SignatureTemplates';
 import { InternationalTemplate } from './templates/InternationalTemplate';
 import { ResumeReview } from './ResumeReview';
 import { useLanguage } from '../i18n/LanguageContext';
@@ -343,7 +344,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div className="min-w-0">
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400">{galleryCopy.style}</p>
               <p className="truncate text-sm font-extrabold text-slate-900 dark:text-slate-100">{selectedTemplate.name}</p>
-              <p className="hidden text-xs text-slate-500 sm:block dark:text-slate-400">{t(`tmpl_${selectedTemplate.key}_badge`)}</p>
+              <p className="hidden text-xs text-slate-500 sm:block dark:text-slate-400">{selectedTemplate.badge?.[language] || t(`tmpl_${selectedTemplate.key}_badge`)}</p>
             </div>
           </div>
           <button type="button" id="btn-change-template" onClick={() => setGalleryOpen(true)} aria-haspopup="dialog" aria-expanded={galleryOpen} className="flex shrink-0 items-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs font-bold text-sky-800 hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:border-sky-800 dark:bg-sky-950/60 dark:text-sky-300 dark:hover:bg-sky-900/60">
@@ -390,7 +391,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           onCut={(e) => e.preventDefault()}
           onDragStart={(e) => e.preventDefault()}
           className={`resume-paper select-none bg-white text-slate-900 shadow-2xl rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden print:shadow-none print:border-none print:rounded-none print:transform-none print:overflow-visible print:h-auto print:w-full print:max-w-none print:m-0 print:select-text ${
-            template === 'impact' || template === 'minimalist' || template === 'creative-color' || template === 'timeline-tech'
+            Object.hasOwn(SIGNATURE_COMPONENTS, template) || template === 'impact' || template === 'minimalist' || template === 'creative-color' || template === 'timeline-tech'
               ? 'p-0 font-sans'
               : template === 'executive-clean' || template === 'elegant-serif'
               ? 'p-6 sm:p-10 font-serif'
@@ -523,6 +524,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             />
           )}
 
+          {Object.hasOwn(SIGNATURE_COMPONENTS, template) && (() => {
+            const Template = SIGNATURE_COMPONENTS[template as SignatureStyle];
+            return <Template {...resume} />;
+          })()}
           {template === 'international' && (
             <InternationalTemplate
               personal={personal}
