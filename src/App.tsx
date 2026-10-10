@@ -2,6 +2,8 @@ import { trackEvent, generationErrorCategory } from './utils/analytics';
 import { requestAi } from './utils/aiRequests';
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
+import { ContactPage } from './components/ContactPage';
+import { InstagramLink } from './components/InstagramLink';
 import { LandingHero } from './components/LandingHero';
 import { ResumeWizard } from './components/ResumeWizard';
 import { ResumePreview } from './components/ResumePreview';
@@ -37,7 +39,8 @@ import { restoreResumeForm, retainResumeForm } from './utils/resumeForm';
 
 function AppContent() {
   const { language, t } = useLanguage();
-  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'wizard' | 'result' | 'contact'>(() => window.location.pathname === '/contact' ? 'contact' : 'landing');
+  const contactLabel = { pt: 'Contato', en: 'Contact', es: 'Contacto', fr: 'Contact' }[language];
   const [wizardStep, setWizardStep] = useState<WizardStep>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedResume, setGeneratedResume] = useState<OptimizedResume | null>(null);
@@ -404,6 +407,7 @@ function AppContent() {
 
   // Navigation helpers
   const handleStartWizard = (step: WizardStep = 1) => {
+    if (currentView === 'contact') { window.location.assign(`/${language}/`); return; }
     trackEvent('inicio_curriculo', { idioma: language });
     if (!currentUser || currentUser.isAnonymous) {
       setFormDataCache(null);
@@ -429,7 +433,7 @@ function AppContent() {
         onOpenFeatures={() => setFeaturesOpen(true)}
         onOpenAuth={() => setLoginOpen(true)}
         isWizardActive={currentView === 'wizard'}
-        onGoHome={() => setCurrentView('landing')}
+        onGoHome={() => currentView === 'contact' ? window.location.assign(`/${language}/`) : setCurrentView('landing')}
         hasSavedResume={!authLoading && !!savedResumeData && !!currentUser && !currentUser.isAnonymous}
         onOpenSavedResume={handleOpenSavedResume}
         currentUser={currentUser}
@@ -437,6 +441,7 @@ function AppContent() {
 
       {/* Main Content Area */}
       <main className="flex-1">
+        {currentView === 'contact' && <ContactPage />}
         {currentView === 'landing' && (
           <LandingHero
             onStartResume={() => handleStartWizard(1)}
@@ -534,6 +539,8 @@ function AppContent() {
             </div>
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <a href="/contact" className="inline-flex min-h-11 items-center rounded-lg hover:text-sky-600 dark:hover:text-sky-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500">{contactLabel}</a>
+              <InstagramLink placement="footer" />
               <button
                 onClick={() => setHowItWorksOpen(true)}
                 className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer whitespace-nowrap"

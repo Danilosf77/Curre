@@ -8,7 +8,7 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "lint": "tsc --noEmit",
-    "test": "node --import tsx --test tests/regression.test.ts",
+    "test": "node --import tsx --test tests/regression.test.ts tests/contact.test.ts",
     "test:pdf": "node --import tsx --test tests/pdf.test.ts"
   },
   "dependencies": {

@@ -1,6 +1,9 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
+import { readFile } from 'node:fs/promises';
+import { createContactHandler, contactConfig, contactReady } from './api/contact.js';
+import { contactHtml } from './api/contactSeo.js';
 import { createServer as createViteServer } from 'vite';
 import optimizeResumeHandler from './api/optimize-resume.js';
 import analyzeJobHandler from './api/analyze-job.js';
@@ -16,6 +19,20 @@ const app = express();
 if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY.split(',').map(value => value.trim()));
 const PORT = process.env.NODE_ENV === 'production' ? (Number(process.env.PORT) || 3000) : 3000;
 
+// Exact expression: Express's default optional slash matching would loop /contact.
+app.get(/^\/(?:contact-us\/?|contact\/)$/, (_req, res) => res.redirect(301, '/contact'));
+app.get('/api/contact/config', (_req, res) => {
+  const config = contactConfig();
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ enabled: contactReady(config), siteKey: config.siteKey });
+});
+// Bound payload before the generic AI parser; reject malformed JSON without echoing it.
+app.post('/api/contact', express.json({ limit: '32kb', strict: true }), createContactHandler());
+app.use('/api/contact', (err: any, _req: any, res: any, next: any) => {
+  if (!err) return next();
+  res.status(err.type === 'entity.too.large' ? 413 : 400).json({ error: 'validation' });
+});
+app.all('/api/contact', (_req, res) => res.set('Allow', 'POST').status(405).json({ error: 'method' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -88,12 +105,20 @@ async function startServer() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
+    app.get('/contact', async (req, res, next) => {
+      try { res.type('html').send(await vite.transformIndexHtml(req.originalUrl, contactHtml(await readFile('index.html', 'utf8')))); }
+      catch (error) { next(error); }
+    });
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     const publicPath = path.join(process.cwd(), 'public');
     app.use(express.static(publicPath));
     app.use(express.static(distPath));
+    app.get('/contact', async (_req, res, next) => {
+      try { res.type('html').send(contactHtml(await readFile(path.join(distPath, 'index.html'), 'utf8'))); }
+      catch (error) { next(error); }
+    });
     app.get('*', (req, res) => {
       // Do not let the catch-all return index.html for static assets, sitemap, robots or favicons
       const isStaticFile = req.path.match(/\.(png|ico|jpg|jpeg|svg|xml|txt|json)$/) || 

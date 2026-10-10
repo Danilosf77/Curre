@@ -2148,6 +2148,8 @@ export function applyDocumentMetadata(lang: Language) {
 
   // 1. <html lang="...">
   document.documentElement.lang = meta.htmlLang;
+  // Contact owns its metadata; changing language must not replace its canonical.
+  if (window.location.pathname === '/contact') return;
 
   // 2. <title> e og:title / twitter:title
   document.title = meta.title;
@@ -2369,6 +2371,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode; defaultLang
     if (typeof window !== 'undefined') {
       // Atualiza os metadados do documento (título, descrição, canonical) antes do pushState
       applyDocumentMetadata(lang);
+
+      if (window.location.pathname === '/contact') return;
 
       const targetUrl = `/${lang}/${window.location.search}${window.location.hash}`;
       if (window.location.pathname !== `/${lang}/`) {

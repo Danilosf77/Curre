@@ -1,16 +1,17 @@
 // Only public production hosts collect events. No resume contents or identifiers.
 export const isAnalyticsHost = (host: string) => ['www.curreai.com', 'curreai.com', 'curre.onrender.com'].includes(host);
-type EventName = 'inicio_curriculo' | 'formulario_concluido' | 'etapa_concluida' | 'geracao_iniciada' | 'geracao_concluida' | 'geracao_falhou' | 'preview_visualizado' | 'modelo_selecionado' | 'download_curriculo';
-type Params = { etapa?: number; idioma?: string; origem?: 'novo' | 'edicao' | 'nova_tentativa'; metodo?: 'ia' | 'basico'; metodo_geracao?: 'servidor_playwright' | 'fallback_navegador'; categoria_erro?: 'timeout' | 'limite' | 'servidor' | 'rede_ou_resposta' | 'ia_indisponivel'; modelo?: string; duracao_ms?: number };
+type EventName = 'contact_view' | 'contact_submit' | 'contact_success' | 'contact_error' | 'instagram_click' | 'inicio_curriculo' | 'formulario_concluido' | 'etapa_concluida' | 'geracao_iniciada' | 'geracao_concluida' | 'geracao_falhou' | 'preview_visualizado' | 'modelo_selecionado' | 'download_curriculo';
+type Params = { placement?: 'footer' | 'contact_page'; etapa?: number; idioma?: string; origem?: 'novo' | 'edicao' | 'nova_tentativa'; metodo?: 'ia' | 'basico'; metodo_geracao?: 'servidor_playwright' | 'fallback_navegador'; categoria_erro?: 'validacao' | 'verificacao' | 'timeout' | 'limite' | 'servidor' | 'rede_ou_resposta' | 'ia_indisponivel'; modelo?: string; duracao_ms?: number };
 
 export function safeAnalyticsParams(params: Params): Record<string, string | number> {
   const safe: Record<string, string | number> = {};
+  if (['footer','contact_page'].includes(params.placement || '')) safe.placement = params.placement!;
   if (Number.isInteger(params.etapa) && params.etapa! >= 1 && params.etapa! <= 8) safe.etapa = params.etapa!;
   if (['pt','en','es','fr'].includes(params.idioma || '')) safe.idioma = params.idioma!;
   if (['novo','edicao','nova_tentativa'].includes(params.origem || '')) safe.origem = params.origem!;
   if (['ia','basico'].includes(params.metodo || '')) safe.metodo = params.metodo!;
   if (['servidor_playwright','fallback_navegador'].includes(params.metodo_geracao || '')) safe.metodo_geracao = params.metodo_geracao!;
-  if (['timeout','limite','servidor','rede_ou_resposta','ia_indisponivel'].includes(params.categoria_erro || '')) safe.categoria_erro = params.categoria_erro!;
+  if (['validacao','verificacao','timeout','limite','servidor','rede_ou_resposta','ia_indisponivel'].includes(params.categoria_erro || '')) safe.categoria_erro = params.categoria_erro!;
   if (['liquid-modern','executive-clean','ats-professional','impact','corporate-premium','minimalist','creative-color','elegant-serif','timeline-tech','international','global-classic','executive-signature','nordic','editorial'].includes(params.modelo || '')) safe.modelo = params.modelo!;
   if (typeof params.duracao_ms === 'number' && Number.isFinite(params.duracao_ms)) safe.duracao_ms = Math.max(0, Math.min(300000, Math.round(params.duracao_ms)));
   return safe;
@@ -19,7 +20,7 @@ export function safeAnalyticsParams(params: Params): Record<string, string | num
 export function trackEvent(name: EventName, params: Params = {}) {
   if (typeof window === 'undefined' || !isAnalyticsHost(window.location.hostname)) return;
   // Ignore arbitrary runtime names and fields even if a caller bypasses TS.
-  if (!['inicio_curriculo','formulario_concluido','etapa_concluida','geracao_iniciada','geracao_concluida','geracao_falhou','preview_visualizado','modelo_selecionado','download_curriculo'].includes(name)) return;
+  if (!['contact_view','contact_submit','contact_success','contact_error','instagram_click','inicio_curriculo','formulario_concluido','etapa_concluida','geracao_iniciada','geracao_concluida','geracao_falhou','preview_visualizado','modelo_selecionado','download_curriculo'].includes(name)) return;
   try {
     const tag = (window as any).gtag;
     if (typeof tag === 'function') tag('event', name, safeAnalyticsParams(params));

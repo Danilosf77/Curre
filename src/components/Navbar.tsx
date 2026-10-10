@@ -29,7 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const contactLabel = { pt: 'Contato', en: 'Contact', es: 'Contacto', fr: 'Contact' }[language];
 
   return (
     <header className="sticky top-0 z-40 w-full no-print px-3 sm:px-6 lg:px-8 pt-1.5 pb-2">
@@ -66,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Desktop Navigation - Visível em telas md e maiores no modo claro e escuro */}
         <nav className="hidden md:flex items-center gap-1 sm:gap-2 lg:gap-3">
+          <a href="/contact" className="px-2 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-sky-600 focus-visible:outline-2 focus-visible:outline-sky-500">{contactLabel}</a>
           <button
             onClick={onStartResume}
             id="nav-link-create"
@@ -168,6 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-2 max-w-6xl mx-auto liquid-glass-card rounded-2xl p-4 shadow-xl border border-white/80 dark:border-slate-700 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <a href="/contact" className="flex min-h-11 items-center px-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 focus-visible:outline-2 focus-visible:outline-sky-500">{contactLabel}</a>
           <div className="px-2 py-1 text-xs font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider">
             {t('nav_header')}
           </div>

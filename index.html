@@ -42,7 +42,10 @@
         window.gtag('js', new Date());
         // Explicit production QA only; localhost never loads this tag.
         const analyticsDebug = new URLSearchParams(window.location.search).get('analytics_debug') === '1';
-        window.gtag('config', 'G-2ZLS5E954V', analyticsDebug ? { debug_mode: true } : {});
+        // Never collect query strings, hashes or submitted contact contents.
+        let safeReferrer = '';
+        try { const ref = new URL(document.referrer); safeReferrer = ref.origin + ref.pathname; } catch {}
+        window.gtag('config', 'G-2ZLS5E954V', { ...(window.location.pathname === '/contact' ? { page_location: window.location.origin + window.location.pathname, page_referrer: safeReferrer } : {}), ...(analyticsDebug ? { debug_mode: true } : {}) });
         const tag = document.createElement('script');
         tag.async = true;
         tag.src = 'https://www.googletagmanager.com/gtag/js?id=G-2ZLS5E954V';
