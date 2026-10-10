@@ -540,7 +540,6 @@ function AppContent() {
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
               <a href="/contact" className="inline-flex min-h-11 items-center rounded-lg hover:text-sky-600 dark:hover:text-sky-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500">{contactLabel}</a>
-              <InstagramLink placement="footer" />
               <button
                 onClick={() => setHowItWorksOpen(true)}
                 className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer whitespace-nowrap"
@@ -566,14 +565,15 @@ function AppContent() {
           <div className="border-t border-slate-100 dark:border-slate-800" />
 
           {/* Bottom Row: Attribution & Copyright */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px]">
-            <div className="text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center justify-items-center gap-4 text-[11px]">
+            <div className="text-slate-500 dark:text-slate-400 inline-flex items-center gap-1.5 sm:justify-self-start">
               <span>{t('footer_developed_by')}</span>
               <span className="text-slate-700 dark:text-slate-200 font-semibold whitespace-nowrap">
                 Danilo Freitas
               </span>
             </div>
-            <div className="text-slate-400 dark:text-slate-500">
+            <InstagramLink placement="footer" />
+            <div className="text-slate-400 dark:text-slate-500 sm:justify-self-end sm:text-right">
               &copy; {new Date().getFullYear()} CURRÊ. All rights reserved.
             </div>
           </div>
